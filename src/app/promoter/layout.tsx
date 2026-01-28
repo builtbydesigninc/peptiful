@@ -2,13 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Wallet, LogOut } from "lucide-react"
+import { LayoutDashboard, Wallet, LogOut, ShoppingBag, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 
 const navItems = [
   { href: "/promoter", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/promoter/orders", icon: ShoppingBag, label: "Orders" },
+  { href: "/promoter/codes", icon: Tag, label: "My Codes" },
   { href: "/promoter/payouts", icon: Wallet, label: "Payouts" },
 ]
 
@@ -28,7 +30,7 @@ export default function PromoterLayout({
             <Logo size="sm" variant="dark" />
             <span className="font-bold text-dark-navy">Peptiful</span>
           </div>
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5 sm:gap-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -36,7 +38,7 @@ export default function PromoterLayout({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-1.5 px-2 sm:px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
                       ? "bg-navy text-white"
                       : "text-muted-foreground hover:bg-lavender"
@@ -47,7 +49,7 @@ export default function PromoterLayout({
                 </Link>
               )
             })}
-            <Button variant="ghost" size="sm" className="text-muted-foreground ml-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground ml-1 sm:ml-2 px-2 sm:px-3">
               <LogOut className="size-4" />
               <span className="hidden sm:inline ml-1.5">Logout</span>
             </Button>
