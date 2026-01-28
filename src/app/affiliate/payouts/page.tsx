@@ -3,17 +3,18 @@
 import {
   Download,
   CheckCircle,
-  Clock,
   DollarSign,
   Calendar,
   CreditCard,
   FileText,
+  Wallet,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useAffiliate } from "../context"
 
-const payouts = [
+const allPayouts = [
   {
     id: "PAY-2026-0120",
     date: "Jan 20, 2026",
@@ -22,6 +23,7 @@ const payouts = [
     method: "Bank Transfer",
     status: "completed",
     reference: "TRF-789456123",
+    brandIds: ["hoa", "tpm"],
   },
   {
     id: "PAY-2026-0105",
@@ -31,6 +33,7 @@ const payouts = [
     method: "Bank Transfer",
     status: "completed",
     reference: "TRF-789456122",
+    brandIds: ["hoa", "tpm"],
   },
   {
     id: "PAY-2025-1220",
@@ -40,6 +43,7 @@ const payouts = [
     method: "Bank Transfer",
     status: "completed",
     reference: "TRF-789456121",
+    brandIds: ["hoa"],
   },
   {
     id: "PAY-2025-1205",
@@ -49,6 +53,7 @@ const payouts = [
     method: "Bank Transfer",
     status: "completed",
     reference: "TRF-789456120",
+    brandIds: ["hoa", "tpm"],
   },
   {
     id: "PAY-2025-1120",
@@ -58,6 +63,7 @@ const payouts = [
     method: "Bank Transfer",
     status: "completed",
     reference: "TRF-789456119",
+    brandIds: ["tpm"],
   },
   {
     id: "PAY-2025-1105",
@@ -67,17 +73,41 @@ const payouts = [
     method: "Bank Transfer",
     status: "completed",
     reference: "TRF-789456118",
+    brandIds: ["hoa"],
   },
 ]
 
-const nextPayout = {
-  date: "Feb 1, 2026",
-  amount: "$3,847.50",
-  orders: 62,
-  daysUntil: 5,
+const nextPayoutData = {
+  all: { date: "Feb 1, 2026", amount: "$3,847.50", orders: 62, daysUntil: 5 },
+  hoa: { date: "Feb 1, 2026", amount: "$2,523.40", orders: 38, daysUntil: 5 },
+  tpm: { date: "Feb 1, 2026", amount: "$1,324.10", orders: 24, daysUntil: 5 },
+  ps: { date: "—", amount: "$0.00", orders: 0, daysUntil: 0 },
 }
 
 export default function AffiliatePayoutsPage() {
+  const { user, getSelectedBrand, getVisibleBrands } = useAffiliate()
+
+  if (!user) return null
+
+  const isAffiliate = user.role === "affiliate"
+  const selectedBrand = getSelectedBrand()
+  const visibleBrands = getVisibleBrands()
+
+  // Filter payouts based on role and selection
+  let payouts = allPayouts.filter(p => 
+    p.brandIds.some(bid => visibleBrands.some(vb => vb.id === bid))
+  )
+  if (selectedBrand) {
+    payouts = payouts.filter(p => p.brandIds.includes(selectedBrand.id))
+  }
+
+  // Get next payout data
+  const nextPayout = selectedBrand
+    ? nextPayoutData[selectedBrand.id as keyof typeof nextPayoutData] || nextPayoutData.all
+    : isAffiliate
+      ? nextPayoutData.all
+      : nextPayoutData[user.brands[0]?.id as keyof typeof nextPayoutData] || nextPayoutData.all
+
   const totalPaid = payouts.reduce(
     (acc, p) => acc + parseFloat(p.amount.replace("$", "").replace(",", "")),
     0
@@ -87,8 +117,15 @@ export default function AffiliatePayoutsPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">Payout History</h2>
-        <p className="text-sm sm:text-base text-muted-foreground">Track your earnings and payment history</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">
+          {selectedBrand ? `${selectedBrand.name} Payouts` : "Payout History"}
+        </h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          {selectedBrand
+            ? `Payment history for ${selectedBrand.name}`
+            : "Track your earnings and payment history"
+          }
+        </p>
       </div>
 
       {/* Summary Cards */}
@@ -103,9 +140,11 @@ export default function AffiliatePayoutsPage() {
             <p className="text-2xl sm:text-4xl font-bold mb-2">{nextPayout.amount}</p>
             <div className="flex items-center justify-between">
               <span className="text-xs sm:text-sm opacity-80">{nextPayout.orders} orders</span>
-              <Badge className="bg-white/20 text-white hover:bg-white/30 text-xs">
-                {nextPayout.daysUntil} days
-              </Badge>
+              {nextPayout.daysUntil > 0 && (
+                <Badge className="bg-white/20 text-white hover:bg-white/30 text-xs">
+                  {nextPayout.daysUntil} days
+                </Badge>
+              )}
             </div>
             <p className="text-xs sm:text-sm opacity-80 mt-2 sm:mt-3">{nextPayout.date}</p>
           </CardContent>
@@ -151,45 +190,55 @@ export default function AffiliatePayoutsPage() {
           <CardTitle className="text-base sm:text-lg">Payment History</CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b border-border/50 bg-lavender/30">
-                <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Payout ID</th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Date</th>
-                <th className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Amount</th>
-                <th className="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm font-semibold text-dark-navy hidden sm:table-cell">Orders</th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
-                <th className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Invoice</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payouts.map((payout) => (
-                <tr key={payout.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
-                  <td className="px-3 sm:px-6 py-3 sm:py-4">
-                    <span className="font-mono font-semibold text-navy text-xs sm:text-sm">{payout.id}</span>
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{payout.date}</td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                    <span className="font-bold text-dark-navy text-xs sm:text-sm">{payout.amount}</span>
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">{payout.orders}</td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4">
-                    <span className="flex items-center gap-1 sm:gap-1.5 text-green-600 font-medium text-xs sm:text-sm">
-                      <CheckCircle className="size-3 sm:size-4" />
-                      <span className="hidden sm:inline">Completed</span>
-                      <span className="sm:hidden">Done</span>
-                    </span>
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                    <Button variant="ghost" size="sm" className="text-xs sm:text-sm h-8 px-2 sm:px-3">
-                      <FileText className="size-3 sm:size-4" />
-                      <span className="hidden sm:inline ml-1">Download</span>
-                    </Button>
-                  </td>
+          {payouts.length === 0 ? (
+            <div className="p-8 text-center">
+              <Wallet className="size-12 mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-muted-foreground">No payouts yet</p>
+              <p className="text-sm text-muted-foreground/70">
+                Payouts will appear here once you've earned commissions
+              </p>
+            </div>
+          ) : (
+            <table className="w-full min-w-[600px]">
+              <thead>
+                <tr className="border-b border-border/50 bg-lavender/30">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Payout ID</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Date</th>
+                  <th className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Amount</th>
+                  <th className="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm font-semibold text-dark-navy hidden sm:table-cell">Orders</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
+                  <th className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Invoice</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {payouts.map((payout) => (
+                  <tr key={payout.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <span className="font-mono font-semibold text-navy text-xs sm:text-sm">{payout.id}</span>
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{payout.date}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                      <span className="font-bold text-dark-navy text-xs sm:text-sm">{payout.amount}</span>
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">{payout.orders}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <span className="flex items-center gap-1 sm:gap-1.5 text-green-600 font-medium text-xs sm:text-sm">
+                        <CheckCircle className="size-3 sm:size-4" />
+                        <span className="hidden sm:inline">Completed</span>
+                        <span className="sm:hidden">Done</span>
+                      </span>
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                      <Button variant="ghost" size="sm" className="text-xs sm:text-sm h-8 px-2 sm:px-3">
+                        <FileText className="size-3 sm:size-4" />
+                        <span className="hidden sm:inline ml-1">Download</span>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </CardContent>
       </Card>
     </div>

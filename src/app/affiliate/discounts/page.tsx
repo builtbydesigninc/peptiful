@@ -16,7 +16,7 @@ import {
   TrendingUp,
   Hash,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -35,8 +35,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAffiliate } from "../context"
 
-const discountCodes = [
+const allDiscountCodes = [
   {
     id: 1,
     code: "HOA20",
@@ -47,6 +48,7 @@ const discountCodes = [
     limit: 500,
     revenue: "$12,847.50",
     expires: "Feb 28, 2026",
+    brandIds: ["hoa"],
     brands: ["House of Aminos"],
   },
   {
@@ -59,6 +61,7 @@ const discountCodes = [
     limit: 200,
     revenue: "$6,234.20",
     expires: "Mar 31, 2026",
+    brandIds: ["hoa", "tpm", "ps"],
     brands: ["All Brands"],
   },
   {
@@ -71,6 +74,7 @@ const discountCodes = [
     limit: null,
     revenue: "$18,456.80",
     expires: null,
+    brandIds: ["hoa", "tpm", "ps"],
     brands: ["All Brands"],
   },
   {
@@ -83,6 +87,7 @@ const discountCodes = [
     limit: 100,
     revenue: "$8,920.00",
     expires: "Jan 15, 2026",
+    brandIds: ["hoa", "tpm"],
     brands: ["House of Aminos", "TPM"],
   },
   {
@@ -95,16 +100,23 @@ const discountCodes = [
     limit: 50,
     revenue: "$1,234.50",
     expires: "Dec 31, 2026",
+    brandIds: ["hoa"],
     brands: ["House of Aminos"],
   },
+  {
+    id: 6,
+    code: "TPM10",
+    discount: "10%",
+    discountType: "percentage",
+    status: "active",
+    uses: 67,
+    limit: 200,
+    revenue: "$3,456.00",
+    expires: "Apr 30, 2026",
+    brandIds: ["tpm"],
+    brands: ["TPM"],
+  },
 ]
-
-const stats = {
-  totalCodes: 5,
-  activeCodes: 3,
-  totalRedemptions: 580,
-  revenueFromCodes: "$47,693.00",
-}
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -119,7 +131,15 @@ function getStatusBadge(status: string) {
   }
 }
 
-function CreateCodeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function CreateCodeModal({ 
+  open, 
+  onClose, 
+  visibleBrands 
+}: { 
+  open: boolean
+  onClose: () => void
+  visibleBrands: { id: string; name: string }[]
+}) {
   const [autoCode, setAutoCode] = useState(false)
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage")
   const [hasLimit, setHasLimit] = useState(true)
@@ -273,27 +293,29 @@ function CreateCodeModal({ open, onClose }: { open: boolean; onClose: () => void
           </div>
 
           {/* Applicable Brands */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Applicable Brands</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">All brands</span>
-                <Switch checked={allBrands} onCheckedChange={setAllBrands} />
+          {visibleBrands.length > 1 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Applicable Brands</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">All brands</span>
+                  <Switch checked={allBrands} onCheckedChange={setAllBrands} />
+                </div>
               </div>
+              {!allBrands && (
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select brands" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {visibleBrands.map(brand => (
+                      <SelectItem key={brand.id} value={brand.id}>{brand.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
-            {!allBrands && (
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select brands" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hoa">House of Aminos</SelectItem>
-                  <SelectItem value="tpm">TPM</SelectItem>
-                  <SelectItem value="ps">Peptide Sciences</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+          )}
 
           {/* Active Status */}
           <div className="flex items-center justify-between p-3 bg-lavender rounded-lg">
@@ -323,7 +345,7 @@ function CreateCodeModal({ open, onClose }: { open: boolean; onClose: () => void
 function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <Card className="bg-white border-border/50">
-      <CardContent className="py-16 text-center">
+      <div className="py-16 text-center">
         <div className="flex justify-center mb-4">
           <div className="size-16 rounded-full bg-lavender flex items-center justify-center">
             <TicketPercent className="size-8 text-navy" />
@@ -337,28 +359,55 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
           <Plus className="size-4" />
           Create Your First Code
         </Button>
-      </CardContent>
+      </div>
     </Card>
   )
 }
 
 export default function AffiliateDiscountsPage() {
+  const { user, getSelectedBrand, getVisibleBrands } = useAffiliate()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+
+  if (!user) return null
+
+  const isAffiliate = user.role === "affiliate"
+  const selectedBrand = getSelectedBrand()
+  const visibleBrands = getVisibleBrands()
+
+  // Filter codes based on role and selection
+  let discountCodes = allDiscountCodes.filter(code => 
+    code.brandIds.some(bid => visibleBrands.some(vb => vb.id === bid))
+  )
+
+  if (selectedBrand) {
+    discountCodes = discountCodes.filter(code => code.brandIds.includes(selectedBrand.id))
+  }
+
+  // Apply filters
+  const filteredCodes = discountCodes.filter((code) => {
+    const matchesStatus = statusFilter === "all" || code.status === statusFilter
+    const matchesSearch = code.code.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesStatus && matchesSearch
+  })
+
+  // Calculate stats based on filtered codes
+  const stats = {
+    totalCodes: discountCodes.length,
+    activeCodes: discountCodes.filter(c => c.status === "active").length,
+    totalRedemptions: discountCodes.reduce((acc, c) => acc + c.uses, 0),
+    revenueFromCodes: "$" + discountCodes
+      .reduce((acc, c) => acc + parseFloat(c.revenue.replace("$", "").replace(",", "")), 0)
+      .toLocaleString("en-US", { minimumFractionDigits: 2 }),
+  }
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code)
     setCopiedCode(code)
     setTimeout(() => setCopiedCode(null), 2000)
   }
-
-  const filteredCodes = discountCodes.filter((code) => {
-    const matchesStatus = statusFilter === "all" || code.status === statusFilter
-    const matchesSearch = code.code.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
 
   const showEmptyState = discountCodes.length === 0
 
@@ -367,8 +416,15 @@ export default function AffiliateDiscountsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">Discount Codes</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Create and manage promotional codes</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">
+            {selectedBrand ? `${selectedBrand.name} Discounts` : "Discount Codes"}
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            {selectedBrand 
+              ? `Promotional codes for ${selectedBrand.name}`
+              : "Create and manage promotional codes"
+            }
+          </p>
         </div>
         <Button variant="accent" className="w-full sm:w-auto" onClick={() => setShowCreateModal(true)}>
           <Plus className="size-4" />
@@ -383,7 +439,7 @@ export default function AffiliateDiscountsPage() {
           {/* Stats */}
           <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
             <Card className="bg-white border-border/50">
-              <CardContent className="p-4">
+              <div className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
                     <Tag className="size-5" />
@@ -393,10 +449,10 @@ export default function AffiliateDiscountsPage() {
                     <p className="text-xl font-bold text-dark-navy">{stats.totalCodes}</p>
                   </div>
                 </div>
-              </CardContent>
+              </div>
             </Card>
             <Card className="bg-white border-border/50">
-              <CardContent className="p-4">
+              <div className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
                     <Check className="size-5" />
@@ -406,10 +462,10 @@ export default function AffiliateDiscountsPage() {
                     <p className="text-xl font-bold text-green-600">{stats.activeCodes}</p>
                   </div>
                 </div>
-              </CardContent>
+              </div>
             </Card>
             <Card className="bg-white border-border/50">
-              <CardContent className="p-4">
+              <div className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
                     <Hash className="size-5" />
@@ -419,10 +475,10 @@ export default function AffiliateDiscountsPage() {
                     <p className="text-xl font-bold text-dark-navy">{stats.totalRedemptions}</p>
                   </div>
                 </div>
-              </CardContent>
+              </div>
             </Card>
             <Card className="bg-white border-border/50">
-              <CardContent className="p-4">
+              <div className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
                     <TrendingUp className="size-5" />
@@ -432,13 +488,13 @@ export default function AffiliateDiscountsPage() {
                     <p className="text-xl font-bold text-green-600">{stats.revenueFromCodes}</p>
                   </div>
                 </div>
-              </CardContent>
+              </div>
             </Card>
           </div>
 
           {/* Filters */}
           <Card className="bg-white border-border/50">
-            <CardContent className="p-4">
+            <div className="p-4">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -461,119 +517,140 @@ export default function AffiliateDiscountsPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Table */}
           <Card className="bg-white border-border/50 overflow-hidden">
-            <CardContent className="p-0 overflow-x-auto">
-              <table className="w-full min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-border/50 bg-lavender/30">
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Code</th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Discount</th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Uses</th>
-                    <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Revenue</th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Expires</th>
-                    <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCodes.map((code) => {
-                    const usagePercent = code.limit ? (code.uses / code.limit) * 100 : 0
-                    return (
-                      <tr key={code.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
-                        <td className="px-4 sm:px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <code className="px-2 py-1 bg-lavender rounded text-sm font-mono font-bold text-navy">
-                              {code.code}
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-7"
-                              onClick={() => copyCode(code.code)}
-                            >
-                              {copiedCode === code.code ? (
-                                <Check className="size-3 text-green-600" />
-                              ) : (
-                                <Copy className="size-3" />
-                              )}
-                            </Button>
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          <span className="font-semibold text-dark-navy">{code.discount}</span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          {getStatusBadge(code.status)}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          <div className="space-y-1">
-                            <span className="text-sm">
-                              <span className="font-semibold text-dark-navy">{code.uses}</span>
-                              <span className="text-muted-foreground">
-                                {code.limit ? ` / ${code.limit}` : " (unlimited)"}
-                              </span>
-                            </span>
-                            {code.limit && (
-                              <div className="w-20 h-1.5 bg-lavender rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full ${
-                                    usagePercent >= 90 ? "bg-coral" : "bg-navy"
-                                  }`}
-                                  style={{ width: `${Math.min(usagePercent, 100)}%` }}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 text-right">
-                          <span className="font-semibold text-green-600">{code.revenue}</span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            {code.expires ? (
-                              <>
-                                <Calendar className="size-3" />
-                                {code.expires}
-                              </>
-                            ) : (
-                              <span>No expiry</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="size-8">
-                                <MoreHorizontal className="size-4" />
+            <div className="p-0 overflow-x-auto">
+              {filteredCodes.length === 0 ? (
+                <div className="p-8 text-center">
+                  <TicketPercent className="size-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-muted-foreground">No codes match your filters</p>
+                </div>
+              ) : (
+                <table className="w-full min-w-[800px]">
+                  <thead>
+                    <tr className="border-b border-border/50 bg-lavender/30">
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Code</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Discount</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Uses</th>
+                      {isAffiliate && !selectedBrand && (
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Brands</th>
+                      )}
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Revenue</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Expires</th>
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCodes.map((code) => {
+                      const usagePercent = code.limit ? (code.uses / code.limit) * 100 : 0
+                      return (
+                        <tr key={code.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <code className="px-2 py-1 bg-lavender rounded text-sm font-mono font-bold text-navy">
+                                {code.code}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-7"
+                                onClick={() => copyCode(code.code)}
+                              >
+                                {copiedCode === code.code ? (
+                                  <Check className="size-3 text-green-600" />
+                                ) : (
+                                  <Copy className="size-3" />
+                                )}
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => copyCode(code.code)}>
-                                Copy Code
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>View Analytics</DropdownMenuItem>
-                              <DropdownMenuItem className="text-coral">
-                                {code.status === "active" ? "Deactivate" : "Activate"}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
+                            </div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            <span className="font-semibold text-dark-navy">{code.discount}</span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            {getStatusBadge(code.status)}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="space-y-1">
+                              <span className="text-sm">
+                                <span className="font-semibold text-dark-navy">{code.uses}</span>
+                                <span className="text-muted-foreground">
+                                  {code.limit ? ` / ${code.limit}` : " (unlimited)"}
+                                </span>
+                              </span>
+                              {code.limit && (
+                                <div className="w-20 h-1.5 bg-lavender rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full ${
+                                      usagePercent >= 90 ? "bg-coral" : "bg-navy"
+                                    }`}
+                                    style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          {isAffiliate && !selectedBrand && (
+                            <td className="px-4 sm:px-6 py-4">
+                              <span className="text-sm text-muted-foreground">
+                                {code.brands.join(", ")}
+                              </span>
+                            </td>
+                          )}
+                          <td className="px-4 sm:px-6 py-4 text-right">
+                            <span className="font-semibold text-green-600">{code.revenue}</span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                              {code.expires ? (
+                                <>
+                                  <Calendar className="size-3" />
+                                  {code.expires}
+                                </>
+                              ) : (
+                                <span>No expiry</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="size-8">
+                                  <MoreHorizontal className="size-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => copyCode(code.code)}>
+                                  Copy Code
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                                <DropdownMenuItem>View Analytics</DropdownMenuItem>
+                                <DropdownMenuItem className="text-coral">
+                                  {code.status === "active" ? "Deactivate" : "Activate"}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </Card>
         </>
       )}
 
-      <CreateCodeModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      <CreateCodeModal 
+        open={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+        visibleBrands={visibleBrands}
+      />
     </div>
   )
 }

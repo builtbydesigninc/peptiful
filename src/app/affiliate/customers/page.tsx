@@ -11,8 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useAffiliate } from "../context"
 
-const topCustomers = [
+const allTopCustomers = [
   {
     id: 1,
     name: "John Smith",
@@ -21,6 +22,7 @@ const topCustomers = [
     totalSpent: "$4,892.50",
     avgOrder: "$203.85",
     lastOrder: "2 days ago",
+    brandIds: ["hoa", "tpm"],
   },
   {
     id: 2,
@@ -30,6 +32,7 @@ const topCustomers = [
     totalSpent: "$3,456.80",
     avgOrder: "$192.04",
     lastOrder: "1 week ago",
+    brandIds: ["hoa"],
   },
   {
     id: 3,
@@ -39,6 +42,7 @@ const topCustomers = [
     totalSpent: "$2,987.40",
     avgOrder: "$199.16",
     lastOrder: "3 days ago",
+    brandIds: ["tpm"],
   },
   {
     id: 4,
@@ -48,6 +52,7 @@ const topCustomers = [
     totalSpent: "$2,345.60",
     avgOrder: "$195.47",
     lastOrder: "5 days ago",
+    brandIds: ["hoa"],
   },
   {
     id: 5,
@@ -57,14 +62,16 @@ const topCustomers = [
     totalSpent: "$2,156.90",
     avgOrder: "$196.08",
     lastOrder: "1 week ago",
+    brandIds: ["hoa", "tpm"],
   },
 ]
 
-const topProducts = [
+const allTopProducts = [
   {
     id: 1,
     name: "BPC-157 10mg",
-    brand: "Peptide Sciences",
+    brandId: "hoa",
+    brand: "House of Aminos",
     sold: 342,
     revenue: "$30,758.58",
     commission: "$3,075.86",
@@ -72,7 +79,8 @@ const topProducts = [
   {
     id: 2,
     name: "TB-500 5mg",
-    brand: "Peptide Sciences",
+    brandId: "hoa",
+    brand: "House of Aminos",
     sold: 256,
     revenue: "$28,153.44",
     commission: "$2,815.34",
@@ -80,7 +88,8 @@ const topProducts = [
   {
     id: 3,
     name: "Ipamorelin 5mg",
-    brand: "Core Peptides",
+    brandId: "tpm",
+    brand: "TPM",
     sold: 198,
     revenue: "$15,838.02",
     commission: "$1,583.80",
@@ -88,7 +97,8 @@ const topProducts = [
   {
     id: 4,
     name: "CJC-1295 2mg",
-    brand: "Core Peptides",
+    brandId: "tpm",
+    brand: "TPM",
     sold: 167,
     revenue: "$24,883.33",
     commission: "$2,488.33",
@@ -96,20 +106,70 @@ const topProducts = [
   {
     id: 5,
     name: "Semaglutide 5mg",
-    brand: "Research Peptides",
+    brandId: "hoa",
+    brand: "House of Aminos",
     sold: 145,
     revenue: "$43,355.00",
     commission: "$4,335.50",
   },
 ]
 
+// Stats by view type
+const statsData = {
+  all: { totalCustomers: 847, repeatRate: "34.2%", avgOrders: "2.18", avgOrderValue: "$168.72" },
+  hoa: { totalCustomers: 523, repeatRate: "38.5%", avgOrders: "2.45", avgOrderValue: "$185.40" },
+  tpm: { totalCustomers: 312, repeatRate: "29.8%", avgOrders: "1.92", avgOrderValue: "$152.30" },
+  ps: { totalCustomers: 0, repeatRate: "0%", avgOrders: "0", avgOrderValue: "$0" },
+}
+
 export default function AffiliateCustomersPage() {
+  const { user, getSelectedBrand, getVisibleBrands } = useAffiliate()
+
+  if (!user) return null
+
+  const isAffiliate = user.role === "affiliate"
+  const selectedBrand = getSelectedBrand()
+  const visibleBrands = getVisibleBrands()
+
+  // Get stats based on selection
+  const stats = selectedBrand
+    ? statsData[selectedBrand.id as keyof typeof statsData] || statsData.all
+    : isAffiliate
+      ? statsData.all
+      : statsData[user.brands[0]?.id as keyof typeof statsData] || statsData.all
+
+  // Filter customers based on role and selection
+  let topCustomers = allTopCustomers.filter(c => 
+    c.brandIds.some(bid => visibleBrands.some(vb => vb.id === bid))
+  )
+  if (selectedBrand) {
+    topCustomers = topCustomers.filter(c => c.brandIds.includes(selectedBrand.id))
+  }
+
+  // Filter products based on role and selection
+  let topProducts = allTopProducts.filter(p => 
+    visibleBrands.some(vb => vb.id === p.brandId)
+  )
+  if (selectedBrand) {
+    topProducts = topProducts.filter(p => p.brandId === selectedBrand.id)
+  }
+
+  // Show brand column for affiliates viewing all
+  const showBrandColumn = isAffiliate && !selectedBrand
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">Customer Insights</h2>
-        <p className="text-sm sm:text-base text-muted-foreground">Understand your customer base and top products</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">
+          {selectedBrand ? `${selectedBrand.name} Customers` : "Customer Insights"}
+        </h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          {selectedBrand
+            ? `Customer data for ${selectedBrand.name}`
+            : "Understand your customer base and top products"
+          }
+        </p>
       </div>
 
       {/* Stats */}
@@ -122,7 +182,7 @@ export default function AffiliateCustomersPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Customers</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">847</p>
+                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.totalCustomers}</p>
               </div>
             </div>
           </CardContent>
@@ -135,7 +195,7 @@ export default function AffiliateCustomersPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">Repeat Rate</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">34.2%</p>
+                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.repeatRate}</p>
               </div>
             </div>
           </CardContent>
@@ -148,7 +208,7 @@ export default function AffiliateCustomersPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">Avg Orders</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">2.18</p>
+                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.avgOrders}</p>
               </div>
             </div>
           </CardContent>
@@ -161,7 +221,7 @@ export default function AffiliateCustomersPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">Avg Order Value</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">$168.72</p>
+                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.avgOrderValue}</p>
               </div>
             </div>
           </CardContent>
@@ -175,37 +235,44 @@ export default function AffiliateCustomersPage() {
             <CardTitle className="text-base sm:text-lg">Top Customers</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-border/50">
-              {topCustomers.map((customer, index) => (
-                <div key={customer.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 hover:bg-lavender/20">
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="text-base sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 shrink-0">
-                      {index + 1}
-                    </span>
-                    <Avatar className="size-8 sm:size-10 shrink-0">
-                      <AvatarFallback className="bg-lavender text-navy text-xs sm:text-sm font-semibold">
-                        {customer.name.split(" ").map(n => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-dark-navy text-sm sm:text-base truncate">{customer.name}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{customer.orders} orders • Last: {customer.lastOrder}</p>
+            {topCustomers.length === 0 ? (
+              <div className="p-8 text-center">
+                <Users className="size-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground">No customer data yet</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/50">
+                {topCustomers.slice(0, 5).map((customer, index) => (
+                  <div key={customer.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 hover:bg-lavender/20">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <span className="text-base sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 shrink-0">
+                        {index + 1}
+                      </span>
+                      <Avatar className="size-8 sm:size-10 shrink-0">
+                        <AvatarFallback className="bg-lavender text-navy text-xs sm:text-sm font-semibold">
+                          {customer.name.split(" ").map(n => n[0]).join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-dark-navy text-sm sm:text-base truncate">{customer.name}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{customer.orders} orders • Last: {customer.lastOrder}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-3 ml-7 sm:ml-0">
+                      <div className="text-left sm:text-right">
+                        <p className="font-bold text-navy text-sm sm:text-base">{customer.totalSpent}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Avg: {customer.avgOrder}</p>
+                      </div>
+                      <Button variant="accent" size="sm" className="shrink-0 text-xs sm:text-sm">
+                        <Mail className="size-3" />
+                        <span className="hidden sm:inline">Send Offer</span>
+                        <span className="sm:hidden">Offer</span>
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:gap-3 ml-7 sm:ml-0">
-                    <div className="text-left sm:text-right">
-                      <p className="font-bold text-navy text-sm sm:text-base">{customer.totalSpent}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Avg: {customer.avgOrder}</p>
-                    </div>
-                    <Button variant="accent" size="sm" className="shrink-0 text-xs sm:text-sm">
-                      <Mail className="size-3" />
-                      <span className="hidden sm:inline">Send Offer</span>
-                      <span className="sm:hidden">Offer</span>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -215,34 +282,43 @@ export default function AffiliateCustomersPage() {
             <CardTitle className="text-base sm:text-lg">Top Products</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-border/50">
-              {topProducts.map((product, index) => (
-                <div key={product.id} className="p-3 sm:p-4 hover:bg-lavender/20">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <span className="text-base sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 shrink-0">
-                        {index + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-dark-navy text-sm sm:text-base truncate">{product.name}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{product.brand}</p>
+            {topProducts.length === 0 ? (
+              <div className="p-8 text-center">
+                <ShoppingBag className="size-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground">No product data yet</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/50">
+                {topProducts.slice(0, 5).map((product, index) => (
+                  <div key={product.id} className="p-3 sm:p-4 hover:bg-lavender/20">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <span className="text-base sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 shrink-0">
+                          {index + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-dark-navy text-sm sm:text-base truncate">{product.name}</p>
+                          {showBrandColumn && (
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{product.brand}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge variant="muted" className="shrink-0 text-[10px] sm:text-xs">{product.sold} sold</Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ml-7 sm:ml-9 text-xs sm:text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Rev: </span>
+                        <span className="font-medium">{product.revenue}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Comm: </span>
+                        <span className="font-bold text-green-600">{product.commission}</span>
                       </div>
                     </div>
-                    <Badge variant="muted" className="shrink-0 text-[10px] sm:text-xs">{product.sold} sold</Badge>
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ml-7 sm:ml-9 text-xs sm:text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Rev: </span>
-                      <span className="font-medium">{product.revenue}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Comm: </span>
-                      <span className="font-bold text-green-600">{product.commission}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
