@@ -4,6 +4,7 @@ import {
   Package,
   Plug,
   TrendingUp,
+  Megaphone,
   ArrowUpRight,
 } from "lucide-react"
 import { Logo } from "@/components/logo"
@@ -15,6 +16,7 @@ const interfaces = [
     href: "/dashboard",
     icon: LayoutDashboard,
     tag: "Internal",
+    accent: false,
   },
   {
     title: "Fulfillment",
@@ -22,6 +24,7 @@ const interfaces = [
     href: "/fulfillment",
     icon: Package,
     tag: "Operations",
+    accent: false,
   },
   {
     title: "Partner Plugin",
@@ -29,6 +32,7 @@ const interfaces = [
     href: "/wordpress",
     icon: Plug,
     tag: "Integration",
+    accent: false,
   },
   {
     title: "Affiliate Portal",
@@ -36,6 +40,15 @@ const interfaces = [
     href: "/affiliate",
     icon: TrendingUp,
     tag: "External",
+    accent: false,
+  },
+  {
+    title: "Promoter Portal",
+    description: "Influencer earnings & codes",
+    href: "/promoter",
+    icon: Megaphone,
+    tag: "Influencer",
+    accent: true,
   },
 ]
 
@@ -62,34 +75,50 @@ export default function HomePage() {
         </p>
 
         {/* Cards Grid */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 w-full max-w-2xl">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-4xl">
           {interfaces.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="group relative bg-white border border-border/60 rounded-xl p-5 sm:p-6 transition-all hover:border-navy/30 hover:shadow-lg hover:shadow-navy/5"
+              className={`group relative rounded-xl p-5 sm:p-6 transition-all ${
+                item.accent
+                  ? "bg-coral text-white hover:shadow-lg hover:shadow-coral/20"
+                  : "bg-white border border-border/60 hover:border-navy/30 hover:shadow-lg hover:shadow-navy/5"
+              }`}
             >
               <div className="flex items-start justify-between mb-4">
                 {/* Icon */}
-                <div className="flex items-center justify-center size-10 rounded-lg bg-lavender text-navy">
+                <div className={`flex items-center justify-center size-10 rounded-lg ${
+                  item.accent ? "bg-white/20 text-white" : "bg-lavender text-navy"
+                }`}>
                   <item.icon className="size-5" />
                 </div>
                 {/* Tag */}
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-2 py-1 bg-lavender rounded">
+                <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-1 rounded ${
+                  item.accent ? "bg-white/20 text-white" : "text-muted-foreground bg-lavender"
+                }`}>
                   {item.tag}
                 </span>
               </div>
 
               {/* Content */}
-              <h2 className="text-lg font-semibold text-dark-navy mb-1 group-hover:text-navy transition-colors">
+              <h2 className={`text-lg font-semibold mb-1 transition-colors ${
+                item.accent ? "text-white" : "text-dark-navy group-hover:text-navy"
+              }`}>
                 {item.title}
               </h2>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className={`text-sm mb-4 ${
+                item.accent ? "text-white/80" : "text-muted-foreground"
+              }`}>
                 {item.description}
               </p>
 
               {/* Link */}
-              <div className="flex items-center gap-1 text-sm font-medium text-navy opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className={`flex items-center gap-1 text-sm font-medium transition-opacity ${
+                item.accent 
+                  ? "text-white opacity-80 group-hover:opacity-100" 
+                  : "text-navy opacity-0 group-hover:opacity-100"
+              }`}>
                 <span>Open</span>
                 <ArrowUpRight className="size-4" />
               </div>

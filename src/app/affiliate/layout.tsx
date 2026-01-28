@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Menu,
   X,
+  Tag,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/affiliate/brands", icon: Building2, label: "My Brands" },
   { href: "/affiliate/orders", icon: ShoppingBag, label: "Order History" },
   { href: "/affiliate/customers", icon: Users, label: "Customer Insights" },
+  { href: "/affiliate/discounts", icon: Tag, label: "Discounts" },
   { href: "/affiliate/payouts", icon: Wallet, label: "Payouts" },
 ]
 

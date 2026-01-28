@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   ExternalLink,
   ShoppingBag,
@@ -7,11 +8,18 @@ import {
   TrendingUp,
   MoreHorizontal,
   Plus,
+  X,
+  Globe,
+  Link2,
+  CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,7 +83,160 @@ function StatusDot({ status }: { status: string }) {
   )
 }
 
+function AddBrandModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [step, setStep] = useState(1)
+  const [connecting, setConnecting] = useState(false)
+  const [connected, setConnected] = useState(false)
+
+  const handleConnect = () => {
+    setConnecting(true)
+    setTimeout(() => {
+      setConnecting(false)
+      setConnected(true)
+      setTimeout(() => {
+        setStep(2)
+      }, 1000)
+    }, 2000)
+  }
+
+  const handleClose = () => {
+    setStep(1)
+    setConnecting(false)
+    setConnected(false)
+    onClose()
+  }
+
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-dark-navy/50 backdrop-blur-sm" onClick={handleClose} />
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-border/50">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-dark-navy">
+              {step === 1 ? "Connect a Brand" : "Brand Connected!"}
+            </h2>
+            <Button variant="ghost" size="icon" onClick={handleClose}>
+              <X className="size-5" />
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            {step === 1 
+              ? "Connect your WooCommerce store to start earning" 
+              : "Configure your brand settings"
+            }
+          </p>
+        </div>
+
+        {step === 1 ? (
+          <div className="p-6 space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="brandName">Brand Name</Label>
+              <Input id="brandName" placeholder="House of Aminos" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="storeUrl">Store URL</Label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input id="storeUrl" placeholder="https://yourstore.com" className="pl-9" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="apiKey">API Key</Label>
+              <Input id="apiKey" placeholder="ck_xxxxxxxxxxxxxxxx" className="font-mono text-sm" />
+              <p className="text-xs text-muted-foreground">
+                Found in WooCommerce → Settings → Advanced → REST API
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="apiSecret">API Secret</Label>
+              <Input id="apiSecret" type="password" placeholder="cs_xxxxxxxxxxxxxxxx" className="font-mono text-sm" />
+            </div>
+
+            {connected ? (
+              <div className="flex items-center gap-2 p-3 bg-green-50 text-green-700 rounded-lg">
+                <CheckCircle className="size-5" />
+                <span className="font-medium">Connection successful!</span>
+              </div>
+            ) : (
+              <Button 
+                className="w-full" 
+                onClick={handleConnect}
+                disabled={connecting}
+              >
+                {connecting ? (
+                  <>
+                    <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Testing Connection...
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="size-4" />
+                    Test Connection
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="p-6 space-y-5">
+            <div className="p-4 bg-lavender rounded-lg text-center">
+              <CheckCircle className="size-12 text-green-600 mx-auto mb-3" />
+              <h3 className="font-bold text-dark-navy">House of Aminos</h3>
+              <p className="text-sm text-muted-foreground">Successfully connected</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="commission">Your Commission Rate</Label>
+              <div className="relative">
+                <Input id="commission" type="number" defaultValue="10" className="pr-8" />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Commission earned on each order from this brand
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-lavender/50 rounded-lg">
+              <div>
+                <p className="font-medium text-dark-navy">Auto-sync Inventory</p>
+                <p className="text-xs text-muted-foreground">Keep stock levels updated</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-lavender/50 rounded-lg">
+              <div>
+                <p className="font-medium text-dark-navy">Order Notifications</p>
+                <p className="text-xs text-muted-foreground">Get notified on new orders</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </div>
+        )}
+
+        <div className="p-6 border-t border-border/50 flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={handleClose}>
+            {step === 1 ? "Cancel" : "Close"}
+          </Button>
+          {step === 2 && (
+            <Button variant="accent" className="flex-1" onClick={handleClose}>
+              View Brand
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AffiliateBrandsPage() {
+  const [showAddModal, setShowAddModal] = useState(false)
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
       {/* Header */}
@@ -84,7 +245,7 @@ export default function AffiliateBrandsPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">My Brands</h2>
           <p className="text-sm sm:text-base text-muted-foreground">Manage your connected brand stores</p>
         </div>
-        <Button variant="accent" className="w-full sm:w-auto">
+        <Button variant="accent" className="w-full sm:w-auto" onClick={() => setShowAddModal(true)}>
           <Plus className="size-4" />
           Add Brand
         </Button>
@@ -158,14 +319,16 @@ export default function AffiliateBrandsPage() {
                 <span className="text-xs text-muted-foreground">
                   Last synced: {brand.lastSync}
                 </span>
-                <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                  View Details
+                <Button variant="secondary" size="sm" className="w-full sm:w-auto" asChild>
+                  <Link href={`/affiliate/brands/${brand.id}`}>View Details</Link>
                 </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      <AddBrandModal open={showAddModal} onClose={() => setShowAddModal(false)} />
     </div>
   )
 }
