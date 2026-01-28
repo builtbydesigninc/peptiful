@@ -15,6 +15,7 @@ import {
   TicketPercent,
   TrendingUp,
   Hash,
+  User,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select"
 import {
   DropdownMenu,
@@ -36,6 +39,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAffiliate } from "../context"
+
+// Mock promoters data grouped by brand
+const promotersByBrand = {
+  hoa: [
+    { id: "p1", name: "Ashton Hall", email: "ashton@fitness.com" },
+    { id: "p2", name: "Jane Fitness", email: "jane@fitlife.com" },
+    { id: "p3", name: "Mike Health", email: "mike@healthpro.com" },
+  ],
+  tpm: [
+    { id: "p4", name: "Other Influencer", email: "other@influencer.com" },
+    { id: "p5", name: "Fitness Pro", email: "pro@fitness.com" },
+  ],
+  ps: [],
+}
 
 const allDiscountCodes = [
   {
@@ -50,9 +67,41 @@ const allDiscountCodes = [
     expires: "Feb 28, 2026",
     brandIds: ["hoa"],
     brands: ["House of Aminos"],
+    assignedTo: null,
+    assignedToName: null,
   },
   {
     id: 2,
+    code: "ASHTON20",
+    discount: "20%",
+    discountType: "percentage",
+    status: "active",
+    uses: 145,
+    limit: 500,
+    revenue: "$4,892.50",
+    expires: "Mar 31, 2026",
+    brandIds: ["hoa"],
+    brands: ["House of Aminos"],
+    assignedTo: "p1",
+    assignedToName: "Ashton Hall",
+  },
+  {
+    id: 3,
+    code: "JANE15",
+    discount: "15%",
+    discountType: "percentage",
+    status: "active",
+    uses: 89,
+    limit: 300,
+    revenue: "$2,913.60",
+    expires: "Apr 30, 2026",
+    brandIds: ["hoa"],
+    brands: ["House of Aminos"],
+    assignedTo: "p2",
+    assignedToName: "Jane Fitness",
+  },
+  {
+    id: 4,
     code: "SUMMER15",
     discount: "15%",
     discountType: "percentage",
@@ -63,9 +112,11 @@ const allDiscountCodes = [
     expires: "Mar 31, 2026",
     brandIds: ["hoa", "tpm", "ps"],
     brands: ["All Brands"],
+    assignedTo: null,
+    assignedToName: null,
   },
   {
-    id: 3,
+    id: 5,
     code: "WELCOME10",
     discount: "$10 off",
     discountType: "fixed",
@@ -76,32 +127,8 @@ const allDiscountCodes = [
     expires: null,
     brandIds: ["hoa", "tpm", "ps"],
     brands: ["All Brands"],
-  },
-  {
-    id: 4,
-    code: "FLASH25",
-    discount: "25%",
-    discountType: "percentage",
-    status: "expired",
-    uses: 100,
-    limit: 100,
-    revenue: "$8,920.00",
-    expires: "Jan 15, 2026",
-    brandIds: ["hoa", "tpm"],
-    brands: ["House of Aminos", "TPM"],
-  },
-  {
-    id: 5,
-    code: "VIP30",
-    discount: "30%",
-    discountType: "percentage",
-    status: "inactive",
-    uses: 12,
-    limit: 50,
-    revenue: "$1,234.50",
-    expires: "Dec 31, 2026",
-    brandIds: ["hoa"],
-    brands: ["House of Aminos"],
+    assignedTo: null,
+    assignedToName: null,
   },
   {
     id: 6,
@@ -115,6 +142,23 @@ const allDiscountCodes = [
     expires: "Apr 30, 2026",
     brandIds: ["tpm"],
     brands: ["TPM"],
+    assignedTo: "p4",
+    assignedToName: "Other Influencer",
+  },
+  {
+    id: 7,
+    code: "FLASH25",
+    discount: "25%",
+    discountType: "percentage",
+    status: "expired",
+    uses: 100,
+    limit: 100,
+    revenue: "$8,920.00",
+    expires: "Jan 15, 2026",
+    brandIds: ["hoa", "tpm"],
+    brands: ["House of Aminos", "TPM"],
+    assignedTo: null,
+    assignedToName: null,
   },
 ]
 
@@ -134,11 +178,13 @@ function getStatusBadge(status: string) {
 function CreateCodeModal({ 
   open, 
   onClose, 
-  visibleBrands 
+  visibleBrands,
+  isAffiliate,
 }: { 
   open: boolean
   onClose: () => void
   visibleBrands: { id: string; name: string }[]
+  isAffiliate: boolean
 }) {
   const [autoCode, setAutoCode] = useState(false)
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage")
@@ -147,6 +193,23 @@ function CreateCodeModal({
   const [hasExpiry, setHasExpiry] = useState(false)
   const [hasMinOrder, setHasMinOrder] = useState(false)
   const [allBrands, setAllBrands] = useState(true)
+  const [selectedBrand, setSelectedBrand] = useState<string>("")
+  const [assignedPromoter, setAssignedPromoter] = useState<string>("none")
+
+  // Get promoters based on selected brand(s)
+  const availablePromoters = allBrands
+    ? Object.entries(promotersByBrand).flatMap(([brandId, promoters]) => 
+        visibleBrands.some(vb => vb.id === brandId) 
+          ? promoters.map(p => ({ ...p, brandId, brandName: visibleBrands.find(vb => vb.id === brandId)?.name || brandId }))
+          : []
+      )
+    : selectedBrand
+      ? (promotersByBrand[selectedBrand as keyof typeof promotersByBrand] || []).map(p => ({ 
+          ...p, 
+          brandId: selectedBrand, 
+          brandName: visibleBrands.find(vb => vb.id === selectedBrand)?.name || selectedBrand 
+        }))
+      : []
 
   if (!open) return null
 
@@ -303,9 +366,9 @@ function CreateCodeModal({
                 </div>
               </div>
               {!allBrands && (
-                <Select>
+                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select brands" />
+                    <SelectValue placeholder="Select brand" />
                   </SelectTrigger>
                   <SelectContent>
                     {visibleBrands.map(brand => (
@@ -316,6 +379,57 @@ function CreateCodeModal({
               )}
             </div>
           )}
+
+          {/* Assign to Promoter */}
+          <div className="space-y-3">
+            <Label>Assign to Promoter (Optional)</Label>
+            <Select value={assignedPromoter} onValueChange={setAssignedPromoter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select promoter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  <span className="flex items-center gap-2">
+                    <Tag className="size-3.5" />
+                    None (Brand code)
+                  </span>
+                </SelectItem>
+                {isAffiliate && visibleBrands.length > 1 ? (
+                  // Grouped by brand for affiliates
+                  visibleBrands.map(brand => {
+                    const brandPromoters = promotersByBrand[brand.id as keyof typeof promotersByBrand] || []
+                    if (brandPromoters.length === 0) return null
+                    return (
+                      <SelectGroup key={brand.id}>
+                        <SelectLabel className="text-xs">{brand.name}</SelectLabel>
+                        {brandPromoters.map(promoter => (
+                          <SelectItem key={promoter.id} value={promoter.id}>
+                            <span className="flex items-center gap-2">
+                              <User className="size-3.5" />
+                              {promoter.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )
+                  })
+                ) : (
+                  // Flat list for brand users
+                  availablePromoters.map(promoter => (
+                    <SelectItem key={promoter.id} value={promoter.id}>
+                      <span className="flex items-center gap-2">
+                        <User className="size-3.5" />
+                        {promoter.name}
+                      </span>
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              If assigned, this code's sales will be attributed to the promoter
+            </p>
+          </div>
 
           {/* Active Status */}
           <div className="flex items-center justify-between p-3 bg-lavender rounded-lg">
@@ -368,6 +482,7 @@ export default function AffiliateDiscountsPage() {
   const { user, getSelectedBrand, getVisibleBrands } = useAffiliate()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState("all")
+  const [assignedFilter, setAssignedFilter] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
@@ -376,6 +491,13 @@ export default function AffiliateDiscountsPage() {
   const isAffiliate = user.role === "affiliate"
   const selectedBrand = getSelectedBrand()
   const visibleBrands = getVisibleBrands()
+
+  // Get all promoters for filter dropdown
+  const allPromoters = Object.entries(promotersByBrand).flatMap(([brandId, promoters]) => 
+    visibleBrands.some(vb => vb.id === brandId) 
+      ? promoters.map(p => ({ ...p, brandId }))
+      : []
+  )
 
   // Filter codes based on role and selection
   let discountCodes = allDiscountCodes.filter(code => 
@@ -390,7 +512,11 @@ export default function AffiliateDiscountsPage() {
   const filteredCodes = discountCodes.filter((code) => {
     const matchesStatus = statusFilter === "all" || code.status === statusFilter
     const matchesSearch = code.code.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
+    const matchesAssigned = 
+      assignedFilter === "all" ||
+      (assignedFilter === "unassigned" && !code.assignedTo) ||
+      code.assignedTo === assignedFilter
+    return matchesStatus && matchesSearch && matchesAssigned
   })
 
   // Calculate stats based on filtered codes
@@ -506,7 +632,7 @@ export default function AffiliateDiscountsPage() {
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[150px]">
+                  <SelectTrigger className="w-full sm:w-[130px]">
                     <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -514,6 +640,20 @@ export default function AffiliateDiscountsPage() {
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={assignedFilter} onValueChange={setAssignedFilter}>
+                  <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue placeholder="Assigned To" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Codes</SelectItem>
+                    <SelectItem value="unassigned">Unassigned (Brand)</SelectItem>
+                    {allPromoters.map(promoter => (
+                      <SelectItem key={promoter.id} value={promoter.id}>
+                        {promoter.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -529,16 +669,14 @@ export default function AffiliateDiscountsPage() {
                   <p className="text-muted-foreground">No codes match your filters</p>
                 </div>
               ) : (
-                <table className="w-full min-w-[800px]">
+                <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border/50 bg-lavender/30">
                       <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Code</th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Discount</th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Uses</th>
-                      {isAffiliate && !selectedBrand && (
-                        <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Brands</th>
-                      )}
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Assigned To</th>
                       <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Revenue</th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Expires</th>
                       <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Actions</th>
@@ -594,13 +732,16 @@ export default function AffiliateDiscountsPage() {
                               )}
                             </div>
                           </td>
-                          {isAffiliate && !selectedBrand && (
-                            <td className="px-4 sm:px-6 py-4">
-                              <span className="text-sm text-muted-foreground">
-                                {code.brands.join(", ")}
-                              </span>
-                            </td>
-                          )}
+                          <td className="px-4 sm:px-6 py-4">
+                            {code.assignedToName ? (
+                              <div className="flex items-center gap-1.5">
+                                <User className="size-3.5 text-muted-foreground" />
+                                <span className="text-sm text-dark-navy">{code.assignedToName}</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">—</span>
+                            )}
+                          </td>
                           <td className="px-4 sm:px-6 py-4 text-right">
                             <span className="font-semibold text-green-600">{code.revenue}</span>
                           </td>
@@ -629,6 +770,12 @@ export default function AffiliateDiscountsPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
                                 <DropdownMenuItem>View Analytics</DropdownMenuItem>
+                                {!code.assignedTo && (
+                                  <DropdownMenuItem>
+                                    <User className="size-4 mr-2" />
+                                    Assign to Promoter
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem className="text-coral">
                                   {code.status === "active" ? "Deactivate" : "Activate"}
                                 </DropdownMenuItem>
@@ -650,6 +797,7 @@ export default function AffiliateDiscountsPage() {
         open={showCreateModal} 
         onClose={() => setShowCreateModal(false)} 
         visibleBrands={visibleBrands}
+        isAffiliate={isAffiliate}
       />
     </div>
   )
