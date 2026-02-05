@@ -16,10 +16,8 @@ import {
   ChevronRight,
   ShoppingBag,
   Tag,
+  Sparkles,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 
 const promoterData = {
   name: "Ashton",
@@ -57,7 +55,7 @@ function MiniChart() {
   const range = max - min
 
   return (
-    <div className="h-24 flex items-end gap-1">
+    <div className="h-32 flex items-end gap-1.5">
       {earningsData.map((value, i) => {
         const height = ((value - min) / range) * 100
         const isLast = i === earningsData.length - 1
@@ -65,7 +63,7 @@ function MiniChart() {
           <div
             key={i}
             className={`flex-1 rounded-t transition-all ${
-              isLast ? "bg-coral" : "bg-navy/30"
+              isLast ? "bg-gradient-to-t from-coral to-pink-500" : "bg-white/10 hover:bg-white/20"
             }`}
             style={{ height: `${Math.max(height, 10)}%` }}
           />
@@ -78,13 +76,31 @@ function MiniChart() {
 function getStatusBadge(status: string) {
   switch (status) {
     case "completed":
-      return <Badge variant="active" className="text-[10px]">Done</Badge>
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+          <span className="h-1 w-1 rounded-full bg-emerald-400" />
+          Done
+        </span>
+      )
     case "processing":
-      return <Badge variant="pending" className="text-[10px]">Pending</Badge>
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+          <span className="h-1 w-1 rounded-full bg-amber-400 animate-pulse" />
+          Pending
+        </span>
+      )
     case "refunded":
-      return <Badge variant="muted" className="text-[10px]">Refunded</Badge>
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          Refunded
+        </span>
+      )
     default:
-      return <Badge variant="muted" className="text-[10px]">{status}</Badge>
+      return (
+        <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          {status}
+        </span>
+      )
   }
 }
 
@@ -108,194 +124,198 @@ export default function PromoterDashboardPage() {
 
   const activeCodes = promoterData.codes.filter(c => c.status === "active")
 
+  const stats = [
+    { label: "Total Uses", value: promoterData.totalUses.toString(), icon: Hash, gradient: "from-navy/60 to-sky-500/40", iconBg: "bg-gradient-to-br from-navy to-sky-600" },
+    { label: "This Period", value: promoterData.currentEarnings, icon: DollarSign, gradient: "from-emerald-500/60 to-teal-500/40", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500", valueClass: "text-emerald-400" },
+    { label: "Lifetime Earnings", value: promoterData.lifetimeEarnings, icon: TrendingUp, gradient: "from-violet-500/60 to-purple-500/40", iconBg: "bg-gradient-to-br from-violet-500 to-purple-500" },
+    { label: "Next Payout", value: promoterData.nextPayout, icon: Calendar, gradient: "from-amber-500/60 to-orange-500/40", iconBg: "bg-gradient-to-br from-amber-500 to-orange-500" },
+  ]
+
   return (
-    <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-      {/* Welcome Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-dark-navy">Welcome, {promoterData.name}! 👋</h1>
-        <p className="text-muted-foreground text-sm mt-1">House of Aminos Promoter</p>
+    <div className="min-h-full text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(235,92,106,0.06),transparent)]" />
       </div>
 
-      {/* Big Code Card */}
-      <Card className="bg-gradient-to-br from-coral to-coral/80 text-white border-0 overflow-hidden">
-        <CardContent className="p-6 text-center">
-          <p className="text-sm opacity-80 mb-2">Your Promo Code</p>
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-4xl sm:text-5xl font-bold tracking-wider">
-              {promoterData.primaryCode}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 size-12"
-              onClick={copyCode}
-            >
-              {copied ? <Check className="size-6" /> : <Copy className="size-6" />}
-            </Button>
-          </div>
-          <p className="text-sm opacity-80 mt-3">{promoterData.primaryDiscount} for your followers</p>
-        </CardContent>
-      </Card>
-
-      {/* Multiple Codes Notice */}
-      {activeCodes.length > 1 && (
-        <Link href="/promoter/codes">
-          <Card className="bg-lavender/50 border-navy/20 hover:bg-lavender transition-colors cursor-pointer">
-            <CardContent className="p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Tag className="size-4 text-navy" />
-                <span className="text-sm font-medium text-dark-navy">
-                  You have {activeCodes.length} active codes
-                </span>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Big Code Card */}
+        <div className="relative rounded-2xl overflow-hidden border border-coral/20 bg-gradient-to-br from-coral/20 via-pink-500/10 to-transparent">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(235,92,106,0.2)_0%,transparent_60%)]" />
+          <div className="relative p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="size-4 text-coral" />
+                  <p className="text-sm text-white/60">Your Promo Code</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-bricolage text-4xl sm:text-5xl font-bold tracking-wider text-white">
+                    {promoterData.primaryCode}
+                  </span>
+                  <button
+                    onClick={copyCode}
+                    className="flex size-12 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all"
+                  >
+                    {copied ? <Check className="size-6 text-emerald-400" /> : <Copy className="size-6 text-white/70" />}
+                  </button>
+                </div>
+                <p className="text-white/50 mt-2">{promoterData.primaryDiscount} for your followers</p>
               </div>
-              <ChevronRight className="size-4 text-navy" />
-            </CardContent>
-          </Card>
-        </Link>
-      )}
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-4 text-center">
-            <Hash className="size-5 text-navy mx-auto mb-2" />
-            <p className="text-2xl font-bold text-dark-navy">{promoterData.totalUses}</p>
-            <p className="text-xs text-muted-foreground">Total Uses</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-4 text-center">
-            <DollarSign className="size-5 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-green-600">{promoterData.currentEarnings}</p>
-            <p className="text-xs text-muted-foreground">This Period</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-4 text-center">
-            <TrendingUp className="size-5 text-navy mx-auto mb-2" />
-            <p className="text-2xl font-bold text-dark-navy">{promoterData.lifetimeEarnings}</p>
-            <p className="text-xs text-muted-foreground">Lifetime</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-4 text-center">
-            <Calendar className="size-5 text-navy mx-auto mb-2" />
-            <p className="text-lg font-bold text-dark-navy">{promoterData.nextPayout}</p>
-            <p className="text-xs text-muted-foreground">Next Payout</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Share Section */}
-      <Card className="bg-white border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Share2 className="size-4" />
-            Share Your Code
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-3 bg-lavender rounded-lg">
-            <p className="text-sm text-dark-navy">{shareText}</p>
+              {/* Multiple Codes Notice */}
+              {activeCodes.length > 1 && (
+                <Link 
+                  href="/promoter/codes"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all group"
+                >
+                  <Tag className="size-4 text-coral" />
+                  <span className="text-sm font-medium text-white">
+                    {activeCodes.length} active codes
+                  </span>
+                  <ChevronRight className="size-4 text-white/50 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={copyShareText}
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden"
             >
-              {copiedShare ? <Check className="size-4" /> : <Copy className="size-4" />}
-              {copiedShare ? "Copied!" : "Copy Text"}
-            </Button>
-          </div>
-          <div className="flex justify-center gap-3">
-            <Button variant="ghost" size="icon" className="rounded-full bg-[#1DA1F2]/10 text-[#1DA1F2] hover:bg-[#1DA1F2]/20">
-              <Twitter className="size-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full bg-[#E4405F]/10 text-[#E4405F] hover:bg-[#E4405F]/20">
-              <Instagram className="size-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20">
-              <MessageCircle className="size-5" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Orders Preview */}
-      <Card className="bg-white border-border/50">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <ShoppingBag className="size-4" />
-            Recent Orders
-          </CardTitle>
-          <Button variant="ghost" size="sm" asChild className="text-xs -mr-2">
-            <Link href="/promoter/orders">
-              View All <ChevronRight className="size-3.5" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-border/50">
-            {recentOrders.slice(0, 4).map((order) => (
-              <div key={order.id} className="px-4 sm:px-6 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className={`flex size-10 items-center justify-center rounded-xl ${stat.iconBg} shadow-lg shrink-0`}>
+                    <stat.icon className="size-5 text-white" />
+                  </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-semibold text-navy">{order.id}</span>
-                      {getStatusBadge(order.status)}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {order.customer} • {order.time}
-                    </p>
+                    <p className="text-xs text-white/40 uppercase tracking-wider truncate">{stat.label}</p>
+                    <p className={`font-bricolage text-xl font-semibold ${stat.valueClass || 'text-white'}`}>{stat.value}</p>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-sm font-bold ${order.status === "refunded" ? "text-muted-foreground line-through" : "text-coral"}`}>
-                    +{order.commission}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">{order.amount}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Recent Orders */}
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+              <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="size-5 text-coral" />
+                  <h3 className="font-bricolage text-lg font-semibold text-white">Recent Orders</h3>
+                </div>
+                <Link 
+                  href="/promoter/orders"
+                  className="flex items-center gap-1 text-sm text-white/50 hover:text-white transition-colors"
+                >
+                  View All <ChevronRight className="size-4" />
+                </Link>
+              </div>
+              <div className="divide-y divide-white/[0.04]">
+                {recentOrders.slice(0, 5).map((order) => (
+                  <div key={order.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-medium text-white">{order.id}</span>
+                          {getStatusBadge(order.status)}
+                        </div>
+                        <p className="text-xs text-white/40 truncate">
+                          {order.customer} • {order.time}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-bold ${order.status === "refunded" ? "text-white/30 line-through" : "text-coral"}`}>
+                        +{order.commission}
+                      </p>
+                      <p className="text-xs text-white/40">{order.amount}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Earnings Chart */}
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+              <div className="p-5 border-b border-white/[0.06]">
+                <h3 className="font-bricolage text-lg font-semibold text-white">Earnings Trend</h3>
+                <p className="text-xs text-white/40">Last 12 weeks</p>
+              </div>
+              <div className="p-5">
+                <MiniChart />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Share Section */}
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+              <div className="p-5 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <Share2 className="size-5 text-coral" />
+                  <h3 className="font-bricolage text-lg font-semibold text-white">Share Your Code</h3>
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Earnings Chart */}
-      <Card className="bg-white border-border/50">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Earnings Trend</CardTitle>
-          <p className="text-xs text-muted-foreground">Last 12 weeks</p>
-        </CardHeader>
-        <CardContent>
-          <MiniChart />
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity */}
-      <Card className="bg-white border-border/50">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-border/50">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="px-6 py-3 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-dark-navy">{activity.message}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+              <div className="p-5 space-y-4">
+                <div className="p-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+                  <p className="text-sm text-white/80">{shareText}</p>
                 </div>
-                <span className={`text-sm font-semibold ${
-                  activity.message.includes("Payout") ? "text-navy" : "text-green-600"
-                }`}>
-                  +{activity.amount}
-                </span>
+                <button
+                  onClick={copyShareText}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all"
+                >
+                  {copiedShare ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
+                  {copiedShare ? "Copied!" : "Copy Text"}
+                </button>
+                <div className="flex justify-center gap-3 pt-2">
+                  <button className="flex size-10 items-center justify-center rounded-xl bg-[#1DA1F2]/10 text-[#1DA1F2] hover:bg-[#1DA1F2]/20 transition-all">
+                    <Twitter className="size-5" />
+                  </button>
+                  <button className="flex size-10 items-center justify-center rounded-xl bg-[#E4405F]/10 text-[#E4405F] hover:bg-[#E4405F]/20 transition-all">
+                    <Instagram className="size-5" />
+                  </button>
+                  <button className="flex size-10 items-center justify-center rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-all">
+                    <MessageCircle className="size-5" />
+                  </button>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Recent Activity */}
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+              <div className="p-5 border-b border-white/[0.06]">
+                <h3 className="font-bricolage text-lg font-semibold text-white">Recent Activity</h3>
+              </div>
+              <div className="divide-y divide-white/[0.04]">
+                {recentActivity.map((activity) => (
+                  <div key={activity.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-white">{activity.message}</p>
+                      <p className="text-xs text-white/40">{activity.time}</p>
+                    </div>
+                    <span className={`text-sm font-semibold ${
+                      activity.message.includes("Payout") ? "text-sky-400" : "text-emerald-400"
+                    }`}>
+                      +{activity.amount}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

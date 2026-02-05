@@ -9,9 +9,8 @@ import {
   CreditCard,
   CheckCircle,
   Clock,
+  TrendingUp,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -30,7 +29,6 @@ import {
   ModalFooter,
   ModalTrigger,
 } from "@/components/ui/modal"
-import { PageHeader } from "@/components/ui/page-header"
 import { cn } from "@/lib/utils"
 
 const unpaidCommissions = [
@@ -114,33 +112,44 @@ const paidHistory = [
   },
 ]
 
+const stats = [
+  { label: "Unpaid Commissions", value: "$5,663.70", icon: Clock, accent: true },
+  { label: "Pending Orders", value: "94", icon: DollarSign },
+  { label: "Paid This Month", value: "$11,228.70", icon: CheckCircle },
+]
+
 function ExpandableRow({ commission }: { commission: typeof unpaidCommissions[0] }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
     <>
       <TableRow
-        className="cursor-pointer hover:bg-muted/50"
+        className="cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
         <TableCell>
-          <Button variant="ghost" size="icon-xs" className="mr-2">
-            {expanded ? (
-              <ChevronDown className="size-4" />
-            ) : (
-              <ChevronRight className="size-4" />
-            )}
-          </Button>
-          <span className="font-semibold">{commission.affiliate}</span>
+          <div className="flex items-center gap-2">
+            <button className="text-white/40 hover:text-white/70">
+              {expanded ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
+            </button>
+            <span className="font-medium text-white">{commission.affiliate}</span>
+          </div>
         </TableCell>
-        <TableCell className="text-center font-medium">
+        <TableCell className="text-center text-white/70">
           {commission.orders}
         </TableCell>
-        <TableCell className="text-right font-semibold text-navy">
-          {commission.totalAmount}
+        <TableCell className="text-right">
+          <span className="font-mono text-sm font-medium text-emerald-400">{commission.totalAmount}</span>
         </TableCell>
         <TableCell>
-          <Badge variant="pending">Unpaid</Badge>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            Unpaid
+          </span>
         </TableCell>
       </TableRow>
       {expanded && (
@@ -148,15 +157,15 @@ function ExpandableRow({ commission }: { commission: typeof unpaidCommissions[0]
           {commission.brands.map((brand, index) => (
             <TableRow
               key={index}
-              className="bg-muted/20 hover:bg-muted/30"
+              className="bg-white/[0.01] border-b border-white/[0.02]"
             >
-              <TableCell className="pl-14 text-muted-foreground">
+              <TableCell className="pl-12 text-white/50">
                 {brand.name}
               </TableCell>
-              <TableCell className="text-center text-muted-foreground">
+              <TableCell className="text-center text-white/40">
                 {brand.orders}
               </TableCell>
-              <TableCell className="text-right text-muted-foreground">
+              <TableCell className="text-right text-white/40 font-mono text-sm">
                 {brand.amount}
               </TableCell>
               <TableCell></TableCell>
@@ -184,17 +193,17 @@ function GeneratePayoutModal() {
   return (
     <Modal onOpenChange={(open) => !open && handleReset()}>
       <ModalTrigger asChild>
-        <Button variant="accent">
+        <Button className="bg-coral hover:bg-coral/90 text-white border-0">
           <CreditCard className="size-4" />
           Generate Payout
         </Button>
       </ModalTrigger>
-      <ModalContent>
+      <ModalContent className="bg-[#0a0a14] border-white/10">
         <ModalHeader>
-          <ModalTitle>
+          <ModalTitle className="text-white">
             {step === 1 ? "Generate Payout" : "Payout Generated"}
           </ModalTitle>
-          <ModalDescription>
+          <ModalDescription className="text-white/50">
             {step === 1
               ? "Review and confirm commission payouts for all affiliates."
               : "The payout has been successfully processed."}
@@ -203,33 +212,33 @@ function GeneratePayoutModal() {
 
         {step === 1 ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">Total Payout</span>
-                <span className="text-2xl font-bold text-navy">{totalAmount}</span>
+                <span className="text-sm text-white/50">Total Payout</span>
+                <span className="text-2xl font-bold text-white">{totalAmount}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Affiliates</span>
-                <span className="font-medium">{selectedAffiliates}</span>
+                <span className="text-white/40">Affiliates</span>
+                <span className="font-medium text-white/70">{selectedAffiliates}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Total Orders</span>
-                <span className="font-medium">
+                <span className="text-white/40">Total Orders</span>
+                <span className="font-medium text-white/70">
                   {unpaidCommissions.reduce((acc, c) => acc + c.orders, 0)}
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Affiliates included:</p>
+              <p className="text-sm font-medium text-white/70">Affiliates included:</p>
               <div className="space-y-1">
                 {unpaidCommissions.map((c) => (
                   <div
                     key={c.id}
                     className="flex items-center justify-between text-sm py-1"
                   >
-                    <span>{c.affiliate}</span>
-                    <span className="font-medium">{c.totalAmount}</span>
+                    <span className="text-white/60">{c.affiliate}</span>
+                    <span className="font-medium text-white/80">{c.totalAmount}</span>
                   </div>
                 ))}
               </div>
@@ -237,26 +246,26 @@ function GeneratePayoutModal() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 rounded-lg bg-green-50 p-4 text-green-700">
+            <div className="flex items-center gap-3 rounded-xl bg-emerald-500/10 p-4 text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
               <CheckCircle className="size-6" />
               <div>
                 <p className="font-semibold">Payout processed successfully!</p>
-                <p className="text-sm">Reference: PAY-2026-0127-001</p>
+                <p className="text-sm text-emerald-400/70">Reference: PAY-2026-0127-001</p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-border p-4 space-y-2">
+            <div className="rounded-xl border border-white/10 p-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-semibold">{totalAmount}</span>
+                <span className="text-white/40">Amount</span>
+                <span className="font-semibold text-white">{totalAmount}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Affiliates</span>
-                <span>{selectedAffiliates}</span>
+                <span className="text-white/40">Affiliates</span>
+                <span className="text-white/70">{selectedAffiliates}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Date</span>
-                <span>Jan 27, 2026</span>
+                <span className="text-white/40">Date</span>
+                <span className="text-white/70">Jan 27, 2026</span>
               </div>
             </div>
           </div>
@@ -265,15 +274,15 @@ function GeneratePayoutModal() {
         <ModalFooter>
           {step === 1 ? (
             <>
-              <Button variant="outline" onClick={handleReset}>
+              <button onClick={handleReset} className="rounded-xl border border-white/10 bg-transparent px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
                 Cancel
-              </Button>
-              <Button variant="accent" onClick={handleGenerate}>
+              </button>
+              <Button className="bg-coral hover:bg-coral/90 text-white" onClick={handleGenerate}>
                 Confirm Payout
               </Button>
             </>
           ) : (
-            <Button variant="default" onClick={handleReset}>
+            <Button className="bg-white text-[#050510] hover:bg-white/90" onClick={handleReset}>
               Done
             </Button>
           )}
@@ -286,112 +295,114 @@ function GeneratePayoutModal() {
 export default function CommissionsPage() {
   const [activeTab, setActiveTab] = useState<"unpaid" | "paid">("unpaid")
 
-  const totalUnpaid = "$5,663.70"
-  const totalPending = unpaidCommissions.reduce((acc, c) => acc + c.orders, 0)
-
   return (
-    <div className="p-8 space-y-6">
-      <PageHeader
-        title="Commissions"
-        description="Track and manage affiliate commission payouts"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Commissions" },
-        ]}
-        actions={
+    <div className="min-h-screen bg-[#050510] text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(235,92,106,0.06),transparent)]" />
+      </div>
+
+      <div className="p-6 lg:p-8 space-y-6">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-white/40 mb-1">
+              <a href="/dashboard" className="hover:text-white/70 transition-colors">Dashboard</a>
+              <span>/</span>
+              <span className="text-white/70">Commissions</span>
+            </div>
+            <h1 className="font-bricolage text-2xl font-semibold tracking-tight text-white">Commissions</h1>
+            <p className="text-sm text-white/50 mt-1">Track and manage affiliate commission payouts</p>
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline">
+            <button className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-all border border-white/10">
               <Download className="size-4" />
               Export
-            </Button>
+            </button>
             <GeneratePayoutModal />
           </div>
-        }
-      />
+        </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Unpaid Commissions</p>
-                <p className="text-2xl font-bold text-coral">{totalUnpaid}</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-coral/10 text-coral">
-                <Clock className="size-5" />
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className={cn(
+                "rounded-2xl border border-white/[0.08] p-5 border-gradient",
+                stat.accent ? "bg-coral/5" : "bg-white/[0.02]"
+              )}
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                    {stat.label}
+                  </p>
+                  <p className={cn(
+                    "font-bricolage text-2xl font-semibold tracking-tight",
+                    stat.accent ? "text-coral" : "text-white"
+                  )}>
+                    {stat.value}
+                  </p>
+                </div>
+                <div className={cn(
+                  "flex size-10 items-center justify-center rounded-xl",
+                  stat.accent ? "bg-coral/10 text-coral" : "bg-white/[0.06] text-white/40"
+                )}>
+                  <stat.icon className="size-5" />
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pending Orders</p>
-                <p className="text-2xl font-bold text-dark-navy">{totalPending}</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                <DollarSign className="size-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Paid This Month</p>
-                <p className="text-2xl font-bold text-navy">$11,228.70</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
-                <CheckCircle className="size-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          ))}
+        </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-border">
-        <button
-          onClick={() => setActiveTab("unpaid")}
-          className={cn(
-            "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
-            activeTab === "unpaid"
-              ? "border-navy text-navy"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          )}
-        >
-          Unpaid
-          <Badge variant="pending" className="ml-2">
-            {unpaidCommissions.length}
-          </Badge>
-        </button>
-        <button
-          onClick={() => setActiveTab("paid")}
-          className={cn(
-            "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
-            activeTab === "paid"
-              ? "border-navy text-navy"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          )}
-        >
-          Paid History
-        </button>
-      </div>
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-white/[0.06]">
+          <button
+            onClick={() => setActiveTab("unpaid")}
+            className={cn(
+              "px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+              activeTab === "unpaid"
+                ? "border-white text-white"
+                : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            Unpaid
+            <span className="ml-2 inline-flex items-center rounded-full bg-coral/20 px-2 py-0.5 text-[10px] font-semibold text-coral">
+              {unpaidCommissions.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("paid")}
+            className={cn(
+              "px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+              activeTab === "paid"
+                ? "border-white text-white"
+                : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            Paid History
+          </button>
+        </div>
 
-      {/* Table */}
-      <Card className="bg-white">
-        <CardContent className="p-0">
+        {/* Table */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
           {activeTab === "unpaid" ? (
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="font-semibold">Affiliate</TableHead>
-                  <TableHead className="font-semibold text-center">Orders</TableHead>
-                  <TableHead className="font-semibold text-right">Amount</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
+                <TableRow className="border-b border-white/[0.06] hover:bg-transparent">
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Affiliate
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40 text-center">
+                    Orders
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40 text-right">
+                    Amount
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Status
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -403,31 +414,41 @@ export default function CommissionsPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="font-semibold">Affiliate</TableHead>
-                  <TableHead className="font-semibold text-center">Orders</TableHead>
-                  <TableHead className="font-semibold text-right">Amount</TableHead>
-                  <TableHead className="font-semibold">Paid Date</TableHead>
-                  <TableHead className="font-semibold">Reference</TableHead>
+                <TableRow className="border-b border-white/[0.06] hover:bg-transparent">
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Affiliate
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40 text-center">
+                    Orders
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40 text-right">
+                    Amount
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Paid Date
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Reference
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paidHistory.map((payout) => (
-                  <TableRow key={payout.id}>
-                    <TableCell className="font-semibold">
+                  <TableRow key={payout.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                    <TableCell className="font-medium text-white">
                       {payout.affiliate}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center text-white/70">
                       {payout.orders}
                     </TableCell>
-                    <TableCell className="text-right font-semibold text-navy">
-                      {payout.amount}
+                    <TableCell className="text-right">
+                      <span className="font-mono text-sm font-medium text-emerald-400">{payout.amount}</span>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-white/40">
                       {payout.paidAt}
                     </TableCell>
                     <TableCell>
-                      <code className="text-xs font-mono text-muted-foreground">
+                      <code className="text-xs font-mono text-white/40">
                         {payout.reference}
                       </code>
                     </TableCell>
@@ -436,8 +457,8 @@ export default function CommissionsPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

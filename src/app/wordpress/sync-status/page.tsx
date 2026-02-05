@@ -7,9 +7,8 @@ import {
   Clock,
   AlertTriangle,
   Download,
+  Trash2,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 
 const syncHistory = [
   {
@@ -79,31 +78,46 @@ const errorLog = [
   },
 ]
 
+function getStatusBadge(status: string) {
+  if (status === "success") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20 capitalize">
+        {status}
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-coral/10 px-2.5 py-1 text-xs font-medium text-coral ring-1 ring-inset ring-coral/20 capitalize">
+      {status}
+    </span>
+  )
+}
+
 export default function SyncStatusPage() {
   return (
     <div className="space-y-6">
       {/* Last Sync Status */}
-      <div className="bg-white rounded border border-[#c3c4c7] shadow-sm">
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
         <div className="p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-[#646970] mb-1">Last Successful Sync</p>
-              <p className="text-3xl font-bold text-[#1d2327]">
+              <p className="text-sm text-white/50 mb-1">Last Successful Sync</p>
+              <p className="font-bricolage text-3xl font-bold text-white">
                 Jan 27, 2026 at 14:45:00
               </p>
-              <p className="text-sm text-[#646970] mt-1">
+              <p className="text-sm text-white/50 mt-1">
                 24 products synced • 1.2 seconds
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-[#646970]">Next sync in</p>
-                <p className="text-xl font-semibold text-navy">12:34</p>
+                <p className="text-sm text-white/50">Next sync in</p>
+                <p className="font-bricolage text-xl font-semibold text-violet-400">12:34</p>
               </div>
-              <Button className="bg-navy hover:bg-navy/90" size="lg">
+              <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30 transition-all">
                 <RefreshCw className="size-4" />
                 Sync Now
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -111,41 +125,40 @@ export default function SyncStatusPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Sync History */}
-        <div className="bg-white rounded border border-[#c3c4c7] shadow-sm">
-          <div className="px-4 py-3 border-b border-[#c3c4c7] bg-[#f6f7f7] flex items-center justify-between">
-            <h2 className="font-semibold text-[#1d2327]">Sync History</h2>
-            <Button variant="ghost" size="sm" className="text-[#646970]">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+          <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <h2 className="font-semibold text-white">Sync History</h2>
+            <button className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/50 hover:text-white hover:bg-white/5 transition-all">
               <Download className="size-4" />
               Export
-            </Button>
+            </button>
           </div>
-          <div className="divide-y divide-[#c3c4c7]">
+          <div className="divide-y divide-white/[0.06]">
             {syncHistory.map((sync) => (
-              <div key={sync.id} className="p-4 flex items-center justify-between">
+              <div key={sync.id} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                 <div className="flex items-center gap-3">
                   {sync.status === "success" ? (
-                    <CheckCircle className="size-5 text-green-600" />
+                    <div className="flex items-center justify-center size-9 rounded-lg bg-emerald-500/10">
+                      <CheckCircle className="size-5 text-emerald-400" />
+                    </div>
                   ) : (
-                    <XCircle className="size-5 text-coral" />
+                    <div className="flex items-center justify-center size-9 rounded-lg bg-coral/10">
+                      <XCircle className="size-5 text-coral" />
+                    </div>
                   )}
                   <div>
-                    <p className="font-medium text-[#1d2327] capitalize">
+                    <p className="font-medium text-white capitalize">
                       {sync.type} sync
-                      <span className="text-[#646970] font-normal ml-1">
+                      <span className="text-white/50 font-normal ml-1">
                         ({sync.items} items)
                       </span>
                     </p>
-                    <p className="text-sm text-[#646970]">{sync.timestamp}</p>
+                    <p className="text-sm text-white/40">{sync.timestamp}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge
-                    variant={sync.status === "success" ? "active" : "failed"}
-                    className="capitalize"
-                  >
-                    {sync.status}
-                  </Badge>
-                  <p className="text-xs text-[#646970] mt-1">{sync.duration}</p>
+                  {getStatusBadge(sync.status)}
+                  <p className="text-xs text-white/40 mt-1">{sync.duration}</p>
                 </div>
               </div>
             ))}
@@ -153,36 +166,39 @@ export default function SyncStatusPage() {
         </div>
 
         {/* Error Log */}
-        <div className="bg-white rounded border border-[#c3c4c7] shadow-sm">
-          <div className="px-4 py-3 border-b border-[#c3c4c7] bg-[#f6f7f7] flex items-center justify-between">
-            <h2 className="font-semibold text-[#1d2327] flex items-center gap-2">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+          <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <h2 className="font-semibold text-white flex items-center gap-2">
               <AlertTriangle className="size-4 text-coral" />
               Error Log
             </h2>
-            <Badge variant="failed">{errorLog.length} errors</Badge>
+            <span className="inline-flex items-center rounded-full bg-coral/10 px-2.5 py-1 text-xs font-medium text-coral ring-1 ring-inset ring-coral/20">
+              {errorLog.length} errors
+            </span>
           </div>
-          <div className="divide-y divide-[#c3c4c7]">
+          <div className="divide-y divide-white/[0.06]">
             {errorLog.map((error) => (
-              <div key={error.id} className="p-4 bg-coral/5">
+              <div key={error.id} className="p-4 bg-coral/[0.03]">
                 <div className="flex items-start justify-between mb-1">
                   <span className="text-sm font-semibold text-coral">
                     {error.type}
                   </span>
-                  <span className="text-xs text-[#646970]">{error.timestamp}</span>
+                  <span className="text-xs text-white/40">{error.timestamp}</span>
                 </div>
-                <p className="text-sm text-[#1d2327]">{error.message}</p>
+                <p className="text-sm text-white/70">{error.message}</p>
                 {error.order && (
-                  <p className="text-xs text-[#646970] mt-1">
-                    Related order: <code className="font-mono">{error.order}</code>
+                  <p className="text-xs text-white/40 mt-1">
+                    Related order: <code className="font-mono text-violet-400">{error.order}</code>
                   </p>
                 )}
               </div>
             ))}
           </div>
-          <div className="p-4 border-t border-[#c3c4c7]">
-            <Button variant="outline" size="sm" className="w-full">
+          <div className="p-4 border-t border-white/[0.06]">
+            <button className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all">
+              <Trash2 className="size-4" />
               Clear Error Log
-            </Button>
+            </button>
           </div>
         </div>
       </div>

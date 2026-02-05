@@ -12,9 +12,9 @@ import {
   Edit,
   ExternalLink,
   Activity,
+  Webhook,
+  Zap,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -49,7 +49,6 @@ import {
   ModalFooter,
   ModalTrigger,
 } from "@/components/ui/modal"
-import { PageHeader } from "@/components/ui/page-header"
 
 const webhooks = [
   {
@@ -102,16 +101,42 @@ const recentLogs = [
   { id: 5, webhook: "Peptide Sciences - Orders", status: "success", timestamp: "18 min ago", duration: "98ms" },
 ]
 
+const stats = [
+  { label: "Total Webhooks", value: "4", icon: Webhook },
+  { label: "Active", value: "3", icon: CheckCircle, color: "emerald" },
+  { label: "Errors", value: "1", icon: XCircle, color: "rose" },
+  { label: "Avg Response", value: "117ms", icon: Zap },
+]
+
 function getStatusBadge(status: string) {
   switch (status) {
     case "active":
-      return <Badge variant="active">Active</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Active
+        </span>
+      )
     case "error":
-      return <Badge variant="failed">Error</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-400 ring-1 ring-inset ring-rose-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+          Error
+        </span>
+      )
     case "paused":
-      return <Badge variant="muted">Paused</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
+          Paused
+        </span>
+      )
     default:
-      return <Badge variant="muted">{status}</Badge>
+      return (
+        <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          {status}
+        </span>
+      )
   }
 }
 
@@ -131,74 +156,76 @@ function CreateWebhookModal() {
   return (
     <Modal onOpenChange={(open) => !open && handleReset()}>
       <ModalTrigger asChild>
-        <Button variant="accent">
+        <Button className="bg-coral hover:bg-coral/90 text-white border-0">
           <Plus className="size-4" />
           Create Webhook
         </Button>
       </ModalTrigger>
-      <ModalContent>
+      <ModalContent className="bg-[#0a0a14] border-white/10">
         <ModalHeader>
-          <ModalTitle>Create Webhook</ModalTitle>
-          <ModalDescription>
+          <ModalTitle className="text-white">Create Webhook</ModalTitle>
+          <ModalDescription className="text-white/50">
             Set up a new webhook endpoint to receive events.
           </ModalDescription>
         </ModalHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="wh-name">Webhook Name</Label>
+            <Label htmlFor="wh-name" className="text-white/70">Webhook Name</Label>
             <Input
               id="wh-name"
               placeholder="e.g., Peptide Sciences - Orders"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="wh-url">Endpoint URL</Label>
+            <Label htmlFor="wh-url" className="text-white/70">Endpoint URL</Label>
             <Input
               id="wh-url"
               type="url"
               placeholder="https://example.com/webhook"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="wh-brand">Brand</Label>
+            <Label htmlFor="wh-brand" className="text-white/70">Brand</Label>
             <Select value={brand} onValueChange={setBrand}>
-              <SelectTrigger id="wh-brand">
+              <SelectTrigger id="wh-brand" className="bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="Select a brand" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="peptide-sciences">Peptide Sciences</SelectItem>
-                <SelectItem value="core-peptides">Core Peptides</SelectItem>
-                <SelectItem value="amino-asylum">Amino Asylum</SelectItem>
+              <SelectContent className="bg-[#0a0a14] border-white/10">
+                <SelectItem value="peptide-sciences" className="text-white/70 hover:text-white hover:bg-white/5">Peptide Sciences</SelectItem>
+                <SelectItem value="core-peptides" className="text-white/70 hover:text-white hover:bg-white/5">Core Peptides</SelectItem>
+                <SelectItem value="amino-asylum" className="text-white/70 hover:text-white hover:bg-white/5">Amino Asylum</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="wh-event">Event Type</Label>
+            <Label htmlFor="wh-event" className="text-white/70">Event Type</Label>
             <Select value={event} onValueChange={setEvent}>
-              <SelectTrigger id="wh-event">
+              <SelectTrigger id="wh-event" className="bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="Select an event" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="order.created">order.created</SelectItem>
-                <SelectItem value="order.updated">order.updated</SelectItem>
-                <SelectItem value="fulfillment.updated">fulfillment.updated</SelectItem>
-                <SelectItem value="tracking.added">tracking.added</SelectItem>
+              <SelectContent className="bg-[#0a0a14] border-white/10">
+                <SelectItem value="order.created" className="text-white/70 hover:text-white hover:bg-white/5">order.created</SelectItem>
+                <SelectItem value="order.updated" className="text-white/70 hover:text-white hover:bg-white/5">order.updated</SelectItem>
+                <SelectItem value="fulfillment.updated" className="text-white/70 hover:text-white hover:bg-white/5">fulfillment.updated</SelectItem>
+                <SelectItem value="tracking.added" className="text-white/70 hover:text-white hover:bg-white/5">tracking.added</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <ModalFooter>
-          <Button variant="outline" onClick={handleReset}>
+          <button onClick={handleReset} className="rounded-xl border border-white/10 bg-transparent px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
             Cancel
-          </Button>
+          </button>
           <Button
-            variant="accent"
+            className="bg-coral hover:bg-coral/90 text-white"
             disabled={!name || !url || !brand || !event}
           >
             Create Webhook
@@ -211,209 +238,214 @@ function CreateWebhookModal() {
 
 export default function WebhooksPage() {
   return (
-    <div className="p-8 space-y-6">
-      <PageHeader
-        title="Webhooks"
-        description="Manage webhook endpoints and monitor delivery status"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Webhooks" },
-        ]}
-        actions={<CreateWebhookModal />}
-      />
-
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Webhooks</p>
-                <p className="text-2xl font-bold text-dark-navy">4</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                <Activity className="size-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-navy">3</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
-                <CheckCircle className="size-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Errors</p>
-                <p className="text-2xl font-bold text-coral">1</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-coral/10 text-coral">
-                <XCircle className="size-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg Response</p>
-                <p className="text-2xl font-bold text-dark-navy">117ms</p>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                <Clock className="size-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-[#050510] text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
       </div>
 
-      {/* Webhooks Table */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="text-lg">Webhook Endpoints</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="font-semibold">Name</TableHead>
-                <TableHead className="font-semibold">Brand</TableHead>
-                <TableHead className="font-semibold">Event</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Success Rate</TableHead>
-                <TableHead className="font-semibold">Last Triggered</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {webhooks.map((webhook) => (
-                <TableRow key={webhook.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-semibold">{webhook.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono truncate max-w-[200px]">
-                        {webhook.url}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {webhook.brand}
-                  </TableCell>
-                  <TableCell>
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                      {webhook.event}
-                    </code>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(webhook.status)}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`font-medium ${
-                        webhook.successRate >= 99
-                          ? "text-green-600"
-                          : webhook.successRate >= 95
-                          ? "text-yellow-600"
-                          : "text-coral"
-                      }`}
-                    >
-                      {webhook.successRate}%
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {webhook.lastTriggered}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-xs">
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <ExternalLink className="mr-2 size-4" />
-                          View logs
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 size-4" />
-                          Edit webhook
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <RefreshCw className="mr-2 size-4" />
-                          Test webhook
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-coral">
-                          <Trash2 className="mr-2 size-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="p-6 lg:p-8 space-y-6">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-white/40 mb-1">
+              <a href="/dashboard" className="hover:text-white/70 transition-colors">Dashboard</a>
+              <span>/</span>
+              <span className="text-white/70">Webhooks</span>
+            </div>
+            <h1 className="font-bricolage text-2xl font-semibold tracking-tight text-white">Webhooks</h1>
+            <p className="text-sm text-white/50 mt-1">Manage webhook endpoints and monitor delivery status</p>
+          </div>
+          <CreateWebhookModal />
+        </div>
 
-      {/* Recent Logs */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="text-lg">Recent Delivery Logs</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="font-semibold">Webhook</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Duration</TableHead>
-                <TableHead className="font-semibold">Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentLogs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell className="font-medium">{log.webhook}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {log.status === "success" ? (
-                        <CheckCircle className="size-4 text-green-600" />
-                      ) : (
-                        <XCircle className="size-4 text-coral" />
-                      )}
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 border-gradient"
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                    {stat.label}
+                  </p>
+                  <p className={`font-bricolage text-2xl font-semibold tracking-tight ${
+                    stat.color === "emerald" ? "text-emerald-400" :
+                    stat.color === "rose" ? "text-rose-400" : "text-white"
+                  }`}>
+                    {stat.value}
+                  </p>
+                </div>
+                <div className={`flex size-10 items-center justify-center rounded-xl ${
+                  stat.color === "emerald" ? "bg-emerald-500/10 text-emerald-400" :
+                  stat.color === "rose" ? "bg-rose-500/10 text-rose-400" : "bg-white/[0.06] text-white/40"
+                }`}>
+                  <stat.icon className="size-5" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Webhooks Table */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+          <div className="px-6 py-4 border-b border-white/[0.06]">
+            <h2 className="font-bricolage text-lg font-semibold text-white">Webhook Endpoints</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-white/[0.06] hover:bg-transparent">
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Brand
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Event
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Success Rate
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Last Triggered
+                  </TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {webhooks.map((webhook) => (
+                  <TableRow key={webhook.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-white">{webhook.name}</p>
+                        <p className="text-xs text-white/40 font-mono truncate max-w-[200px]">
+                          {webhook.url}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-white/50">
+                      {webhook.brand}
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs bg-white/5 px-2 py-1 rounded-md text-white/60 font-mono">
+                        {webhook.event}
+                      </code>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(webhook.status)}</TableCell>
+                    <TableCell>
                       <span
-                        className={`text-sm font-medium capitalize ${
-                          log.status === "success" ? "text-green-600" : "text-coral"
+                        className={`font-medium ${
+                          webhook.successRate >= 99
+                            ? "text-emerald-400"
+                            : webhook.successRate >= 95
+                            ? "text-amber-400"
+                            : "text-rose-400"
                         }`}
                       >
-                        {log.status}
+                        {webhook.successRate}%
                       </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">
-                    {log.duration}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {log.timestamp}
-                  </TableCell>
+                    </TableCell>
+                    <TableCell className="text-white/40">
+                      {webhook.lastTriggered}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors">
+                            <MoreHorizontal className="size-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-[#0a0a14] border-white/10">
+                          <DropdownMenuItem className="text-white/70 hover:text-white hover:bg-white/5">
+                            <ExternalLink className="mr-2 size-4" />
+                            View logs
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white/70 hover:text-white hover:bg-white/5">
+                            <Edit className="mr-2 size-4" />
+                            Edit webhook
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white/70 hover:text-white hover:bg-white/5">
+                            <RefreshCw className="mr-2 size-4" />
+                            Test webhook
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-white/10" />
+                          <DropdownMenuItem className="text-coral hover:text-coral hover:bg-coral/10">
+                            <Trash2 className="mr-2 size-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Recent Logs */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+          <div className="px-6 py-4 border-b border-white/[0.06]">
+            <h2 className="font-bricolage text-lg font-semibold text-white">Recent Delivery Logs</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-white/[0.06] hover:bg-transparent">
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Webhook
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Duration
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Time
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {recentLogs.map((log) => (
+                  <TableRow key={log.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                    <TableCell className="font-medium text-white/90">{log.webhook}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {log.status === "success" ? (
+                          <CheckCircle className="size-4 text-emerald-400" />
+                        ) : (
+                          <XCircle className="size-4 text-rose-400" />
+                        )}
+                        <span
+                          className={`text-sm font-medium capitalize ${
+                            log.status === "success" ? "text-emerald-400" : "text-rose-400"
+                          }`}
+                        >
+                          {log.status}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm text-white/50">
+                      {log.duration}
+                    </TableCell>
+                    <TableCell className="text-white/40">
+                      {log.timestamp}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

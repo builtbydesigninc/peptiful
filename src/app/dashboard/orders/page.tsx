@@ -12,9 +12,10 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Calendar,
+  ShoppingCart,
+  TrendingUp,
+  Clock,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -38,7 +39,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { PageHeader } from "@/components/ui/page-header"
 
 const orders = [
   {
@@ -131,16 +131,41 @@ const orders = [
   },
 ]
 
+const stats = [
+  { label: "Total Orders", value: "247", icon: ShoppingCart, trend: "+12 today" },
+  { label: "Revenue Today", value: "$4,892", icon: TrendingUp, trend: "+18.5%" },
+  { label: "Pending", value: "12", icon: Clock, trend: "Processing" },
+]
+
 function getStatusBadge(status: string) {
   switch (status) {
     case "processing":
-      return <Badge variant="pending">Processing</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+          Processing
+        </span>
+      )
     case "completed":
-      return <Badge variant="active">Completed</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Completed
+        </span>
+      )
     case "failed":
-      return <Badge variant="failed">Failed</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-400 ring-1 ring-inset ring-rose-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+          Failed
+        </span>
+      )
     default:
-      return <Badge variant="muted">{status}</Badge>
+      return (
+        <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          {status}
+        </span>
+      )
   }
 }
 
@@ -148,175 +173,223 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
 
   return (
-    <div className="p-8 space-y-6">
-      <PageHeader
-        title="Orders"
-        description="Manage and track all orders across your brands"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Orders" },
-        ]}
-        actions={
-          <Button>
+    <div className="min-h-screen bg-[#050510] text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
+      </div>
+
+      <div className="p-6 lg:p-8 space-y-6">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-white/40 mb-1">
+              <a href="/dashboard" className="hover:text-white/70 transition-colors">Dashboard</a>
+              <span>/</span>
+              <span className="text-white/70">Orders</span>
+            </div>
+            <h1 className="font-bricolage text-2xl font-semibold tracking-tight text-white">Orders</h1>
+            <p className="text-sm text-white/50 mt-1">Manage and track all orders across your brands</p>
+          </div>
+          <button className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-all border border-white/10">
             <Download className="size-4" />
             Export
-          </Button>
-        }
-      />
+          </button>
+        </div>
 
-      {/* Filters */}
-      <Card className="bg-white">
-        <CardContent className="p-4">
+        {/* Stats Row */}
+        <div className="grid gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 border-gradient"
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                    {stat.label}
+                  </p>
+                  <p className="font-bricolage text-2xl font-semibold tracking-tight text-white">
+                    {stat.value}
+                  </p>
+                  <p className="text-xs text-white/40">{stat.trend}</p>
+                </div>
+                <div className="flex size-10 items-center justify-center rounded-xl bg-white/[0.06] text-white/40">
+                  <stat.icon className="size-5" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 border-gradient">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/40" />
               <Input
                 placeholder="Search orders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30"
               />
             </div>
             <Select>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="All Brands" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Brands</SelectItem>
-                <SelectItem value="peptide-sciences">Peptide Sciences</SelectItem>
-                <SelectItem value="core-peptides">Core Peptides</SelectItem>
-                <SelectItem value="amino-asylum">Amino Asylum</SelectItem>
+              <SelectContent className="bg-[#0a0a14] border-white/10">
+                <SelectItem value="all" className="text-white/70 hover:text-white hover:bg-white/5">All Brands</SelectItem>
+                <SelectItem value="peptide-sciences" className="text-white/70 hover:text-white hover:bg-white/5">Peptide Sciences</SelectItem>
+                <SelectItem value="core-peptides" className="text-white/70 hover:text-white hover:bg-white/5">Core Peptides</SelectItem>
+                <SelectItem value="amino-asylum" className="text-white/70 hover:text-white hover:bg-white/5">Amino Asylum</SelectItem>
               </SelectContent>
             </Select>
             <Select>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px] bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
+              <SelectContent className="bg-[#0a0a14] border-white/10">
+                <SelectItem value="all" className="text-white/70 hover:text-white hover:bg-white/5">All Status</SelectItem>
+                <SelectItem value="processing" className="text-white/70 hover:text-white hover:bg-white/5">Processing</SelectItem>
+                <SelectItem value="completed" className="text-white/70 hover:text-white hover:bg-white/5">Completed</SelectItem>
+                <SelectItem value="failed" className="text-white/70 hover:text-white hover:bg-white/5">Failed</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="default">
+            <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
               <Calendar className="size-4" />
               Date Range
-            </Button>
-            <Button variant="ghost" size="sm" className="ml-auto">
+            </button>
+            <Button variant="ghost" className="ml-auto text-white/50 hover:text-white hover:bg-white/5">
               <Filter className="size-4" />
               More Filters
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Orders Table */}
-      <Card className="bg-white">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="font-semibold">Order ID</TableHead>
-                <TableHead className="font-semibold">Brand</TableHead>
-                <TableHead className="font-semibold">Customer</TableHead>
-                <TableHead className="font-semibold text-center">Items</TableHead>
-                <TableHead className="font-semibold text-right">Total</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Date</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/orders/${order.id}`}
-                      className="font-mono text-sm font-semibold text-navy hover:underline"
-                    >
-                      {order.id}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{order.brand}</p>
-                      <p className="text-xs text-muted-foreground">{order.affiliate}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{order.customer}</p>
-                      <p className="text-xs text-muted-foreground">{order.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">{order.items}</TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {order.total}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {order.date}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-xs">
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/orders/${order.id}`}>
-                            View details
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Resend notification</DropdownMenuItem>
-                        <DropdownMenuItem>Add tracking</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        {/* Orders Table */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-white/[0.06] hover:bg-transparent">
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Order ID
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Brand
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Customer
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40 text-center">
+                    Items
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40 text-right">
+                    Total
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Date
+                  </TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow key={order.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/orders/${order.id}`}
+                        className="font-mono text-sm font-medium text-white hover:text-coral transition-colors"
+                      >
+                        {order.id}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-white/90">{order.brand}</p>
+                        <p className="text-xs text-white/40">{order.affiliate}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-white/90">{order.customer}</p>
+                        <p className="text-xs text-white/40">{order.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center text-white/70">{order.items}</TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-mono text-sm font-medium text-white">
+                        {order.total}
+                      </span>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell className="text-sm text-white/40">
+                      {order.date}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors">
+                            <MoreHorizontal className="size-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-[#0a0a14] border-white/10">
+                          <DropdownMenuItem asChild className="text-white/70 hover:text-white hover:bg-white/5">
+                            <Link href={`/dashboard/orders/${order.id}`}>
+                              View details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white/70 hover:text-white hover:bg-white/5">Resend notification</DropdownMenuItem>
+                          <DropdownMenuItem className="text-white/70 hover:text-white hover:bg-white/5">Add tracking</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t border-border/50 px-4 py-3">
-            <p className="text-sm text-muted-foreground">
-              Showing <span className="font-medium">1-8</span> of{" "}
-              <span className="font-medium">247</span> orders
+          <div className="flex items-center justify-between border-t border-white/[0.06] px-4 py-3">
+            <p className="text-sm text-white/40">
+              Showing <span className="font-medium text-white/70">1-8</span> of{" "}
+              <span className="font-medium text-white/70">247</span> orders
             </p>
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon-sm" disabled>
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/40 hover:bg-white/5 disabled:opacity-50" disabled>
                 <ChevronsLeft className="size-4" />
-              </Button>
-              <Button variant="outline" size="icon-sm" disabled>
+              </button>
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/40 hover:bg-white/5 disabled:opacity-50" disabled>
                 <ChevronLeft className="size-4" />
-              </Button>
-              <Button variant="default" size="sm" className="min-w-[32px]">
+              </button>
+              <button className="flex h-8 min-w-[32px] items-center justify-center rounded-lg bg-white text-[#050510] text-sm font-medium">
                 1
-              </Button>
-              <Button variant="outline" size="sm" className="min-w-[32px]">
+              </button>
+              <button className="flex h-8 min-w-[32px] items-center justify-center rounded-lg border border-white/10 text-white/70 text-sm font-medium hover:bg-white/5">
                 2
-              </Button>
-              <Button variant="outline" size="sm" className="min-w-[32px]">
+              </button>
+              <button className="flex h-8 min-w-[32px] items-center justify-center rounded-lg border border-white/10 text-white/70 text-sm font-medium hover:bg-white/5">
                 3
-              </Button>
-              <span className="px-2 text-muted-foreground">...</span>
-              <Button variant="outline" size="sm" className="min-w-[32px]">
+              </button>
+              <span className="px-2 text-white/40">...</span>
+              <button className="flex h-8 min-w-[32px] items-center justify-center rounded-lg border border-white/10 text-white/70 text-sm font-medium hover:bg-white/5">
                 31
-              </Button>
-              <Button variant="outline" size="icon-sm">
+              </button>
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/70 hover:bg-white/5">
                 <ChevronRight className="size-4" />
-              </Button>
-              <Button variant="outline" size="icon-sm">
+              </button>
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/70 hover:bg-white/5">
                 <ChevronsRight className="size-4" />
-              </Button>
+              </button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

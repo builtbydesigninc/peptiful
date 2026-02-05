@@ -4,7 +4,7 @@ export default function FulfillmentLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-lavender">
+    <div className="min-h-screen bg-[#050510]">
       {children}
     </div>
   )

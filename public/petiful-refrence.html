@@ -1,0 +1,789 @@
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINA — Advanced Botanical Skincare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.aura.build/FxFilter.js"></script><style id="aura-editor-visibility-style">
+.invisible { visibility: hidden !important; }
+</style>
+<style>
+.glass {
+filter: var(--fx-filter);
+}
+.border-gradient {
+position: relative;
+}
+.border-gradient::before {
+content: "";
+position: absolute;
+inset: 0;
+border-radius: 1.5rem;
+padding: 1px;
+-webkit-mask: linear-gradient(#fff 0 0) content-box,
+linear-gradient(#fff 0 0);
+-webkit-mask-composite: xor;
+mask-composite: exclude;
+background: linear-gradient(225deg,
+rgba(255, 255, 255, 0.0) 0%,
+rgba(255, 255, 255, 0.2) 50%,
+rgba(255, 255, 255, 0.0) 100%);
+pointer-events: none;
+}
+@keyframes fadeSlideIn {
+0% {
+opacity: 0;
+transform: translateY(30px);
+filter: blur(8px);
+}
+100% {
+opacity: 1;
+transform: translateY(0);
+filter: blur(0px);
+}
+}
+.animate-on-scroll {
+animation-play-state: paused !important;
+}
+.animate-on-scroll.animate {
+animation-play-state: running !important;
+}
+</style>
+<script>
+(function () {
+const once = true;
+if (!window.__inViewIO) {
+window.__inViewIO = new IntersectionObserver((entries) => {
+entries.forEach((entry) => {
+if (entry.isIntersecting) {
+entry.target.classList.add("animate");
+if (once) window.__inViewIO.unobserve(entry.target);
+}
+});
+}, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
+}
+window.initInViewAnimations = function (selector = ".animate-on-scroll") {
+document.querySelectorAll(selector).forEach((el) => {
+window.__inViewIO.observe(el);
+});
+};
+document.addEventListener("DOMContentLoaded", () => initInViewAnimations());
+})();
+</script>
+<meta name="disabled-font-classes" content="font-geist,font-roboto,font-montserrat,font-poppins,font-playfair,font-instrument-serif,font-merriweather,font-jakarta,font-manrope,font-space-grotesk,font-work-sans,font-pt-serif,font-geist-mono,font-space-mono,font-quicksand,font-nunito">
+<style id="aura-editor-visibility-style">
+.invisible { visibility: hidden !important; }
+</style>
+<link id="all-fonts-link-font-bricolage" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-bricolage">.font-bricolage { font-family: 'Bricolage Grotesque', sans-serif !important; }</style><link id="all-fonts-link-font-newsreader" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..800&amp;display=swap"><style id="all-fonts-style-font-newsreader">.font-newsreader { font-family: 'Newsreader', serif !important; }</style><link id="all-fonts-link-font-google-sans-flex" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-google-sans-flex">.font-google-sans-flex { font-family: 'Google Sans Flex', sans-serif !important; }</style><link id="all-fonts-link-font-oswald" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-oswald">.font-oswald { font-family: 'Oswald', sans-serif !important; }</style><link id="all-fonts-link-font-dm-sans" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-dm-sans">.font-dm-sans { font-family: 'DM Sans', sans-serif !important; }</style></head>
+<body class="antialiased bg-neutral-950" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;">
+  
+  <!-- Enhanced Hero Background -->
+  <div class="absolute top-0 inset-x-0 h-[110vh] -z-10 overflow-hidden pointer-events-none">
+    <div class="absolute inset-0 bg-neutral-950/20 z-10"></div>
+    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/02a526d3-7d39-4227-9509-97fb6468a9a3_3840w.jpg" alt="Background" class="w-full h-full object-cover opacity-70 animate-pulse-slow" style="animation: 10s cubic-bezier(0.4, 0, 0.6, 1) 0s infinite normal none running pulse;">
+    <div class="absolute inset-0 bg-gradient-to-b from-neutral-950/10 via-neutral-950/40 to-neutral-950 z-20"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-neutral-950/0 to-transparent z-20"></div>
+  </div>
+
+  <section class="min-h-[92vh] overflow-hidden text-white relative">
+    <!-- Navigation -->
+    <header class="z-20 relative">
+      <div class="mx-auto max-w-7xl px-6 lg:px-10">
+        <div class="flex h-20 items-center justify-between">
+          <a href="#" class="flex items-center gap-3">
+            </a><a href="#" class="inline-flex items-center gap-2.5 group">
+    <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] group-hover:bg-white/10 transition-colors duration-200 backdrop-blur-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white drop-shadow-sm">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"></path>
+            <path d="M12 7.5V9"></path>
+            <path d="M7.5 12H9"></path>
+            <path d="M16.5 12H15"></path>
+            <path d="M12 16.5V15"></path>
+            <path d="M8 8L9.5 9.5"></path>
+            <path d="M16 16L14.5 14.5"></path>
+            <path d="M16 8L14.5 9.5"></path>
+            <path d="M8 16L9.5 14.5"></path>
+        </svg>
+    </div>
+    <span class="text-xl font-semibold tracking-tighter text-white font-bricolage drop-shadow-sm">LUMINA</span>
+</a>
+          
+
+          <nav class="hidden md:flex items-center gap-8 text-sm text-white/80">
+            <a href="#" class="hover:text-white transition font-sans">Shop</a>
+            <a href="#" class="hover:text-white transition font-sans">Rituals</a>
+            <a href="#" class="hover:text-white transition font-sans">Ingredients</a>
+            <a href="#" class="hover:text-white transition font-sans">About</a>
+            <a href="#" class="hover:text-white transition font-sans">Journal</a>
+          </nav>
+
+          <div class="hidden md:flex items-center gap-4">
+            <button class="inline-flex items-center gap-2 rounded-2xl px-3 py-1.5 text-sm text-white/80 border-gradient before:rounded-2xl bg-white/5 hover:text-white transition font-sans" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11.5" cy="11.5" r="9.5"></circle><path stroke-linecap="round" d="m20 20l2 2"></path></g></svg>
+              Search
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            </button>
+            <a href="#" class="inline-flex items-center gap-2 rounded-2xl bg-white text-neutral-900 px-4 py-2.5 text-sm font-medium hover:bg-white/90 transition font-sans">
+              Bag (0)
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m19.5 9l-2.094 10.743A2.5 2.5 0 0 1 14.952 22H9.048a2.5 2.5 0 0 1-2.454-2.257L4.5 9M8 9V6.5a4 4 0 0 1 4-4v0a4 4 0 0 1 4 4V9"></path></svg>
+            </a>
+          </div>
+
+          <button aria-label="Open menu" class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-2xl border-gradient before:rounded-2xl bg-white/5" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-5 w-5 text-white"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M3 12h18M3 6h18M3 18h18"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero content -->
+    <div class="z-10 relative">
+      <div class="mx-auto max-w-7xl px-6 lg:px-10">
+        <div class="grid lg:grid-cols-12 gap-8 items-end pt-10 md:pt-16 lg:pt-20">
+          <div class="lg:col-span-7 [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll animate">
+            <p class="uppercase text-xs tracking-[0.18em] text-white/60 font-sans">The Future of Bio-Fermentation</p>
+            <h1 class="sm:text-5xl lg:text-7xl leading-[1.05] text-4xl mt-4 font-bricolage font-semibold tracking-tighter" style="">
+              Unlock the secret to ageless luminosity.
+            </h1>
+            <p class="sm:text-lg text-base text-white/80 max-w-2xl mt-5 font-sans">
+              LUMINA fuses rare botanicals with clinical precision to restore your skin's natural radiance. Experience the ritual of transformation.
+            </p>
+
+            <div class="mt-8 flex flex-col sm:flex-row gap-4">
+              <a href="#" class="inline-flex items-center justify-center rounded-2xl bg-white text-neutral-900 px-5 py-3 text-sm font-medium shadow-sm hover:bg-white/90 transition font-sans">
+                Shop the Collection
+              </a>
+              <a href="#" class="inline-flex items-center justify-center gap-2 border-gradient before:rounded-2xl hover:text-white transition text-sm font-medium text-white/90 bg-white/5 rounded-2xl pt-3 pr-5 pb-3 pl-5" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-5 w-5"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M15.424 11.233a1 1 0 0 1 0 1.534l-4.5 3a1 1 0 0 1-1.556-.832V8.932a1 1 0 0 1 1.556-.832l4.5 3Z"></path></g></svg>
+                The Ritual Film
+               </a>
+            </div>
+
+            <p class="mt-4 text-sm text-white/50 font-sans">Cruelty-Free — Vegan — Dermatologist Tested</p>
+
+            <!-- Stats -->
+            <div class="mt-8 flex flex-wrap items-center gap-6 text-sm">
+              <div class="inline-flex items-center gap-2 text-white/90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m12 22l-4.706-5.835a7.502 7.502 0 0 1 1.83-10.978l1.018-.679a2.5 2.5 0 0 1 3.716 0l1.018.68a7.502 7.502 0 0 1 1.83 10.977z"></path></svg>
+                <span class="font-sans"><span class="font-semibold font-sans">50,000+</span> glowing reviews</span>
+              </div>
+              <div class="hidden sm:inline-flex h-4 w-px bg-white/15"></div>
+              <div class="inline-flex items-center gap-2 text-white/90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4"><path fill="none" stroke="currentColor" stroke-width="1.5" d="M14.272 10.445L18 2m-8.68 8.968L6 2m11.161 18.252a1.272 1.272 0 0 1-1.258.948H8.097a1.272 1.272 0 0 1-1.258-.948l-1.63-6.52a2 2 0 0 1 1.941-2.485h9.699a2 2 0 0 1 1.942 2.485z"></path></svg>
+                <span class="font-sans">Rated <span class="font-semibold font-sans">4.9</span>/5 stars</span>
+              </div>
+              <div class="hidden sm:inline-flex h-4 w-px bg-white/15"></div>
+              <div class="inline-flex items-center gap-2 text-white/90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M12 12c4 4 2 10 2 10s-3-2-5-5s2-9 2-9s1 1 1 4"></path></svg>
+                <span class="font-sans">100% Clean Ingredients</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right badge -->
+          <div class="lg:col-span-5 lg:pl-8 [animation:fadeSlideIn_0.8s_ease-out_0.3s_both] animate-on-scroll animate">
+            <div class="border-gradient before:rounded-3xl sm:p-5 bg-white/5 max-w-sm rounded-3xl ml-auto pt-4 pr-4 pb-4 pl-4 backdrop-blur-lg" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+              <div class="flex items-center justify-between">
+                <div class="">
+                  <p class="text-xs uppercase tracking-[0.18em] text-white/60 font-sans">Best Seller</p>
+                  <p class="mt-1 text-sm text-white/90 font-sans">Night Repair Complex</p>
+                </div>
+                <div class="flex -space-x-2">
+                  <span class="w-8 h-8 bg-[url(https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=100&amp;h=100&amp;fit=crop)] bg-cover bg-center ring-white/10 ring-2 rounded-full"></span>
+                  <span class="bg-center bg-amber-400/90 w-8 h-8 bg-[url(https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=100&amp;h=100&amp;fit=crop)] bg-cover rounded-full ring-white/10 ring-2"></span>
+                  <span class="bg-cyan-400/90 w-8 h-8 bg-[url(https://images.unsplash.com/photo-1556228720-198759498bd4?w=100&amp;h=100&amp;fit=crop)] bg-cover bg-center ring-white/10 ring-2 rounded-full"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial card -->
+        <div class="mt-12 sm:mt-16 max-w-md [animation:fadeSlideIn_0.8s_ease-out_0.5s_both] animate-on-scroll animate">
+          <div class="border-gradient before:rounded-3xl bg-white/5 rounded-3xl pt-5 pr-5 pb-5 pl-5 backdrop-blur-xl">
+            <p class="text-sm text-white/85 font-sans">
+              "I've tried every luxury brand, but Lumina is the only one that actually changed my skin texture. It's not just skincare, it's a daily moment of peace."
+            </p>
+            <div class="mt-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&amp;h=100&amp;fit=crop" alt="Portrait of Sarah" class="h-9 w-9 rounded-full object-cover ring-1 ring-white/20" style="">
+                <div>
+                  <p class="text-sm font-medium font-sans">Sarah Jenkins</p>
+                  <p class="text-xs text-white/60 font-sans">Beauty Editor</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-white/70"></span>
+                <span class="h-1.5 w-1.5 rounded-full bg-white/30"></span>
+                <span class="h-1.5 w-1.5 rounded-full bg-white/30"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll hint -->
+        <div class="mt-10 sm:mt-14 pb-10">
+          <div class="flex items-center gap-2 text-xs text-white/60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m12 16l4-4m-4 4l-4-4m4 4V8"></path></svg>
+            <span class="font-sans">Scroll to explore</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero Section with Services -->
+  <section class="relative w-full mx-auto max-w-7xl px-6 lg:px-10 mt-24 [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll animate">
+    <div class="bg-zinc-950/60 w-full border-gradient before:rounded-3xl rounded-3xl pt-6 pr-6 pb-6 pl-6 sm:p-8" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+      <div class="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10">
+        <div class="lg:col-span-6">
+          <a href="#contact" class="inline-flex items-center gap-2 rounded-2xl px-3 py-1.5 border-gradient before:rounded-2xl bg-white/5 text-zinc-200 hover:bg-white/10 transition font-sans" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="w-4 h-4"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="m5 14l-.914-6.855A2 2 0 0 1 6.069 5h11.862a2 2 0 0 1 1.983 2.145L19 14M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5M5 14h14"></path><path d="M12 18v-4m-3 0l3 3l3-3"></path></g></svg>
+            New Arrivals
+          </a>
+
+          <h1 class="mt-4 text-[44px] sm:text-6xl md:text-7xl leading-[1.05] text-zinc-100 font-bricolage font-semibold tracking-tighter" style="">Elevate Your Daily Ritual</h1>
+
+          <div class="h-px bg-white/10 mt-6"></div>
+
+          <div class="mt-6">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h3 class="text-2xl sm:text-3xl text-zinc-100 font-bricolage font-semibold tracking-tighter" style="">Restorative Serums</h3>
+              <span class="inline-flex items-center rounded-2xl px-3 py-1 text-sm text-zinc-200 bg-white/5 border-gradient before:rounded-2xl font-sans" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">From $85</span>
+            </div>
+            <p class="text-zinc-400 text-sm sm:text-base mt-3 font-sans">Concentrated formulas targeting fine lines, dullness, and hydration deep within.</p>
+          </div>
+
+          <div class="h-px bg-white/10 mt-6"></div>
+
+          <div class="mt-6">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h3 class="text-2xl sm:text-3xl text-zinc-100 font-bricolage font-semibold tracking-tighter" style="">Essential Creams</h3>
+              <span class="inline-flex items-center rounded-2xl px-3 py-1 text-sm text-zinc-200 bg-white/5 border-gradient before:rounded-2xl font-sans" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">From $65</span>
+            </div>
+            <p class="text-zinc-400 text-sm sm:text-base mt-3 font-sans">Rich, barrier-building moisture that locks in hydration for 24 hours.</p>
+          </div>
+
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href="#work" class="inline-flex items-center justify-center h-14 px-6 rounded-2xl text-base font-medium text-white bg-white/5 border-gradient before:rounded-2xl hover:bg-white/10 transition shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] font-sans" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">View Collection</a>
+            <a href="#contact" class="inline-flex items-center justify-center h-14 px-8 rounded-2xl text-base font-medium text-neutral-900 bg-gradient-to-b from-white to-neutral-300 hover:opacity-90 transition shadow-[0_12px_40px_rgba(0,0,0,0.35)] font-sans">Take Skin Quiz</a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="relative mx-auto w-full max-w-[860px]" style="filter: drop-shadow(0 20px 60px rgba(0,0,0,0.6));">
+            <div class="rounded-3xl bg-neutral-900/60 border-gradient before:rounded-3xl p-3" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+              <div class="relative overflow-hidden rounded-3xl bg-neutral-950 border border-white/10">
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                  <span class="h-3 w-3 rounded-full bg-zinc-700"></span>
+                  <span class="h-3 w-3 rounded-full bg-zinc-700/70"></span>
+                  <span class="h-3 w-3 rounded-full bg-zinc-700/50"></span>
+                </div>
+
+                <div class="p-4 sm:p-6">
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
+                      <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=500&amp;h=600&amp;fit=crop" alt="Serum bottle" class="w-full h-full object-cover opacity-90" style="">
+                      <div class="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/30"></div>
+                    </div>
+                    <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
+                      <img src="https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=500&amp;h=600&amp;fit=crop" alt="Cream texture" class="w-full h-full object-cover opacity-90" style="">
+                      <div class="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/30"></div>
+                    </div>
+                    <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:row-span-2">
+                      <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=500&amp;h=800&amp;fit=crop" alt="Model applying cream" class="w-full h-full object-cover opacity-90" style="">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                    </div>
+                    <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
+                      <img src="https://images.unsplash.com/photo-1648203107138-9e9f9dc64662?w=320&amp;q=80" alt="Dropper" class="w-full h-full object-cover opacity-90" style="">
+                      <div class="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/30"></div>
+                    </div>
+                    <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
+                      <img src="https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?w=320&amp;q=80" alt="Product set" class="w-full h-full object-cover opacity-90" style="">
+                      <div class="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/30"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pointer-events-none absolute -right-24 bottom-0 w-72 h-72 rounded-full bg-amber-200/5 blur-3xl"></div>
+                <div class="pointer-events-none absolute -left-24 -top-24 w-80 h-80 rounded-full bg-white/5 blur-3xl"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="max-w-7xl px-6 lg:px-10 mt-14 sm:mt-20 mx-auto [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll">
+    <div class="border-gradient before:rounded-3xl overflow-hidden bg-white/5 rounded-3xl" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+      <div class="flex items-end justify-between p-6 border-b border-white/10">
+        <h2 class="text-2xl sm:text-3xl text-white font-bricolage font-semibold tracking-tighter" style="">Our Philosophy</h2>
+        <div class="hidden sm:flex items-center gap-2">
+          <a href="#" class="inline-flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs font-medium tracking-tight text-white bg-white/10 hover:bg-white/20 border-gradient before:rounded-2xl" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m19 19l-6-6l-3 3l-6-6"></path></svg>
+            <span class="font-sans">View Science</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 border-b border-white/10">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div class="md:col-span-1">
+            <div class="text-3xl sm:text-4xl text-white/70 tabular-nums font-bricolage font-semibold tracking-tighter" style="">1</div>
+          </div>
+          <div class="md:col-span-8">
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Active Botanicals</span>
+              </li>
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Cold-Pressed Extraction</span>
+              </li>
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Micro-Encapsulation Technology</span>
+              </li>
+            </ul>
+
+            <div class="mt-4 flex items-center gap-3 overflow-x-auto pb-2">
+              <div class="aspect-[4/3] w-24 sm:w-28 rounded-2xl overflow-hidden border-gradient before:rounded-2xl flex-shrink-0">
+                <img src="https://images.unsplash.com/photo-1615396899839-c99c121888b0?w=320&amp;h=240&amp;fit=crop" alt="Botanicals" class="w-full h-full object-cover" style="">
+              </div>
+              <div class="aspect-[4/3] w-24 sm:w-28 rounded-2xl overflow-hidden border-gradient before:rounded-2xl flex-shrink-0">
+                <img src="https://images.unsplash.com/photo-1508007226633-b7de6a10cb16?w=320&amp;q=80" alt="Lab" class="w-full h-full object-cover" style="">
+              </div>
+              <div class="aspect-[4/3] w-24 sm:w-28 rounded-2xl overflow-hidden border-gradient before:rounded-2xl flex-shrink-0">
+                <img src="https://images.unsplash.com/photo-1579838501521-e335871b0a6f?w=320&amp;q=80" alt="Texture" class="w-full h-full object-cover" style="">
+              </div>
+            </div>
+          </div>
+          <div class="md:col-span-3 md:text-right">
+            <h3 class="text-lg sm:text-xl tracking-tight font-semibold text-white font-sans">The Formula</h3>
+            <p class="text-xs text-neutral-400 mt-1 font-sans">Potent, pure, and proven.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 border-b border-white/10">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div class="md:col-span-1">
+            <div class="text-3xl sm:text-4xl text-white/70 tabular-nums font-bricolage font-semibold tracking-tighter" style="">2</div>
+          </div>
+          <div class="md:col-span-8">
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Sustainable Harvesting</span>
+              </li>
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Glass Packaging</span>
+              </li>
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Carbon Neutral Shipping</span>
+              </li>
+            </ul>
+
+            <div class="mt-4 flex items-center gap-3">
+              <div class="aspect-[16/10] w-28 sm:w-32 rounded-2xl overflow-hidden border-gradient before:rounded-2xl">
+                <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=320&amp;h=200&amp;fit=crop" alt="Nature" class="w-full h-full object-cover grayscale" style="">
+              </div>
+              <div class="aspect-[16/10] w-28 sm:w-32 rounded-2xl overflow-hidden border-gradient before:rounded-2xl">
+                <img src="https://images.unsplash.com/photo-1532413992378-f169ac26fff0?w=320&amp;h=200&amp;fit=crop" alt="Water" class="w-full h-full object-cover grayscale">
+              </div>
+            </div>
+          </div>
+          <div class="md:col-span-3 md:text-right">
+            <h3 class="text-lg sm:text-xl tracking-tight font-semibold text-white font-sans">The Sourcing</h3>
+            <p class="text-xs text-neutral-400 mt-1 font-sans">Kind to your skin and the earth.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div class="md:col-span-1">
+            <div class="text-3xl sm:text-4xl text-white/70 tabular-nums font-bricolage font-semibold tracking-tighter" style="">3</div>
+          </div>
+          <div class="md:col-span-8">
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Visible Radiance in 2 Weeks</span>
+              </li>
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Strengthened Skin Barrier</span>
+              </li>
+              <li class="flex items-start gap-2 text-sm text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="w-4 h-4 mt-0.5 text-emerald-400"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12.5l2 2l5-5"></path></g></svg>
+                <span class="font-sans">Deep hydration</span>
+              </li>
+              
+            </ul>
+
+            <div class="mt-4 flex items-center gap-3">
+              <div class="aspect-[16/10] w-32 sm:w-40 rounded-2xl overflow-hidden border-gradient before:rounded-2xl">
+                <img src="https://images.unsplash.com/photo-1552693673-1bf958298935?w=320&amp;h=200&amp;fit=crop" alt="Result 1" class="w-full h-full object-cover" style="">
+              </div>
+              <div class="aspect-[16/10] w-32 sm:w-40 rounded-2xl overflow-hidden border-gradient before:rounded-2xl">
+                <img src="https://images.unsplash.com/photo-1505944270255-72b8c68c6a70?w=320&amp;h=200&amp;fit=crop" alt="Result 2" class="w-full h-full object-cover" style="">
+              </div>
+            </div>
+          </div>
+          <div class="md:col-span-3 md:text-right">
+            <h3 class="text-lg sm:text-xl tracking-tight font-semibold text-white font-sans">The Result</h3>
+            <p class="text-xs text-neutral-400 mt-1 font-sans">Skin that glows from within.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 sm:p-8 border-t border-white/10">
+        <p class="text-sm text-neutral-300 font-sans">Unsure where to start? Get a personalized regimen.</p>
+        <div class="flex items-center gap-3">
+          <a href="#contact" class="inline-flex items-center gap-2 hover:bg-emerald-500 text-sm font-medium text-black tracking-tight bg-white/90 rounded-2xl px-4 py-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="w-4 h-4"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m5 14l-.914-6.855A2 2 0 0 1 6.069 5h11.862a2 2 0 0 1 1.983 2.145L19 14M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5M5 14h14m-7 4v-4m-3 0l3 3l3-3"></path></svg>
+            <span class="font-sans">Shop Best Sellers</span>
+          </a>
+          <a href="#" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium tracking-tight text-white bg-white/10 hover:bg-white/20 border-gradient before:rounded-2xl" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="w-4 h-4"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12s4.477 10 10 10m-3-11v2m3-2v2m3-2v2"></path></svg>
+            <span class="font-sans">Skin Quiz</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Glassmorphic Testimonials Section -->
+  <section class="[animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll sm:py-24 bg-center bg-[url(https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&amp;w=3870&amp;auto=format&amp;fit=crop)] bg-cover mt-20 mb-20 pt-16 pb-16"><div class="absolute inset-0" data-container-bg="true"><div id="particles-js" class="absolute inset-0 -z-10">
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize ParticlesJS
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.3, random: false },
+                size: { value: 2, random: true },
+                line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.2, width: 1 },
+                move: { enable: true, speed: 1, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+                modes: { grab: { distance: 400, line_linked: { opacity: 1 } }, bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 }, repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 } }
+            },
+            retina_detect: true
+        });
+    });
+</script>
+<canvas class="particles-js-canvas-el" width="1905" height="868" style="width: 100%; height: 100%;"></canvas></div></div>
+    <div class="mx-auto max-w-7xl px-6 lg:px-10">
+      <div class="mb-12 text-center">
+        <p class="text-xs uppercase text-neutral-500 tracking-widest mb-2 font-sans">Real Results</p>
+        <h2 class="text-3xl sm:text-4xl text-white font-bricolage font-semibold tracking-tighter" style="">Community Love</h2>
+      </div>
+
+      <div class="relative flex items-center justify-center py-12 sm:py-20 overflow-x-auto" style="min-height: 450px;">
+        <div class="container max-w-full flex justify-center items-center gap-6 px-4">
+          <div class="border-gradient before:rounded-3xl flex-shrink-0 w-[340px] h-[340px] rounded-3xl relative backdrop-blur" style="background: linear-gradient(rgba(255, 255, 255, 0.1), transparent); box-shadow: rgba(0, 0, 0, 0.1) 0px 25px 25px; transform: rotate(-10deg); --fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <div class="absolute inset-4 rounded-3xl bg-white text-neutral-900 shadow-2xl ring-1 ring-neutral-200 overflow-hidden">
+              <div class="p-6">
+                <div class="inline-flex items-center justify-center h-8 w-8 rounded-2xl bg-neutral-100 ring-1 ring-neutral-200 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="h-4 w-4 text-neutral-700"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m11.132 3.65l-1.353 4.258a1.27 1.27 0 0 1-1.213.895H4.258a1.27 1.27 0 0 0-.75 2.29l3.352 2.48a1.27 1.27 0 0 1 .465 1.446l-1.282 4.043a1.27 1.27 0 0 0 1.956 1.42l3.419-2.527a1.27 1.27 0 0 1 1.564 0l3.42 2.527a1.27 1.27 0 0 0 1.956-1.42l-1.282-4.043a1.27 1.27 0 0 1 .465-1.447l3.351-2.479a1.27 1.27 0 0 0-.75-2.29h-4.307a1.27 1.27 0 0 1-1.214-.895l-1.353-4.258a1.27 1.27 0 0 0-2.427 0"></path></svg>
+                </div>
+                <p class="text-sm leading-relaxed text-neutral-900 mb-4 font-sans">"My sensitive skin has finally met its match. The calming serum reduced my redness in just three days. Absolutely in love."</p>
+                <div class="pt-3 border-t border-neutral-200 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&amp;h=64&amp;fit=crop" alt="Jessica" class="h-6 w-6 rounded-full object-cover" style="">
+                    <div>
+                      <div class="text-xs font-medium text-neutral-900 font-sans">Jessica M.</div>
+                      <div class="text-xs text-neutral-500 font-sans">Verified Buyer</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="text-amber-400"><path fill="currentColor" d="m13.725 11l3.52 3.42l-4.755.656l-2.126 4.39l-2.072-4.416l-4.755-.63L7.086 11l-.859-4.84l4.28 2.294l4.307-2.242z"></path></svg>
+                    <span class="text-xs font-medium font-sans">5.0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-gradient before:rounded-3xl flex-shrink-0 w-[340px] h-[340px] rounded-3xl relative backdrop-blur" style="background: linear-gradient(rgba(255, 255, 255, 0.08), transparent); box-shadow: rgba(0, 0, 0, 0.1) 0px 25px 25px; transform: rotate(-6deg); --fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <div class="absolute inset-4 rounded-3xl bg-white/90 text-neutral-900 shadow-xl ring-1 ring-neutral-200 overflow-hidden" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+              <div class="p-6">
+                <div class="inline-flex items-center justify-center h-8 w-8 rounded-2xl bg-neutral-100 ring-1 ring-neutral-200 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="h-4 w-4 text-neutral-700"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m11.132 3.65l-1.353 4.258a1.27 1.27 0 0 1-1.213.895H4.258a1.27 1.27 0 0 0-.75 2.29l3.352 2.48a1.27 1.27 0 0 1 .465 1.446l-1.282 4.043a1.27 1.27 0 0 0 1.956 1.42l3.419-2.527a1.27 1.27 0 0 1 1.564 0l3.42 2.527a1.27 1.27 0 0 0 1.956-1.42l-1.282-4.043a1.27 1.27 0 0 1 .465-1.447l3.351-2.479a1.27 1.27 0 0 0-.75-2.29h-4.307a1.27 1.27 0 0 1-1.214-.895l-1.353-4.258a1.27 1.27 0 0 0-2.427 0"></path></svg>
+                </div>
+                <p class="text-sm leading-relaxed text-neutral-900 mb-4 font-sans">"The glow is real. I stopped wearing foundation after using the Vitamin C elixir for two weeks. It feels luxurious and smells divine."</p>
+                <div class="pt-3 border-t border-neutral-200 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&amp;h=64&amp;fit=crop" alt="David" class="h-6 w-6 rounded-full object-cover" style="">
+                    <div>
+                      <div class="text-xs font-medium text-neutral-900 font-sans">David K.</div>
+                      <div class="text-xs text-neutral-500 font-sans">Verified Buyer</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="text-amber-400"><path fill="currentColor" d="m13.725 11l3.52 3.42l-4.755.656l-2.126 4.39l-2.072-4.416l-4.755-.63L7.086 11l-.859-4.84l4.28 2.294l4.307-2.242z"></path></svg>
+                    <span class="text-xs font-medium font-sans">5.0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-gradient before:rounded-3xl flex-shrink-0 w-[340px] h-[340px] rounded-3xl relative backdrop-blur" style="background: linear-gradient(rgba(255, 255, 255, 0.06), transparent); box-shadow: rgba(0, 0, 0, 0.1) 0px 25px 25px; --fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+            <div class="absolute inset-4 rounded-3xl bg-white/80 text-neutral-900 shadow-lg ring-1 ring-neutral-200 overflow-hidden" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+              <div class="p-6">
+                <div class="inline-flex items-center justify-center h-8 w-8 rounded-2xl bg-neutral-100 ring-1 ring-neutral-200 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="h-4 w-4 text-neutral-700"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m11.132 3.65l-1.353 4.258a1.27 1.27 0 0 1-1.213.895H4.258a1.27 1.27 0 0 0-.75 2.29l3.352 2.48a1.27 1.27 0 0 1 .465 1.446l-1.282 4.043a1.27 1.27 0 0 0 1.956 1.42l3.419-2.527a1.27 1.27 0 0 1 1.564 0l3.42 2.527a1.27 1.27 0 0 0 1.956-1.42l-1.282-4.043a1.27 1.27 0 0 1 .465-1.447l3.351-2.479a1.27 1.27 0 0 0-.75-2.29h-4.307a1.27 1.27 0 0 1-1.214-.895l-1.353-4.258a1.27 1.27 0 0 0-2.427 0"></path></svg>
+                </div>
+                <p class="text-sm leading-relaxed text-neutral-900 mb-4 font-sans">"Finally, skincare that respects the microbiome. My skin barrier has never been stronger. Lumina is a staple."</p>
+                <div class="pt-3 border-t border-neutral-200 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=64&amp;h=64&amp;fit=crop" alt="Elena" class="h-6 w-6 rounded-full object-cover">
+                    <div class="">
+                      <div class="text-xs font-medium text-neutral-900 font-sans">Elena R.</div>
+                      <div class="text-xs text-neutral-500 font-sans">Verified Buyer</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="text-amber-400"><path fill="currentColor" d="m13.725 11l3.52 3.42l-4.755.656l-2.126 4.39l-2.072-4.416l-4.755-.63L7.086 11l-.859-4.84l4.28 2.294l4.307-2.242z"></path></svg>
+                    <span class="text-xs font-medium font-sans">5.0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial with CTA Section -->
+  <section class="pt-16 pb-16 sm:py-24 mx-auto max-w-7xl px-6 lg:px-10 [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll">
+    <div class="mb-12">
+      <div class="text-center mb-12">
+        <div class="mb-6">
+          <div class="flex items-center justify-between text-[13px] sm:text-sm font-medium uppercase tracking-tight text-white">
+            <span class="font-sans">PROOF</span>
+            <span class="font-sans">(04)</span>
+          </div>
+          <div class="mt-2 h-px w-full bg-white/20"></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left items-center">
+          <div class="lg:col-span-7">
+            <h3 class="text-[32px] sm:text-[48px] lg:text-[64px] xl:text-[80px] leading-[0.9] font-semibold text-white tracking-tighter font-bricolage">Clinical Results.</h3>
+          </div>
+
+          <div class="lg:col-span-5">
+            <p class="sm:text-lg text-white/60 max-w-3xl mb-6 font-sans">Our formulas are rigorously tested to ensure efficacy. See the visible difference in texture, tone, and hydration.</p>
+            <div class="flex justify-start">
+              <a href="#" class="inline-flex items-center gap-3 border-gradient before:rounded-full hover:shadow-2xl transition bg-white/5 rounded-full pt-2 pr-2 pb-2 pl-2 shadow" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="w-5 h-5 text-neutral-900"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m14 18l-6-6l6-6"></path></svg>
+                </span>
+                <span class="px-3 text-sm font-medium text-white font-sans">See Before &amp; After</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-3xl overflow-hidden shadow-sm border-gradient before:rounded-3xl" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+      <div class="relative overflow-hidden text-white bg-black pt-6 pr-6 pb-6 pl-6">
+        <div class="flex gap-2 mb-4 items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="w-6 h-6 text-white"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m11.132 3.65l-1.353 4.258a1.27 1.27 0 0 1-1.213.895H4.258a1.27 1.27 0 0 0-.75 2.29l3.352 2.48a1.27 1.27 0 0 1 .465 1.446l-1.282 4.043a1.27 1.27 0 0 0 1.956 1.42l3.419-2.527a1.27 1.27 0 0 1 1.564 0l3.42 2.527a1.27 1.27 0 0 0 1.956-1.42l-1.282-4.043a1.27 1.27 0 0 1 .465-1.447l3.351-2.479a1.27 1.27 0 0 0-.75-2.29h-4.307a1.27 1.27 0 0 1-1.214-.895l-1.353-4.258a1.27 1.27 0 0 0-2.427 0"></path></svg>
+        </div>
+        <div class="flex items-center gap-1 mb-4 text-white">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+        </div>
+        <p class="text-base leading-relaxed mb-6 font-sans">"The hydration is instant. I woke up looking like I had a facial. It's truly magic in a bottle."</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-medium font-sans">Sophie T.</div>
+            <div class="text-xs mt-1 text-white/70 font-sans">Model, London</div>
+          </div>
+          <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=64&amp;h=64&amp;fit=crop" alt="Sophie" class="w-8 h-8 object-cover rounded-full">
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden text-black bg-white pt-6 pr-6 pb-6 pl-6">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=64&amp;h=64&amp;fit=crop" alt="Michelle" class="w-6 h-6 object-cover rounded-full">
+          <div>
+            <div class="text-sm font-medium font-sans">Michelle B.</div>
+            <div class="text-xs text-black/70 font-sans">Dermatologist</div>
+          </div>
+        </div>
+        <div class="flex gap-1 text-black mb-4 items-center">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+        </div>
+        <p class="leading-relaxed relative z-10 text-base font-sans">"I recommend Lumina to all my clients. The ingredient deck is impeccable—clean, effective, and safe for sensitive skin types."</p>
+      </div>
+
+      <div class="relative overflow-hidden text-white bg-black pt-6 pr-6 pb-6 pl-6">
+        <div class="flex items-center gap-2 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="w-6 h-6 text-white"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m11.132 3.65l-1.353 4.258a1.27 1.27 0 0 1-1.213.895H4.258a1.27 1.27 0 0 0-.75 2.29l3.352 2.48a1.27 1.27 0 0 1 .465 1.446l-1.282 4.043a1.27 1.27 0 0 0 1.956 1.42l3.419-2.527a1.27 1.27 0 0 1 1.564 0l3.42 2.527a1.27 1.27 0 0 0 1.956-1.42l-1.282-4.043a1.27 1.27 0 0 1 .465-1.447l3.351-2.479a1.27 1.27 0 0 0-.75-2.29h-4.307a1.27 1.27 0 0 1-1.214-.895l-1.353-4.258a1.27 1.27 0 0 0-2.427 0"></path></svg>
+        </div>
+        <div class="flex items-center gap-1 mb-4 text-white">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01L12 2z"></path></svg>
+        </div>
+        <p class="text-base leading-relaxed mb-6 font-sans">"The packaging is gorgeous, but the formula inside is what keeps me coming back. My pigmentation has faded significantly."</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-medium font-sans">Amara K.</div>
+            <div class="text-xs mt-1 text-white/70 font-sans">Artist, NYC</div>
+          </div>
+          <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=64&amp;h=64&amp;fit=crop" alt="Amara" class="w-8 h-8 object-cover rounded-full">
+        </div>
+      </div>
+
+      <div class="lg:col-span-3 border-t border-white/10">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-0">
+          <div class="text-white bg-black border-white/10 border-r pt-6 pr-6 pb-6 pl-6">
+            <div class="text-3xl sm:text-4xl mb-2 font-bricolage font-semibold tracking-tighter" style="">14 Days</div>
+            <div class="text-xs text-white/70 font-sans">To visible improvement in skin texture</div>
+          </div>
+          <div class="p-6 border-r bg-black text-white border-white/10">
+            <div class="text-3xl sm:text-4xl mb-2 font-bricolage font-semibold tracking-tighter" style="">98%</div>
+            <div class="text-xs text-white/70 font-sans">Users agreed their skin felt hydrated</div>
+          </div>
+          <div class="p-6 bg-black text-white">
+            <div class="text-3xl sm:text-4xl mb-2 font-bricolage font-semibold tracking-tighter" style="">0%</div>
+            <div class="text-xs text-white/70 font-sans">Synthetic fragrances or parabens</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="z-10 [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll bg-[url(https://images.unsplash.com/photo-1614859324967-bdaa65817084?w=3000&amp;auto=format&amp;fit=crop)] bg-cover bg-center border-white/10 border-t mt-20 relative">
+    <div class="mx-auto max-w-7xl px-6 lg:px-10 py-12">
+      <div class="overflow-hidden border-gradient before:rounded-3xl rounded-3xl relative" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+        <div class="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10"></div>
+
+        <div class="sm:px-10 lg:px-14 lg:py-16 pt-12 pr-6 pb-12 pl-6 relative backdrop-blur-lg">
+          <div class="flex flex-col lg:flex-row items-start justify-between gap-10">
+            <div class="max-w-md">
+              <a href="#" class="inline-flex items-center">
+                <span class="text-2xl font-bricolage font-semibold tracking-tighter text-white">LUMINA</span>
+              </a>
+              <p class="mt-4 text-sm text-slate-300 leading-relaxed font-sans">Join the inner circle for exclusive access to new formulations, expert skin advice, and community events.</p>
+
+              <form class="mt-6 flex items-center gap-2">
+                <div class="flex-1">
+                  <label for="footer-email" class="sr-only font-sans">Email</label>
+                  <input id="footer-email" type="email" required="" placeholder="Enter your email" class="w-full rounded-2xl bg-white/5 text-white placeholder-slate-400 px-4 py-3 text-sm border-gradient before:rounded-2xl focus:ring-2 focus:ring-lime-400/30 outline-none" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+                </div>
+                <a href="#" class="inline-flex items-center justify-center gap-2 border-gradient before:rounded-2xl hover:text-white transition text-sm font-medium text-white/90 bg-white/5 rounded-2xl pt-3 pr-5 pb-3 pl-5" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">Join</a>
+              </form>
+              <p class="mt-2 text-xs text-slate-400 font-sans">10% off your first order.</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-8 w-full lg:w-auto">
+              <div class="">
+                <p class="text-sm font-medium text-slate-200 tracking-tight font-sans">Shop</p>
+                <ul class="mt-3 space-y-2 text-sm text-slate-400">
+                  <li class=""><a href="#features" class="hover:text-white transition font-sans">All Products</a></li>
+                  <li class=""><a href="#how-it-works" class="hover:text-white transition font-sans">Best Sellers</a></li>
+                  <li class=""><a href="#pricing" class="hover:text-white transition font-sans">Sets &amp; Kits</a></li>
+                </ul>
+              </div>
+              <div class="">
+                <p class="text-sm font-medium text-slate-200 tracking-tight font-sans">Company</p>
+                <ul class="mt-3 space-y-2 text-sm text-slate-400">
+                  <li class=""><a href="#" class="hover:text-white transition font-sans">Our Story</a></li>
+                  <li class=""><a href="#" class="hover:text-white transition font-sans">Ingredients</a></li>
+                  <li class=""><a href="#" class="hover:text-white transition font-sans">Sustainability</a></li>
+                </ul>
+              </div>
+              <div class="">
+                <p class="text-sm font-medium text-slate-200 tracking-tight font-sans">Support</p>
+                <ul class="mt-3 space-y-2 text-sm text-slate-400">
+                  <li><a href="#" class="hover:text-white transition font-sans">Shipping</a></li>
+                  <li><a href="#" class="hover:text-white transition font-sans">Returns</a></li>
+                  <li><a href="#" class="hover:text-white transition font-sans">FAQ</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-xs text-slate-500 font-sans">© 2024 Lumina Beauty. All rights reserved.</p>
+            <div class="flex items-center gap-2">
+              <a href="#" class="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-white/5 border-gradient before:rounded-2xl hover:bg-white/10 transition" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4 text-slate-300"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="m14 14l-4-4m4 0l-4 4m9-2c0 4.97-4.03 9-9 9s-9-4.03-9-9s4.03-9 9-9s9 4.03 9 9"></path></svg>
+              </a>
+              <a href="#" class="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-white/5 border-gradient before:rounded-2xl hover:bg-white/10 transition" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4 text-slate-300"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 11c0-4.714 0-7.071 1.465-8.535C4.929 1 7.286 1 12 1s7.071 0 8.535 1.465C22 3.929 22 6.286 22 11s0 7.071-1.465 8.535C19.071 21 16.714 21 12 21s-7.071 0-8.535-1.465C2 18.071 2 15.714 2 11"></path><circle cx="12" cy="11" r="3"></circle><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"></circle></g></svg>
+              </a>
+              <a href="#" class="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-white/5 border-gradient before:rounded-2xl hover:bg-white/10 transition" style="--fx-filter: blur(4px) liquid-glass(2, 10) saturate(1.25)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-4 w-4 text-slate-300"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M12 12c-4 4-2 10-2 10s3-2 5-5s-2-9-2-9s-1 1-1 4"></path><path d="M7 16a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2M7 16V8m10 8V8m-10 0V5a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v3m-10 0h10"></path></g></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body></html>

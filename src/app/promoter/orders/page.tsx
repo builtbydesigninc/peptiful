@@ -8,17 +8,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Search,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 const promoterOrders = [
   {
@@ -104,13 +95,31 @@ const stats = {
 function getStatusBadge(status: string) {
   switch (status) {
     case "completed":
-      return <Badge variant="active">Completed</Badge>
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Completed
+        </span>
+      )
     case "processing":
-      return <Badge variant="pending">Processing</Badge>
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+          Processing
+        </span>
+      )
     case "refunded":
-      return <Badge variant="muted">Refunded</Badge>
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          Refunded
+        </span>
+      )
     default:
-      return <Badge variant="muted">{status}</Badge>
+      return (
+        <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          {status}
+        </span>
+      )
   }
 }
 
@@ -130,157 +139,147 @@ export default function PromoterOrdersPage() {
   // Get unique codes for filter
   const uniqueCodes = [...new Set(promoterOrders.map(o => o.codeUsed))]
 
+  const statCards = [
+    { label: "Total Orders", value: stats.totalOrders.toString(), icon: ShoppingBag, gradient: "from-navy/60 to-sky-500/40", iconBg: "bg-gradient-to-br from-navy to-sky-600" },
+    { label: "Revenue Generated", value: stats.totalRevenue, icon: DollarSign, gradient: "from-violet-500/60 to-purple-500/40", iconBg: "bg-gradient-to-br from-violet-500 to-purple-500" },
+    { label: "My Earnings", value: stats.totalCommission, icon: TrendingUp, gradient: "from-coral/60 to-pink-500/40", iconBg: "bg-gradient-to-br from-coral to-pink-500", valueClass: "text-coral" },
+  ]
+
   return (
-    <div className="p-4 space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-dark-navy">Orders</h1>
-        <p className="text-sm text-muted-foreground">{stats.totalOrders} orders using your codes</p>
+    <div className="min-h-full text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(235,92,106,0.06),transparent)]" />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-lavender text-navy shrink-0">
-                <ShoppingBag className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Total Orders</p>
-                <p className="text-base sm:text-xl font-bold text-dark-navy">{stats.totalOrders}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-lavender text-navy shrink-0">
-                <DollarSign className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Revenue</p>
-                <p className="text-base sm:text-xl font-bold text-dark-navy truncate">{stats.totalRevenue}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-coral/10 text-coral shrink-0">
-                <TrendingUp className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">My Earnings</p>
-                <p className="text-base sm:text-xl font-bold text-coral truncate">{stats.totalCommission}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="font-bricolage text-2xl font-semibold text-white">Orders</h1>
+          <p className="text-sm text-white/50 mt-1">{stats.totalOrders} orders using your codes</p>
+        </div>
 
-      {/* Filters */}
-      <Card className="bg-white border-border/50">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Calendar className="size-3.5" />
-              <span className="text-xs sm:text-sm">Date Range</span>
-            </Button>
-            <Select value={codeFilter} onValueChange={setCodeFilter}>
-              <SelectTrigger className="w-[130px] sm:w-[150px] h-9">
-                <SelectValue placeholder="All Codes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Codes</SelectItem>
-                {uniqueCodes.map(code => (
-                  <SelectItem key={code} value={code}>{code}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[110px] sm:w-[130px] h-9">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Stats */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+          {statCards.map((stat) => (
+            <div
+              key={stat.label}
+              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+              <div className="relative z-10 flex items-center gap-3">
+                <div className={`flex size-11 items-center justify-center rounded-xl ${stat.iconBg} shadow-lg shrink-0`}>
+                  <stat.icon className="size-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-white/40 uppercase tracking-wider">{stat.label}</p>
+                  <p className={`font-bricolage text-xl font-semibold ${stat.valueClass || 'text-white'}`}>{stat.value}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 border-gradient">
+          <div className="flex flex-wrap gap-3">
+            <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all">
+              <Calendar className="size-4 text-white/50" />
+              Date Range
+            </button>
+            <select
+              value={codeFilter}
+              onChange={(e) => setCodeFilter(e.target.value)}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all focus:outline-none focus:ring-2 focus:ring-coral/50 cursor-pointer"
+            >
+              <option value="all" className="bg-[#0a0a14] text-white">All Codes</option>
+              {uniqueCodes.map(code => (
+                <option key={code} value={code} className="bg-[#0a0a14] text-white">{code}</option>
+              ))}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all focus:outline-none focus:ring-2 focus:ring-coral/50 cursor-pointer"
+            >
+              <option value="all" className="bg-[#0a0a14] text-white">All Status</option>
+              <option value="completed" className="bg-[#0a0a14] text-white">Completed</option>
+              <option value="processing" className="bg-[#0a0a14] text-white">Processing</option>
+              <option value="refunded" className="bg-[#0a0a14] text-white">Refunded</option>
+            </select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Table */}
-      <Card className="bg-white border-border/50 overflow-hidden">
-        <CardContent className="p-0 overflow-x-auto">
+        {/* Table */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
           {filteredOrders.length === 0 ? (
-            <div className="p-8 text-center">
-              <ShoppingBag className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">No orders found</p>
-              <p className="text-sm text-muted-foreground/70">Try adjusting your filters</p>
+            <div className="p-12 text-center">
+              <ShoppingBag className="size-12 mx-auto text-white/20 mb-3" />
+              <p className="text-white/50">No orders found</p>
+              <p className="text-sm text-white/30">Try adjusting your filters</p>
             </div>
           ) : (
-            <table className="w-full min-w-[550px]">
-              <thead>
-                <tr className="border-b border-border/50 bg-lavender/30">
-                  <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-semibold text-dark-navy">Order</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-semibold text-dark-navy">Date</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-semibold text-dark-navy">Customer</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-semibold text-dark-navy">Code</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-right text-xs font-semibold text-dark-navy">Total</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-right text-xs font-semibold text-coral">Earned</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-semibold text-dark-navy">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
-                    <td className="px-3 sm:px-4 py-3">
-                      <span className="font-mono font-semibold text-navy text-xs">{order.id}</span>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{order.date}</td>
-                    <td className="px-3 sm:px-4 py-3 text-xs">{order.customer}</td>
-                    <td className="px-3 sm:px-4 py-3">
-                      <code className="px-1.5 py-0.5 bg-lavender rounded text-[10px] font-mono font-medium text-navy">
-                        {order.codeUsed}
-                      </code>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 text-right text-xs font-medium">{order.orderTotal}</td>
-                    <td className="px-3 sm:px-4 py-3 text-right">
-                      <span className={`font-bold text-xs ${order.status === "refunded" ? "text-muted-foreground line-through" : "text-coral"}`}>
-                        {order.commission}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3">{getStatusBadge(order.status)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          
-          {/* Pagination */}
-          {filteredOrders.length > 0 && (
-            <div className="flex items-center justify-between border-t border-border/50 px-3 sm:px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                Showing <span className="font-medium">1-{filteredOrders.length}</span> of <span className="font-medium">{stats.totalOrders}</span>
-              </p>
-              <div className="flex items-center gap-1.5">
-                <Button variant="outline" size="sm" disabled className="h-8 px-2">
-                  <ChevronLeft className="size-3.5" />
-                </Button>
-                <Button variant="outline" size="sm" className="h-8 px-2">
-                  <ChevronRight className="size-3.5" />
-                </Button>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[650px]">
+                  <thead>
+                    <tr className="border-b border-white/[0.06]">
+                      <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Order</th>
+                      <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Date</th>
+                      <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Customer</th>
+                      <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Code</th>
+                      <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-white/40">Total</th>
+                      <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-coral/70">Earned</th>
+                      <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((order) => (
+                      <tr key={order.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors">
+                        <td className="px-5 py-4">
+                          <span className="font-mono font-semibold text-white">{order.id}</span>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-white/50 whitespace-nowrap">{order.date}</td>
+                        <td className="px-5 py-4 text-sm text-white/70">{order.customer}</td>
+                        <td className="px-5 py-4">
+                          <code className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-mono font-medium text-coral">
+                            {order.codeUsed}
+                          </code>
+                        </td>
+                        <td className="px-5 py-4 text-right text-sm font-medium text-white/70">{order.orderTotal}</td>
+                        <td className="px-5 py-4 text-right">
+                          <span className={`font-bold text-sm ${order.status === "refunded" ? "text-white/30 line-through" : "text-coral"}`}>
+                            {order.commission}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">{getStatusBadge(order.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
+              
+              {/* Pagination */}
+              <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-4">
+                <p className="text-sm text-white/40">
+                  Showing <span className="font-medium text-white/70">1-{filteredOrders.length}</span> of <span className="font-medium text-white/70">{stats.totalOrders}</span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <button 
+                    disabled 
+                    className="flex size-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/30 cursor-not-allowed"
+                  >
+                    <ChevronLeft className="size-4" />
+                  </button>
+                  <button className="flex size-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all">
+                    <ChevronRight className="size-4" />
+                  </button>
+                </div>
+              </div>
+            </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

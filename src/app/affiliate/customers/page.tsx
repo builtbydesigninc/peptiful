@@ -7,9 +7,6 @@ import {
   Mail,
   TrendingUp,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAffiliate } from "../context"
 
@@ -157,170 +154,148 @@ export default function AffiliateCustomersPage() {
   // Show brand column for affiliates viewing all
   const showBrandColumn = isAffiliate && !selectedBrand
 
+  const statCards = [
+    { label: "Total Customers", value: stats.totalCustomers.toString(), icon: Users, gradient: "from-navy/60 to-sky-500/40", iconBg: "bg-gradient-to-br from-navy to-sky-600" },
+    { label: "Repeat Rate", value: stats.repeatRate, icon: TrendingUp, gradient: "from-emerald-500/60 to-teal-500/40", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500" },
+    { label: "Avg Orders", value: stats.avgOrders, icon: ShoppingBag, gradient: "from-violet-500/60 to-purple-500/40", iconBg: "bg-gradient-to-br from-violet-500 to-purple-500" },
+    { label: "Avg Order Value", value: stats.avgOrderValue, icon: DollarSign, gradient: "from-amber-500/60 to-orange-500/40", iconBg: "bg-gradient-to-br from-amber-500 to-orange-500" },
+  ]
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">
-          {selectedBrand ? `${selectedBrand.name} Customers` : "Customer Insights"}
-        </h2>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          {selectedBrand
-            ? `Customer data for ${selectedBrand.name}`
-            : "Understand your customer base and top products"
-          }
-        </p>
+    <div className="min-h-full bg-[#050510] text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-lavender text-navy shrink-0">
-                <Users className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Customers</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.totalCustomers}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-lavender text-navy shrink-0">
-                <TrendingUp className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Repeat Rate</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.repeatRate}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-lavender text-navy shrink-0">
-                <ShoppingBag className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Avg Orders</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.avgOrders}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-lavender text-navy shrink-0">
-                <DollarSign className="size-4 sm:size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Avg Order Value</p>
-                <p className="text-lg sm:text-xl font-bold text-dark-navy">{stats.avgOrderValue}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
+        {/* Header */}
+        <div>
+          <h2 className="font-bricolage text-xl sm:text-2xl font-semibold text-white">
+            {selectedBrand ? `${selectedBrand.name} Customers` : "Customer Insights"}
+          </h2>
+          <p className="text-sm text-white/50 mt-1">
+            {selectedBrand
+              ? `Customer data for ${selectedBrand.name}`
+              : "Understand your customer base and top products"
+            }
+          </p>
+        </div>
 
-      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-        {/* Top Customers */}
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Top Customers</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
+        {/* Stats */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {statCards.map((stat) => (
+            <div
+              key={stat.label}
+              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className={`flex size-10 items-center justify-center rounded-xl ${stat.iconBg} shadow-lg shrink-0`}>
+                    <stat.icon className="size-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-white/40 uppercase tracking-wider truncate">{stat.label}</p>
+                    <p className="font-bricolage text-xl font-semibold text-white">{stat.value}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Top Customers */}
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+            <div className="p-5 border-b border-white/[0.06]">
+              <h3 className="font-bricolage text-lg font-semibold text-white">Top Customers</h3>
+            </div>
             {topCustomers.length === 0 ? (
-              <div className="p-8 text-center">
-                <Users className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">No customer data yet</p>
+              <div className="p-12 text-center">
+                <Users className="size-12 mx-auto text-white/20 mb-3" />
+                <p className="text-white/50">No customer data yet</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/50">
+              <div className="divide-y divide-white/[0.04]">
                 {topCustomers.slice(0, 5).map((customer, index) => (
-                  <div key={customer.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 hover:bg-lavender/20">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <span className="text-base sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 shrink-0">
+                  <div key={customer.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-lg font-semibold text-white/30 w-6 shrink-0">
                         {index + 1}
                       </span>
-                      <Avatar className="size-8 sm:size-10 shrink-0">
-                        <AvatarFallback className="bg-lavender text-navy text-xs sm:text-sm font-semibold">
+                      <Avatar className="size-10 shrink-0 ring-2 ring-white/10 ring-offset-2 ring-offset-[#0a0a14]">
+                        <AvatarFallback className="bg-gradient-to-br from-navy to-sky-600 text-white text-xs font-semibold">
                           {customer.name.split(" ").map(n => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <p className="font-semibold text-dark-navy text-sm sm:text-base truncate">{customer.name}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{customer.orders} orders • Last: {customer.lastOrder}</p>
+                        <p className="font-medium text-white text-sm truncate">{customer.name}</p>
+                        <p className="text-xs text-white/40 truncate">{customer.orders} orders • Last: {customer.lastOrder}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-3 ml-7 sm:ml-0">
+                    <div className="flex items-center gap-3 ml-9 sm:ml-0">
                       <div className="text-left sm:text-right">
-                        <p className="font-bold text-navy text-sm sm:text-base">{customer.totalSpent}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">Avg: {customer.avgOrder}</p>
+                        <p className="font-mono font-semibold text-emerald-400 text-sm">{customer.totalSpent}</p>
+                        <p className="text-xs text-white/40">Avg: {customer.avgOrder}</p>
                       </div>
-                      <Button variant="accent" size="sm" className="shrink-0 text-xs sm:text-sm">
-                        <Mail className="size-3" />
+                      <button className="shrink-0 flex items-center gap-1.5 rounded-lg bg-coral/10 border border-coral/20 px-3 py-2 text-xs font-medium text-coral hover:bg-coral/20 transition-all">
+                        <Mail className="size-3.5" />
                         <span className="hidden sm:inline">Send Offer</span>
-                        <span className="sm:hidden">Offer</span>
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Top Products */}
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Top Products</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
+          {/* Top Products */}
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+            <div className="p-5 border-b border-white/[0.06]">
+              <h3 className="font-bricolage text-lg font-semibold text-white">Top Products</h3>
+            </div>
             {topProducts.length === 0 ? (
-              <div className="p-8 text-center">
-                <ShoppingBag className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">No product data yet</p>
+              <div className="p-12 text-center">
+                <ShoppingBag className="size-12 mx-auto text-white/20 mb-3" />
+                <p className="text-white/50">No product data yet</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/50">
+              <div className="divide-y divide-white/[0.04]">
                 {topProducts.slice(0, 5).map((product, index) => (
-                  <div key={product.id} className="p-3 sm:p-4 hover:bg-lavender/20">
+                  <div key={product.id} className="p-4 hover:bg-white/[0.02] transition-colors">
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <span className="text-base sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 shrink-0">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-lg font-semibold text-white/30 w-6 shrink-0">
                           {index + 1}
                         </span>
                         <div className="min-w-0">
-                          <p className="font-semibold text-dark-navy text-sm sm:text-base truncate">{product.name}</p>
+                          <p className="font-medium text-white text-sm truncate">{product.name}</p>
                           {showBrandColumn && (
-                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{product.brand}</p>
+                            <p className="text-xs text-white/40 truncate">{product.brand}</p>
                           )}
                         </div>
                       </div>
-                      <Badge variant="muted" className="shrink-0 text-[10px] sm:text-xs">{product.sold} sold</Badge>
+                      <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10 shrink-0">
+                        {product.sold} sold
+                      </span>
                     </div>
-                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ml-7 sm:ml-9 text-xs sm:text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ml-9 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Rev: </span>
-                        <span className="font-medium">{product.revenue}</span>
+                        <span className="text-white/40">Rev: </span>
+                        <span className="font-mono font-medium text-white">{product.revenue}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Comm: </span>
-                        <span className="font-bold text-green-600">{product.commission}</span>
+                        <span className="text-white/40">Comm: </span>
+                        <span className="font-mono font-semibold text-emerald-400">{product.commission}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   )

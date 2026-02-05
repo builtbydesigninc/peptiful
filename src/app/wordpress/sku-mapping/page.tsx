@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import {
   RefreshCw,
   Plus,
@@ -11,40 +10,13 @@ import {
   AlertCircle,
   Link2,
   Unlink,
+  X,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalDescription,
-  ModalFooter,
-  ModalTrigger,
-} from "@/components/ui/modal"
-import { Label } from "@/components/ui/label"
-import { SearchSelect } from "@/components/ui/search-select"
 
 const products = [
   {
     id: 1,
     name: "BPC-157 10mg",
-    image: "/placeholder-product.jpg",
     localSku: "PS-BPC157-10",
     hubSku: "HUB-BPC157-10MG",
     mapped: true,
@@ -54,7 +26,6 @@ const products = [
   {
     id: 2,
     name: "TB-500 5mg",
-    image: "/placeholder-product.jpg",
     localSku: "PS-TB500-5",
     hubSku: "HUB-TB500-5MG",
     mapped: true,
@@ -64,7 +35,6 @@ const products = [
   {
     id: 3,
     name: "Ipamorelin 5mg",
-    image: "/placeholder-product.jpg",
     localSku: "PS-IPAM-5",
     hubSku: null,
     mapped: false,
@@ -74,7 +44,6 @@ const products = [
   {
     id: 4,
     name: "CJC-1295 2mg",
-    image: "/placeholder-product.jpg",
     localSku: "PS-CJC1295-2",
     hubSku: "HUB-CJC1295-2MG",
     mapped: true,
@@ -84,7 +53,6 @@ const products = [
   {
     id: 5,
     name: "GHRP-6 5mg",
-    image: "/placeholder-product.jpg",
     localSku: "PS-GHRP6-5",
     hubSku: null,
     mapped: false,
@@ -94,7 +62,6 @@ const products = [
   {
     id: 6,
     name: "Semaglutide 5mg",
-    image: "/placeholder-product.jpg",
     localSku: "PS-SEMA-5",
     hubSku: "HUB-SEMA-5MG",
     mapped: true,
@@ -117,6 +84,8 @@ const unmappedCount = products.filter((p) => !p.mapped).length
 
 export default function SkuMappingPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<number | null>(null)
 
   const filteredProducts = searchQuery
     ? products.filter(
@@ -129,195 +98,227 @@ export default function SkuMappingPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <Link2 className="size-5 text-navy" />
-            <span className="text-lg font-semibold text-[#1d2327]">
+            <div className="flex items-center justify-center size-8 rounded-lg bg-emerald-500/10">
+              <Link2 className="size-4 text-emerald-400" />
+            </div>
+            <span className="text-lg font-semibold text-white">
               {mappedCount} mapped
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Unlink className="size-5 text-coral" />
+            <div className="flex items-center justify-center size-8 rounded-lg bg-coral/10">
+              <Unlink className="size-4 text-coral" />
+            </div>
             <span className="text-lg font-semibold text-coral">
               {unmappedCount} unmapped
             </span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Modal>
-            <ModalTrigger asChild>
-              <Button variant="outline">
-                <Plus className="size-4" />
-                Add Mapping
-              </Button>
-            </ModalTrigger>
-            <ModalContent>
-              <ModalHeader>
-                <ModalTitle>Add SKU Mapping</ModalTitle>
-                <ModalDescription>
-                  Map a local product SKU to a Hub SKU
-                </ModalDescription>
-              </ModalHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Local Product</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products
-                        .filter((p) => !p.mapped)
-                        .map((p) => (
-                          <SelectItem key={p.id} value={p.localSku}>
-                            {p.name} ({p.localSku})
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Hub SKU</Label>
-                  <SearchSelect
-                    options={hubSkuOptions}
-                    placeholder="Search Hub SKUs..."
-                    searchPlaceholder="Type to search..."
-                  />
-                </div>
-              </div>
-              <ModalFooter>
-                <Button variant="outline">Cancel</Button>
-                <Button variant="accent">Save Mapping</Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-          <Button className="bg-navy hover:bg-navy/90">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all"
+          >
+            <Plus className="size-4" />
+            Add Mapping
+          </button>
+          <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30 transition-all">
             <RefreshCw className="size-4" />
             Sync All
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#646970]" />
-        <Input
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-white/40" />
+        <input
           placeholder="Search products or SKUs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 border-[#8c8f94]"
+          className="w-full rounded-xl border border-white/10 bg-white/5 pl-11 pr-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded border border-[#c3c4c7] shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-[#f6f7f7] border-b border-[#c3c4c7]">
-              <th className="px-4 py-3 text-left text-sm font-semibold text-[#1d2327]">
-                Product
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-[#1d2327]">
-                Local SKU
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-[#1d2327]">
-                Hub SKU
-              </th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-[#1d2327]">
-                Stock
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-[#1d2327]">
-                Last Synced
-              </th>
-              <th className="px-4 py-3 w-[50px]"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((product) => (
-              <tr
-                key={product.id}
-                className="border-b border-[#c3c4c7] last:border-0 hover:bg-[#f6f7f7]"
-              >
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 bg-[#f0f0f1] rounded flex items-center justify-center text-[#646970]">
-                      <span className="text-xs font-medium">IMG</span>
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">
+                  Product
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">
+                  Local SKU
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">
+                  Hub SKU
+                </th>
+                <th className="px-5 py-3 text-center text-[11px] font-medium uppercase tracking-wider text-white/40">
+                  Stock
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">
+                  Last Synced
+                </th>
+                <th className="px-5 py-3 w-[50px]"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.map((product) => (
+                <tr
+                  key={product.id}
+                  className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
+                >
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 bg-white/5 rounded-lg flex items-center justify-center text-white/30 border border-white/10">
+                        <span className="text-xs font-medium">IMG</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{product.name}</p>
+                        {product.mapped ? (
+                          <span className="flex items-center gap-1 text-xs text-emerald-400">
+                            <CheckCircle className="size-3" />
+                            Mapped
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-xs text-coral">
+                            <AlertCircle className="size-3" />
+                            Unmapped
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-[#1d2327]">{product.name}</p>
-                      {product.mapped ? (
-                        <span className="flex items-center gap-1 text-xs text-navy">
-                          <CheckCircle className="size-3" />
-                          Mapped
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-xs text-coral">
-                          <AlertCircle className="size-3" />
-                          Unmapped
-                        </span>
+                  </td>
+                  <td className="px-5 py-4">
+                    <code className="text-sm font-mono bg-white/5 border border-white/10 px-2 py-1 rounded-lg text-white/70">
+                      {product.localSku}
+                    </code>
+                  </td>
+                  <td className="px-5 py-4">
+                    {product.hubSku ? (
+                      <code className="text-sm font-mono text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-1 rounded-lg">
+                        {product.hubSku}
+                      </code>
+                    ) : (
+                      <select className="rounded-lg border border-coral/30 bg-coral/5 px-3 py-1.5 text-sm text-coral focus:outline-none focus:ring-2 focus:ring-coral/50 cursor-pointer">
+                        <option value="" className="bg-[#0a0a14] text-white">Select Hub SKU</option>
+                        {hubSkuOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value} className="bg-[#0a0a14] text-white">
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+                  <td className="px-5 py-4 text-center">
+                    <span
+                      className={`font-semibold ${
+                        product.stock === 0 ? "text-coral" : "text-white"
+                      }`}
+                    >
+                      {product.stock}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-sm text-white/50">
+                    {product.lastSynced}
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === product.id ? null : product.id)}
+                        className="flex items-center justify-center size-8 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all"
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </button>
+                      {openDropdown === product.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setOpenDropdown(null)} />
+                          <div className="absolute right-0 top-full mt-1 z-20 w-40 rounded-xl border border-white/10 bg-[#0a0a14] shadow-xl py-1">
+                            <button className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/5 transition-colors">
+                              Sync Now
+                            </button>
+                            <button className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/5 transition-colors">
+                              Edit Mapping
+                            </button>
+                            <button className="w-full px-4 py-2 text-left text-sm text-coral hover:bg-coral/10 transition-colors">
+                              Remove Mapping
+                            </button>
+                          </div>
+                        </>
                       )}
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <code className="text-sm font-mono bg-[#f0f0f1] px-2 py-0.5 rounded">
-                    {product.localSku}
-                  </code>
-                </td>
-                <td className="px-4 py-3">
-                  {product.hubSku ? (
-                    <code className="text-sm font-mono text-navy bg-lavender px-2 py-0.5 rounded">
-                      {product.hubSku}
-                    </code>
-                  ) : (
-                    <Select>
-                      <SelectTrigger className="w-48 h-8 text-sm border-coral text-coral">
-                        <SelectValue placeholder="Select Hub SKU" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {hubSkuOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span
-                    className={`font-semibold ${
-                      product.stock === 0 ? "text-coral" : "text-[#1d2327]"
-                    }`}
-                  >
-                    {product.stock}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-[#646970]">
-                  {product.lastSynced}
-                </td>
-                <td className="px-4 py-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-xs">
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Sync Now</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Mapping</DropdownMenuItem>
-                      <DropdownMenuItem className="text-coral">
-                        Remove Mapping
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Add Mapping Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#0a0a14] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Add SKU Mapping</h3>
+                <p className="text-sm text-white/50">Map a local product SKU to a Hub SKU</p>
+              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex items-center justify-center size-8 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/70">Local Product</label>
+                <select className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                  <option value="" className="bg-[#0a0a14]">Select a product</option>
+                  {products
+                    .filter((p) => !p.mapped)
+                    .map((p) => (
+                      <option key={p.id} value={p.localSku} className="bg-[#0a0a14]">
+                        {p.name} ({p.localSku})
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/70">Hub SKU</label>
+                <select className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                  <option value="" className="bg-[#0a0a14]">Search Hub SKUs...</option>
+                  {hubSkuOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value} className="bg-[#0a0a14]">
+                      {opt.label} - {opt.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-white/[0.06]">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button className="rounded-xl bg-gradient-to-r from-coral to-pink-500 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-coral/20 hover:shadow-xl hover:shadow-coral/30 transition-all">
+                Save Mapping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

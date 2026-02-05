@@ -9,27 +9,14 @@ import {
   Square,
   X,
   ChevronRight,
-  User,
   MapPin,
   Box,
   Search,
   RefreshCw,
   LogOut,
+  Check,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Logo } from "@/components/logo"
 
 type TabType = "ready" | "shipped" | "issues"
 
@@ -136,98 +123,126 @@ function OrderCard({
   order,
   onProcess,
   showProcessButton = true,
+  isSelected = false,
+  onToggleSelect,
+  showCheckbox = false,
 }: {
   order: Order
   onProcess?: () => void
   showProcessButton?: boolean
+  isSelected?: boolean
+  onToggleSelect?: () => void
+  showCheckbox?: boolean
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-2xl font-bold text-dark-navy font-mono">{order.id}</h3>
-          <p className="text-lg text-muted-foreground">{order.brand}</p>
-        </div>
-        <Badge
-          variant={order.labelType === "white" ? "active" : "pending"}
-          className="text-sm px-3 py-1"
-        >
-          {order.labelType === "white"
-            ? "White Label"
-            : `Private: ${order.privateLabelBrand}`}
-        </Badge>
-      </div>
-
-      {/* Ship To */}
-      <div className="flex items-start gap-2 mb-4 p-3 bg-lavender/50 rounded-xl">
-        <MapPin className="size-5 text-navy mt-0.5 shrink-0" />
-        <div>
-          <p className="font-semibold text-lg">{order.customer.name}</p>
-          <p className="text-muted-foreground">
-            {order.customer.city}, {order.customer.state}
-          </p>
-        </div>
-      </div>
-
-      {/* Items */}
-      <div className="space-y-2 mb-4">
-        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Items ({order.items.reduce((acc, item) => acc + item.qty, 0)})
-        </p>
-        {order.items.map((item, idx) => (
-          <div
-            key={idx}
-            className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+    <div className="group rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden">
+      {/* Selection Header - only show for ready orders */}
+      {showCheckbox && (
+        <div className="flex items-center gap-3 px-5 pt-4 pb-2">
+          <button
+            onClick={onToggleSelect}
+            className={cn(
+              "size-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0",
+              isSelected
+                ? "bg-sky-500 border-sky-500 text-white"
+                : "bg-white/5 border-white/20 hover:border-white/40"
+            )}
           >
-            <div className="flex items-center gap-3">
-              <Box className="size-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-muted-foreground font-mono">{item.sku}</p>
-              </div>
-            </div>
-            <span className="text-xl font-bold text-navy">×{item.qty}</span>
-          </div>
-        ))}
-      </div>
+            {isSelected && <Check className="size-4" />}
+          </button>
+          <span className="text-sm text-white/40">Select for bulk processing</span>
+        </div>
+      )}
 
-      {/* Shipped Info or Issue */}
-      {order.status === "shipped" && (
-        <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl text-green-700 mb-4">
-          <Truck className="size-5" />
+      <div className={cn("p-5", showCheckbox && "pt-2")}>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="font-medium">Shipped at {order.shippedAt}</p>
-            <p className="text-sm font-mono">{order.trackingNumber}</p>
+            <h3 className="font-bricolage text-2xl font-bold text-white font-mono">{order.id}</h3>
+            <p className="text-lg text-white/50">{order.brand}</p>
+          </div>
+          <span className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium",
+            order.labelType === "white"
+              ? "bg-navy/20 text-sky-300 ring-1 ring-inset ring-navy/30"
+              : "bg-coral/20 text-coral ring-1 ring-inset ring-coral/30"
+          )}>
+            {order.labelType === "white"
+              ? "White Label"
+              : `Private: ${order.privateLabelBrand}`}
+          </span>
+        </div>
+
+        {/* Ship To */}
+        <div className="flex items-start gap-3 mb-4 p-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-sky-600 shadow-lg shrink-0">
+            <MapPin className="size-5 text-white" />
+          </div>
+          <div>
+            <p className="font-semibold text-lg text-white">{order.customer.name}</p>
+            <p className="text-white/50">
+              {order.customer.city}, {order.customer.state}
+            </p>
           </div>
         </div>
-      )}
 
-      {order.status === "issue" && (
-        <div className="flex items-center gap-2 p-3 bg-coral/10 rounded-xl text-coral mb-4">
-          <AlertTriangle className="size-5" />
-          <p className="font-medium">{order.issueType}</p>
+        {/* Items */}
+        <div className="space-y-2 mb-4">
+          <p className="text-[11px] font-medium text-white/40 uppercase tracking-wider">
+            Items ({order.items.reduce((acc, item) => acc + item.qty, 0)})
+          </p>
+          {order.items.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between py-3 border-b border-white/[0.06] last:border-0"
+            >
+              <div className="flex items-center gap-3">
+                <Box className="size-5 text-white/40" />
+                <div>
+                  <p className="font-medium text-white">{item.name}</p>
+                  <p className="text-sm text-white/40 font-mono">{item.sku}</p>
+                </div>
+              </div>
+              <span className="text-xl font-bold text-sky-400">×{item.qty}</span>
+            </div>
+          ))}
         </div>
-      )}
 
-      {/* Action */}
-      {showProcessButton && order.status === "ready" && (
-        <Button
-          variant="accent"
-          size="lg"
-          className="w-full text-lg h-14"
-          onClick={onProcess}
-        >
-          Process Order
-          <ChevronRight className="size-5" />
-        </Button>
-      )}
+        {/* Shipped Info or Issue */}
+        {order.status === "shipped" && (
+          <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 mb-4">
+            <Truck className="size-5" />
+            <div>
+              <p className="font-medium">Shipped at {order.shippedAt}</p>
+              <p className="text-sm font-mono text-emerald-400/70">{order.trackingNumber}</p>
+            </div>
+          </div>
+        )}
 
-      {order.status === "issue" && (
-        <Button variant="outline" size="lg" className="w-full text-lg h-14">
-          Resolve Issue
-        </Button>
-      )}
+        {order.status === "issue" && (
+          <div className="flex items-center gap-3 p-4 bg-coral/10 border border-coral/20 rounded-xl text-coral mb-4">
+            <AlertTriangle className="size-5" />
+            <p className="font-medium">{order.issueType}</p>
+          </div>
+        )}
+
+        {/* Action */}
+        {showProcessButton && order.status === "ready" && (
+          <button
+            onClick={onProcess}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-coral to-pink-500 px-4 py-4 text-lg font-medium text-white hover:opacity-90 transition-all shadow-lg shadow-coral/20"
+          >
+            Process Order
+            <ChevronRight className="size-5" />
+          </button>
+        )}
+
+        {order.status === "issue" && (
+          <button className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-transparent px-4 py-4 text-lg font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
+            Resolve Issue
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -255,42 +270,42 @@ function ProcessPanel({
     <div className="fixed inset-0 z-50 flex">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-dark-navy/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className="relative ml-auto h-full w-full max-w-lg bg-white shadow-xl flex flex-col">
+      <div className="relative ml-auto h-full w-full max-w-lg bg-[#0a0a14] border-l border-white/10 shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-2xl font-bold text-dark-navy font-mono">
+            <h2 className="font-bricolage text-2xl font-bold text-white font-mono">
               {order.id}
             </h2>
-            <p className="text-muted-foreground">{order.brand}</p>
+            <p className="text-white/50">{order.brand}</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <button onClick={onClose} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all">
             <X className="size-6" />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-dark">
           {/* Ship To */}
-          <div className="p-4 bg-lavender/50 rounded-xl">
-            <p className="text-sm font-medium text-muted-foreground mb-1">
+          <div className="p-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+            <p className="text-[11px] font-medium text-white/40 uppercase tracking-wider mb-2">
               SHIP TO
             </p>
-            <p className="text-xl font-semibold">{order.customer.name}</p>
-            <p className="text-muted-foreground">
+            <p className="text-xl font-semibold text-white">{order.customer.name}</p>
+            <p className="text-white/50">
               {order.customer.city}, {order.customer.state}
             </p>
           </div>
 
           {/* Checklist */}
           <div>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <CheckSquare className="size-5 text-navy" />
+            <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              <CheckSquare className="size-5 text-sky-400" />
               Pick List
             </h3>
             <div className="space-y-3">
@@ -298,27 +313,31 @@ function ProcessPanel({
                 <label
                   key={item.sku}
                   className={cn(
-                    "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-colors",
+                    "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
                     checkedItems[item.sku]
-                      ? "border-navy bg-navy/5"
-                      : "border-border hover:border-navy/30"
+                      ? "border-sky-500 bg-sky-500/10"
+                      : "border-white/10 hover:border-white/20 bg-white/[0.02]"
                   )}
                 >
-                  <Checkbox
-                    checked={checkedItems[item.sku] || false}
-                    onCheckedChange={(checked) =>
-                      setCheckedItems((prev) => ({
-                        ...prev,
-                        [item.sku]: !!checked,
-                      }))
-                    }
-                    className="size-6"
-                  />
+                  <button
+                    onClick={() => setCheckedItems((prev) => ({
+                      ...prev,
+                      [item.sku]: !prev[item.sku],
+                    }))}
+                    className={cn(
+                      "size-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0",
+                      checkedItems[item.sku]
+                        ? "bg-sky-500 border-sky-500 text-white"
+                        : "bg-white/5 border-white/20"
+                    )}
+                  >
+                    {checkedItems[item.sku] && <Check className="size-4" />}
+                  </button>
                   <div className="flex-1">
-                    <p className="font-semibold text-lg">{item.name}</p>
-                    <p className="text-muted-foreground font-mono">{item.sku}</p>
+                    <p className="font-semibold text-lg text-white">{item.name}</p>
+                    <p className="text-white/40 font-mono">{item.sku}</p>
                   </div>
-                  <span className="text-2xl font-bold text-navy">×{item.qty}</span>
+                  <span className="text-2xl font-bold text-sky-400">×{item.qty}</span>
                 </label>
               ))}
             </div>
@@ -326,51 +345,48 @@ function ProcessPanel({
 
           {/* Tracking */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Shipping Details</h3>
+            <h3 className="text-lg font-semibold text-white">Shipping Details</h3>
             <div className="space-y-2">
-              <Label htmlFor="carrier" className="text-base">
+              <label className="text-sm font-medium text-white/70">
                 Carrier
-              </Label>
-              <Select value={carrier} onValueChange={setCarrier}>
-                <SelectTrigger id="carrier" className="h-14 text-lg">
-                  <SelectValue placeholder="Select carrier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ups">UPS</SelectItem>
-                  <SelectItem value="fedex">FedEx</SelectItem>
-                  <SelectItem value="usps">USPS</SelectItem>
-                  <SelectItem value="dhl">DHL</SelectItem>
-                </SelectContent>
-              </Select>
+              </label>
+              <select
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+                className="w-full h-14 text-lg rounded-xl bg-white/5 border border-white/10 text-white px-4 focus:outline-none focus:ring-2 focus:ring-sky-500/50 cursor-pointer"
+              >
+                <option value="" className="bg-[#0a0a14]">Select carrier</option>
+                <option value="ups" className="bg-[#0a0a14]">UPS</option>
+                <option value="fedex" className="bg-[#0a0a14]">FedEx</option>
+                <option value="usps" className="bg-[#0a0a14]">USPS</option>
+                <option value="dhl" className="bg-[#0a0a14]">DHL</option>
+              </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tracking" className="text-base">
+              <label className="text-sm font-medium text-white/70">
                 Tracking Number
-              </Label>
-              <Input
-                id="tracking"
+              </label>
+              <input
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
                 placeholder="Scan or enter tracking number"
-                className="h-14 text-lg font-mono"
+                className="w-full h-14 text-lg font-mono rounded-xl bg-white/5 border border-white/10 text-white px-4 placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
               />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-border space-y-3">
-          <Button
-            variant="accent"
-            size="xl"
-            className="w-full text-xl h-16"
+        <div className="p-6 border-t border-white/[0.06] space-y-3">
+          <button
             disabled={!canComplete}
             onClick={onComplete}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-coral to-pink-500 px-4 py-5 text-xl font-medium text-white hover:opacity-90 transition-all shadow-lg shadow-coral/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Truck className="size-6" />
             Mark Shipped
-          </Button>
-          <button className="w-full text-center text-coral font-medium py-2 hover:underline">
+          </button>
+          <button className="w-full text-center text-coral font-medium py-2 hover:text-coral/80 transition-colors">
             Flag Issue
           </button>
         </div>
@@ -425,108 +441,119 @@ export default function FulfillmentPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
+      </div>
+
       {/* Header */}
-      <header className="bg-dark-navy text-white px-6 py-4 shrink-0">
+      <header className="bg-gradient-to-r from-[#0d1025] via-[#0a0a18] to-[#080812] border-b border-white/[0.06] px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Logo size="md" variant="light" />
+          <div className="flex items-center gap-5">
+            {/* Logo */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-sky-500/20 rounded-xl blur-xl scale-150" />
+              <div className="relative flex items-center justify-center size-12 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10">
+                <img 
+                  src="/logos/Logomark white.svg" 
+                  alt="Peptiful" 
+                  className="h-7 w-7"
+                />
+              </div>
+            </div>
             <div>
-              <h1 className="text-2xl font-bold flex items-center gap-3">
+              <h1 className="font-bricolage text-2xl font-bold flex items-center gap-3 text-white">
                 Fulfillment
-                <Badge variant="failed" className="text-base px-3 py-1">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-coral/20 px-3 py-1 text-base font-medium text-coral ring-1 ring-inset ring-coral/30">
                   {readyOrders.length} pending
-                </Badge>
+                </span>
               </h1>
-              <p className="text-white/60">Peptiful Hub • Warehouse</p>
+              <p className="text-sm text-white/50">Peptiful Hub • Warehouse Operations</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white/70 hover:text-white hover:bg-white/10"
-            >
+            <button className="flex items-center justify-center size-10 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all">
               <RefreshCw className="size-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white/70 hover:text-white hover:bg-white/10"
-            >
-              <LogOut className="size-4 mr-2" />
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <LogOut className="size-4" />
               Sign out
-            </Button>
+            </button>
           </div>
         </div>
       </header>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-border px-6 shrink-0">
+      <div className="bg-[#0a0a14]/80 backdrop-blur-xl border-b border-white/[0.06] px-6 shrink-0">
         <div className="flex gap-1">
           <button
             onClick={() => setActiveTab("ready")}
             className={cn(
-              "px-6 py-4 text-lg font-medium transition-colors border-b-3 -mb-px",
+              "px-6 py-4 text-lg font-medium transition-all border-b-2 -mb-px",
               activeTab === "ready"
-                ? "border-navy text-navy"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "border-sky-400 text-white"
+                : "border-transparent text-white/50 hover:text-white"
             )}
           >
             Ready to Ship
-            <Badge
-              variant={activeTab === "ready" ? "active" : "muted"}
-              className="ml-2"
-            >
+            <span className={cn(
+              "ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium",
+              activeTab === "ready"
+                ? "bg-navy/30 text-sky-300 ring-1 ring-inset ring-navy/50"
+                : "bg-white/5 text-white/50"
+            )}>
               {readyOrders.length}
-            </Badge>
+            </span>
           </button>
           <button
             onClick={() => setActiveTab("shipped")}
             className={cn(
-              "px-6 py-4 text-lg font-medium transition-colors border-b-3 -mb-px",
+              "px-6 py-4 text-lg font-medium transition-all border-b-2 -mb-px",
               activeTab === "shipped"
-                ? "border-navy text-navy"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "border-sky-400 text-white"
+                : "border-transparent text-white/50 hover:text-white"
             )}
           >
             Shipped Today
-            <Badge
-              variant={activeTab === "shipped" ? "active" : "muted"}
-              className="ml-2"
-            >
+            <span className={cn(
+              "ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium",
+              activeTab === "shipped"
+                ? "bg-navy/30 text-sky-300 ring-1 ring-inset ring-navy/50"
+                : "bg-white/5 text-white/50"
+            )}>
               {shippedOrders.length}
-            </Badge>
+            </span>
           </button>
           <button
             onClick={() => setActiveTab("issues")}
             className={cn(
-              "px-6 py-4 text-lg font-medium transition-colors border-b-3 -mb-px",
+              "px-6 py-4 text-lg font-medium transition-all border-b-2 -mb-px",
               activeTab === "issues"
                 ? "border-coral text-coral"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                : "border-transparent text-white/50 hover:text-white"
             )}
           >
             <AlertTriangle className="size-5 inline mr-2" />
             Issues
             {issueOrders.length > 0 && (
-              <Badge variant="failed" className="ml-2">
+              <span className="ml-2 inline-flex items-center rounded-full bg-coral/20 px-2.5 py-0.5 text-sm font-medium text-coral ring-1 ring-inset ring-coral/30">
                 {issueOrders.length}
-              </Badge>
+              </span>
             )}
           </button>
         </div>
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white px-6 py-3 border-b border-border flex items-center gap-4 shrink-0">
+      <div className="bg-[#0a0a14]/50 px-6 py-3 border-b border-white/[0.06] flex items-center gap-4 shrink-0">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-          <Input
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-white/40" />
+          <input
             placeholder="Search order ID or customer..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12 text-lg"
+            className="w-full pl-12 pr-4 h-12 text-lg rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition-all"
           />
         </div>
 
@@ -534,58 +561,45 @@ export default function FulfillmentPage() {
           <div className="flex items-center gap-3 ml-auto">
             <button
               onClick={selectAll}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2 text-white/50 hover:text-white transition-colors"
             >
               {selectedOrders.size === filteredOrders.length &&
               filteredOrders.length > 0 ? (
-                <CheckSquare className="size-5 text-navy" />
+                <CheckSquare className="size-5 text-sky-400" />
               ) : (
                 <Square className="size-5" />
               )}
               <span className="font-medium">Select All</span>
             </button>
             {selectedOrders.size > 0 && (
-              <Button variant="outline" size="lg">
+              <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-coral to-pink-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-coral/20 hover:opacity-90 transition-all">
                 Bulk Process ({selectedOrders.size})
-              </Button>
+              </button>
             )}
           </div>
         )}
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 scrollbar-dark">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredOrders.map((order) => (
-            <div key={order.id} className="relative">
-              {activeTab === "ready" && (
-                <button
-                  onClick={() => toggleSelectOrder(order.id)}
-                  className={cn(
-                    "absolute top-4 left-4 z-10 size-7 rounded-lg border-2 flex items-center justify-center transition-colors",
-                    selectedOrders.has(order.id)
-                      ? "bg-navy border-navy text-white"
-                      : "bg-white border-border hover:border-navy"
-                  )}
-                >
-                  {selectedOrders.has(order.id) && (
-                    <CheckSquare className="size-4" />
-                  )}
-                </button>
-              )}
-              <OrderCard
-                order={order}
-                onProcess={() => setProcessingOrder(order)}
-                showProcessButton={activeTab === "ready"}
-              />
-            </div>
+            <OrderCard
+              key={order.id}
+              order={order}
+              onProcess={() => setProcessingOrder(order)}
+              showProcessButton={activeTab === "ready"}
+              isSelected={selectedOrders.has(order.id)}
+              onToggleSelect={() => toggleSelectOrder(order.id)}
+              showCheckbox={activeTab === "ready"}
+            />
           ))}
         </div>
 
         {filteredOrders.length === 0 && (
           <div className="text-center py-16">
-            <Package className="size-16 mx-auto text-muted-foreground/30 mb-4" />
-            <p className="text-xl text-muted-foreground">
+            <Package className="size-16 mx-auto text-white/20 mb-4" />
+            <p className="text-xl text-white/50">
               {searchQuery
                 ? "No orders found"
                 : activeTab === "ready"

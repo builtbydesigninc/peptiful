@@ -9,9 +9,6 @@ import {
   FileText,
   Wallet,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useAffiliate } from "../context"
 
 const allPayouts = [
@@ -114,133 +111,149 @@ export default function AffiliatePayoutsPage() {
   )
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">
-          {selectedBrand ? `${selectedBrand.name} Payouts` : "Payout History"}
-        </h2>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          {selectedBrand
-            ? `Payment history for ${selectedBrand.name}`
-            : "Track your earnings and payment history"
-          }
-        </p>
+    <div className="min-h-full bg-[#050510] text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
-        {/* Next Payout */}
-        <Card className="bg-gradient-to-br from-navy to-navy/80 text-white border-0 overflow-hidden">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <Calendar className="size-4 sm:size-5 opacity-80" />
-              <span className="text-xs sm:text-sm opacity-80">Next Payout</span>
-            </div>
-            <p className="text-2xl sm:text-4xl font-bold mb-2">{nextPayout.amount}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm opacity-80">{nextPayout.orders} orders</span>
-              {nextPayout.daysUntil > 0 && (
-                <Badge className="bg-white/20 text-white hover:bg-white/30 text-xs">
-                  {nextPayout.daysUntil} days
-                </Badge>
-              )}
-            </div>
-            <p className="text-xs sm:text-sm opacity-80 mt-2 sm:mt-3">{nextPayout.date}</p>
-          </CardContent>
-        </Card>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
+        {/* Header */}
+        <div>
+          <h2 className="font-bricolage text-xl sm:text-2xl font-semibold text-white">
+            {selectedBrand ? `${selectedBrand.name} Payouts` : "Payout History"}
+          </h2>
+          <p className="text-sm text-white/50 mt-1">
+            {selectedBrand
+              ? `Payment history for ${selectedBrand.name}`
+              : "Track your earnings and payment history"
+            }
+          </p>
+        </div>
 
-        {/* Total Paid */}
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <DollarSign className="size-4 sm:size-5 text-green-600" />
-              <span className="text-xs sm:text-sm text-muted-foreground">Total Paid Out</span>
+        {/* Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Next Payout */}
+          <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border-gradient">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.15)_0%,transparent_60%)]" />
+            <div className="relative p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/20 backdrop-blur-sm">
+                  <Calendar className="size-4 text-emerald-400" />
+                </div>
+                <span className="text-sm text-white/60">Next Payout</span>
+              </div>
+              <p className="font-bricolage text-3xl sm:text-4xl font-bold text-white mb-2">{nextPayout.amount}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/50">{nextPayout.orders} orders</span>
+                {nextPayout.daysUntil > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+                    {nextPayout.daysUntil} days
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-white/40 mt-3">{nextPayout.date}</p>
             </div>
-            <p className="text-xl sm:text-3xl font-bold text-dark-navy truncate">
-              ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              {payouts.length} payouts all time
-            </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Payment Method */}
-        <Card className="bg-white border-border/50 overflow-hidden">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <CreditCard className="size-4 sm:size-5 text-navy" />
-              <span className="text-xs sm:text-sm text-muted-foreground">Payment Method</span>
-            </div>
-            <p className="text-base sm:text-lg font-bold text-dark-navy">Bank Transfer</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 truncate">
-              ****4567 • Chase Bank
-            </p>
-            <Button variant="ghost" size="sm" className="mt-2 -ml-2 text-navy text-xs sm:text-sm">
-              Update payment method
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Payout History Table */}
-      <Card className="bg-white border-border/50 overflow-hidden">
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Payment History</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          {payouts.length === 0 ? (
-            <div className="p-8 text-center">
-              <Wallet className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">No payouts yet</p>
-              <p className="text-sm text-muted-foreground/70">
-                Payouts will appear here once you've earned commissions
+          {/* Total Paid */}
+          <div className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-navy/60 to-sky-500/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-sky-600 shadow-lg">
+                  <DollarSign className="size-4 text-white" />
+                </div>
+                <span className="text-sm text-white/60">Total Paid Out</span>
+              </div>
+              <p className="font-bricolage text-2xl sm:text-3xl font-semibold text-white truncate">
+                ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              </p>
+              <p className="text-sm text-white/40 mt-2">
+                {payouts.length} payouts all time
               </p>
             </div>
-          ) : (
-            <table className="w-full min-w-[600px]">
-              <thead>
-                <tr className="border-b border-border/50 bg-lavender/30">
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Payout ID</th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Date</th>
-                  <th className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Amount</th>
-                  <th className="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm font-semibold text-dark-navy hidden sm:table-cell">Orders</th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
-                  <th className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Invoice</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payouts.map((payout) => (
-                  <tr key={payout.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
-                      <span className="font-mono font-semibold text-navy text-xs sm:text-sm">{payout.id}</span>
-                    </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{payout.date}</td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                      <span className="font-bold text-dark-navy text-xs sm:text-sm">{payout.amount}</span>
-                    </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">{payout.orders}</td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
-                      <span className="flex items-center gap-1 sm:gap-1.5 text-green-600 font-medium text-xs sm:text-sm">
-                        <CheckCircle className="size-3 sm:size-4" />
-                        <span className="hidden sm:inline">Completed</span>
-                        <span className="sm:hidden">Done</span>
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                      <Button variant="ghost" size="sm" className="text-xs sm:text-sm h-8 px-2 sm:px-3">
-                        <FileText className="size-3 sm:size-4" />
-                        <span className="hidden sm:inline ml-1">Download</span>
-                      </Button>
-                    </td>
+          </div>
+
+          {/* Payment Method */}
+          <div className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/60 to-purple-500/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 shadow-lg">
+                  <CreditCard className="size-4 text-white" />
+                </div>
+                <span className="text-sm text-white/60">Payment Method</span>
+              </div>
+              <p className="font-bricolage text-lg font-semibold text-white">Bank Transfer</p>
+              <p className="text-sm text-white/40 mt-1 truncate font-mono">
+                ****4567 • Chase Bank
+              </p>
+              <button className="mt-3 text-sm text-sky-400 hover:text-sky-300 transition-colors">
+                Update payment method
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Payout History Table */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+          <div className="p-5 border-b border-white/[0.06]">
+            <h3 className="font-bricolage text-lg font-semibold text-white">Payment History</h3>
+          </div>
+          <div className="overflow-x-auto">
+            {payouts.length === 0 ? (
+              <div className="p-12 text-center">
+                <Wallet className="size-12 mx-auto text-white/20 mb-3" />
+                <p className="text-white/50">No payouts yet</p>
+                <p className="text-sm text-white/30">
+                  Payouts will appear here once you've earned commissions
+                </p>
+              </div>
+            ) : (
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-white/[0.06]">
+                    <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Payout ID</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Date</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-white/40">Amount</th>
+                    <th className="px-5 py-3 text-center text-[11px] font-medium uppercase tracking-wider text-white/40 hidden sm:table-cell">Orders</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Status</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-white/40">Invoice</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody>
+                  {payouts.map((payout) => (
+                    <tr key={payout.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors">
+                      <td className="px-5 py-4">
+                        <span className="font-mono font-medium text-white text-sm">{payout.id}</span>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-white/50 whitespace-nowrap">{payout.date}</td>
+                      <td className="px-5 py-4 text-right">
+                        <span className="font-mono font-semibold text-white text-sm">{payout.amount}</span>
+                      </td>
+                      <td className="px-5 py-4 text-center text-sm text-white/50 hidden sm:table-cell">{payout.orders}</td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-1.5 text-emerald-400 font-medium text-sm">
+                          <CheckCircle className="size-4" />
+                          <span className="hidden sm:inline">Completed</span>
+                          <span className="sm:hidden">Done</span>
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <button className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
+                          <FileText className="size-3.5" />
+                          <span className="hidden sm:inline">Download</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

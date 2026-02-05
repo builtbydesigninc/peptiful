@@ -7,7 +7,6 @@ import {
   Megaphone,
   ArrowUpRight,
 } from "lucide-react"
-import { Logo } from "@/components/logo"
 
 const interfaces = [
   {
@@ -16,7 +15,9 @@ const interfaces = [
     href: "/dashboard",
     icon: LayoutDashboard,
     tag: "Internal",
-    accent: false,
+    iconBg: "from-sky-500 to-blue-600",
+    accent: "text-sky-400",
+    glowColor: "rgba(56,189,248,0.15)",
   },
   {
     title: "Fulfillment",
@@ -24,7 +25,9 @@ const interfaces = [
     href: "/fulfillment",
     icon: Package,
     tag: "Operations",
-    accent: false,
+    iconBg: "from-amber-500 to-orange-500",
+    accent: "text-amber-400",
+    glowColor: "rgba(251,191,36,0.12)",
   },
   {
     title: "Partner Plugin",
@@ -32,7 +35,9 @@ const interfaces = [
     href: "/wordpress",
     icon: Plug,
     tag: "Integration",
-    accent: false,
+    iconBg: "from-violet-500 to-purple-600",
+    accent: "text-violet-400",
+    glowColor: "rgba(139,92,246,0.15)",
   },
   {
     title: "Affiliate Portal",
@@ -40,7 +45,9 @@ const interfaces = [
     href: "/affiliate",
     icon: TrendingUp,
     tag: "External",
-    accent: false,
+    iconBg: "from-emerald-500 to-teal-500",
+    accent: "text-emerald-400",
+    glowColor: "rgba(52,211,153,0.15)",
   },
   {
     title: "Promoter Portal",
@@ -48,99 +55,127 @@ const interfaces = [
     href: "/promoter",
     icon: Megaphone,
     tag: "Influencer",
-    accent: true,
+    iconBg: "from-coral to-rose-500",
+    accent: "text-coral",
+    glowColor: "rgba(235,92,106,0.15)",
   },
 ]
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+    <div className="min-h-screen bg-[#050510] text-white flex flex-col relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(10,69,145,0.12)_0%,transparent_70%)]" />
+        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.08)_0%,transparent_70%)]" />
+        <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(235,92,106,0.08)_0%,transparent_70%)]" />
+        
+        {/* Subtle grid overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
+          }}
+        />
+      </div>
+
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 sm:py-24">
         {/* Logo + Badge */}
-        <div className="flex items-center gap-3 mb-8">
-          <Logo size="lg" variant="dark" />
-          <div className="h-8 w-px bg-border" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            Platform
-          </span>
+        <div className="flex items-center gap-5 mb-12">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/30 to-violet-500/30 rounded-2xl blur-2xl scale-150 group-hover:scale-175 transition-transform duration-500" />
+            <div className="relative flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-sm">
+              <img 
+                src="/logos/Logomark white.svg" 
+                alt="Peptiful" 
+                className="h-9 w-9"
+              />
+            </div>
+          </div>
+          <div className="h-12 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+          <div className="flex flex-col">
+            <span className="font-bricolage text-2xl font-bold tracking-tight text-white">
+              Peptiful
+            </span>
+            <span className="text-[11px] uppercase tracking-[0.25em] text-white/40 font-medium">
+              Platform Hub
+            </span>
+          </div>
         </div>
 
-        {/* Headlines */}
-        <h1 className="text-4xl sm:text-5xl font-bold text-dark-navy text-center mb-3 tracking-tight">
-          Peptiful
-        </h1>
-        <p className="text-muted-foreground text-center mb-12 sm:mb-16 max-w-md">
-          B2B dropshipping infrastructure for peptide brands
+        {/* Tagline */}
+        <p className="text-white/40 text-center mb-14 max-w-md text-base">
+          Select an interface to continue
         </p>
 
         {/* Cards Grid */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-4xl">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-5xl">
           {interfaces.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`group relative rounded-xl p-5 sm:p-6 transition-all ${
-                item.accent
-                  ? "bg-coral text-white hover:shadow-lg hover:shadow-coral/20"
-                  : "bg-white border border-border/60 hover:border-navy/30 hover:shadow-lg hover:shadow-navy/5"
-              }`}
+              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.15] hover:shadow-2xl hover:shadow-black/20 overflow-hidden"
             >
-              <div className="flex items-start justify-between mb-4">
-                {/* Icon */}
-                <div className={`flex items-center justify-center size-10 rounded-lg ${
-                  item.accent ? "bg-white/20 text-white" : "bg-lavender text-navy"
-                }`}>
-                  <item.icon className="size-5" />
+              {/* Subtle glow on hover */}
+              <div 
+                className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{ backgroundColor: item.glowColor }}
+              />
+              
+              <div className="relative z-10">
+                {/* Header row */}
+                <div className="flex items-start justify-between mb-6">
+                  {/* Icon */}
+                  <div className="relative">
+                    <div 
+                      className="absolute inset-0 rounded-xl blur-xl scale-150 opacity-0 group-hover:opacity-60 transition-opacity duration-300"
+                      style={{ backgroundColor: item.glowColor }}
+                    />
+                    <div className={`relative flex items-center justify-center size-14 rounded-xl bg-gradient-to-br ${item.iconBg} shadow-xl`}>
+                      <item.icon className="size-7 text-white" />
+                    </div>
+                  </div>
+                  {/* Tag */}
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full bg-white/[0.06] ${item.accent} group-hover:bg-white/[0.1] transition-colors`}>
+                    {item.tag}
+                  </span>
                 </div>
-                {/* Tag */}
-                <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-1 rounded ${
-                  item.accent ? "bg-white/20 text-white" : "text-muted-foreground bg-lavender"
-                }`}>
-                  {item.tag}
-                </span>
-              </div>
 
-              {/* Content */}
-              <h2 className={`text-lg font-semibold mb-1 transition-colors ${
-                item.accent ? "text-white" : "text-dark-navy group-hover:text-navy"
-              }`}>
-                {item.title}
-              </h2>
-              <p className={`text-sm mb-4 ${
-                item.accent ? "text-white/80" : "text-muted-foreground"
-              }`}>
-                {item.description}
-              </p>
+                {/* Content */}
+                <h2 className="font-bricolage text-xl font-semibold text-white mb-2">
+                  {item.title}
+                </h2>
+                <p className="text-sm text-white/40 mb-6 group-hover:text-white/60 transition-colors leading-relaxed">
+                  {item.description}
+                </p>
 
-              {/* Link */}
-              <div className={`flex items-center gap-1 text-sm font-medium transition-opacity ${
-                item.accent 
-                  ? "text-white opacity-80 group-hover:opacity-100" 
-                  : "text-navy opacity-0 group-hover:opacity-100"
-              }`}>
-                <span>Open</span>
-                <ArrowUpRight className="size-4" />
+                {/* Link */}
+                <div className={`flex items-center gap-2 text-sm font-medium ${item.accent} opacity-60 group-hover:opacity-100 transition-all`}>
+                  <span>Enter</span>
+                  <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
               </div>
             </Link>
           ))}
         </div>
 
-        {/* Version */}
-        <div className="mt-12 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="size-2 rounded-full bg-green-500" />
-          <span>All systems operational</span>
-          <span className="text-border">•</span>
-          <span>v1.0.0</span>
+        {/* Status */}
+        <div className="mt-16 flex items-center gap-4">
+          <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-medium text-emerald-400">All systems operational</span>
+            </div>
+            <span className="text-white/10">|</span>
+            <span className="text-xs text-white/30 font-mono">v1.0.0</span>
+          </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="py-6 border-t border-border/50">
-        <p className="text-xs text-muted-foreground text-center">
-          Peptiful Dropshipping System — UI Preview
-        </p>
-      </footer>
     </div>
   )
 }

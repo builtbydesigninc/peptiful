@@ -17,21 +17,7 @@ import {
   Hash,
   User,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
-  SelectLabel,
-} from "@/components/ui/select"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -165,13 +151,32 @@ const allDiscountCodes = [
 function getStatusBadge(status: string) {
   switch (status) {
     case "active":
-      return <Badge variant="active">Active</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Active
+        </span>
+      )
     case "inactive":
-      return <Badge variant="muted">Inactive</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
+          Inactive
+        </span>
+      )
     case "expired":
-      return <Badge variant="pending">Expired</Badge>
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+          Expired
+        </span>
+      )
     default:
-      return <Badge variant="muted">{status}</Badge>
+      return (
+        <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10">
+          {status}
+        </span>
+      )
   }
 }
 
@@ -215,16 +220,16 @@ function CreateCodeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-dark-navy/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white p-6 border-b border-border/50 z-10">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#0a0a14] border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto scrollbar-dark">
+        <div className="sticky top-0 bg-[#0a0a14] p-6 border-b border-white/[0.06] z-10">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-dark-navy">Create Discount Code</h2>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <h2 className="font-bricolage text-xl font-semibold text-white">Create Discount Code</h2>
+            <button onClick={onClose} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all">
               <X className="size-5" />
-            </Button>
+            </button>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-white/50 mt-1">
             Create a new promotional code for your customers
           </p>
         </div>
@@ -233,65 +238,63 @@ function CreateCodeModal({
           {/* Code Name */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="code">Code Name</Label>
+              <label className="text-sm font-medium text-white/70">Code Name</label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Auto-generate</span>
+                <span className="text-xs text-white/40">Auto-generate</span>
                 <Switch checked={autoCode} onCheckedChange={setAutoCode} />
               </div>
             </div>
-            <Input
-              id="code"
+            <input
               placeholder={autoCode ? "Will be auto-generated" : "e.g., SUMMER20"}
               disabled={autoCode}
-              className="font-mono uppercase"
+              className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-navy/50 focus:border-navy/50 transition-all font-mono uppercase disabled:opacity-50"
             />
           </div>
 
           {/* Discount Type */}
           <div className="space-y-3">
-            <Label>Discount Type</Label>
+            <label className="text-sm font-medium text-white/70">Discount Type</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setDiscountType("percentage")}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
                   discountType === "percentage"
-                    ? "border-navy bg-lavender"
-                    : "border-border hover:border-navy/30"
+                    ? "border-navy bg-navy/20"
+                    : "border-white/10 hover:border-white/20 bg-white/[0.02]"
                 }`}
               >
-                <Percent className={`size-5 mb-2 ${discountType === "percentage" ? "text-navy" : "text-muted-foreground"}`} />
-                <p className="font-semibold text-dark-navy">Percentage</p>
-                <p className="text-xs text-muted-foreground">e.g., 20% off</p>
+                <Percent className={`size-5 mb-2 ${discountType === "percentage" ? "text-sky-400" : "text-white/40"}`} />
+                <p className="font-medium text-white">Percentage</p>
+                <p className="text-xs text-white/40">e.g., 20% off</p>
               </button>
               <button
                 type="button"
                 onClick={() => setDiscountType("fixed")}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
                   discountType === "fixed"
-                    ? "border-navy bg-lavender"
-                    : "border-border hover:border-navy/30"
+                    ? "border-navy bg-navy/20"
+                    : "border-white/10 hover:border-white/20 bg-white/[0.02]"
                 }`}
               >
-                <DollarSign className={`size-5 mb-2 ${discountType === "fixed" ? "text-navy" : "text-muted-foreground"}`} />
-                <p className="font-semibold text-dark-navy">Fixed Amount</p>
-                <p className="text-xs text-muted-foreground">e.g., $10 off</p>
+                <DollarSign className={`size-5 mb-2 ${discountType === "fixed" ? "text-sky-400" : "text-white/40"}`} />
+                <p className="font-medium text-white">Fixed Amount</p>
+                <p className="text-xs text-white/40">e.g., $10 off</p>
               </button>
             </div>
           </div>
 
           {/* Discount Value */}
           <div className="space-y-2">
-            <Label htmlFor="value">Discount Value</Label>
+            <label className="text-sm font-medium text-white/70">Discount Value</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
                 {discountType === "percentage" ? "%" : "$"}
               </span>
-              <Input
-                id="value"
+              <input
                 type="number"
                 placeholder={discountType === "percentage" ? "20" : "10"}
-                className="pl-8"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-navy/50 focus:border-navy/50 transition-all"
               />
             </div>
           </div>
@@ -299,25 +302,28 @@ function CreateCodeModal({
           {/* Usage Limit */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Usage Limit</Label>
+              <label className="text-sm font-medium text-white/70">Usage Limit</label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Limited</span>
+                <span className="text-xs text-white/40">Limited</span>
                 <Switch checked={hasLimit} onCheckedChange={setHasLimit} />
               </div>
             </div>
-            {hasLimit && (
-              <Input type="number" placeholder="500" />
-            )}
-            {!hasLimit && (
-              <p className="text-sm text-muted-foreground">Unlimited redemptions</p>
+            {hasLimit ? (
+              <input
+                type="number"
+                placeholder="500"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-navy/50 focus:border-navy/50 transition-all"
+              />
+            ) : (
+              <p className="text-sm text-white/40">Unlimited redemptions</p>
             )}
           </div>
 
           {/* Per-Customer Limit */}
-          <div className="flex items-center justify-between p-3 bg-lavender/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
             <div>
-              <p className="font-medium text-dark-navy">One use per customer</p>
-              <p className="text-xs text-muted-foreground">Prevent multiple uses by same customer</p>
+              <p className="font-medium text-white">One use per customer</p>
+              <p className="text-xs text-white/40">Prevent multiple uses by same customer</p>
             </div>
             <Switch checked={perCustomerLimit} onCheckedChange={setPerCustomerLimit} />
           </div>
@@ -325,32 +331,39 @@ function CreateCodeModal({
           {/* Expiry */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Expiry Date</Label>
+              <label className="text-sm font-medium text-white/70">Expiry Date</label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Set expiry</span>
+                <span className="text-xs text-white/40">Set expiry</span>
                 <Switch checked={hasExpiry} onCheckedChange={setHasExpiry} />
               </div>
             </div>
             {hasExpiry ? (
-              <Input type="date" />
+              <input
+                type="date"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-navy/50 focus:border-navy/50 transition-all"
+              />
             ) : (
-              <p className="text-sm text-muted-foreground">No expiry - code runs forever</p>
+              <p className="text-sm text-white/40">No expiry - code runs forever</p>
             )}
           </div>
 
           {/* Minimum Order */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Minimum Order Amount</Label>
+              <label className="text-sm font-medium text-white/70">Minimum Order Amount</label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Required</span>
+                <span className="text-xs text-white/40">Required</span>
                 <Switch checked={hasMinOrder} onCheckedChange={setHasMinOrder} />
               </div>
             </div>
             {hasMinOrder && (
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input type="number" placeholder="50" className="pl-8" />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">$</span>
+                <input
+                  type="number"
+                  placeholder="50"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-navy/50 focus:border-navy/50 transition-all"
+                />
               </div>
             )}
           </div>
@@ -359,96 +372,71 @@ function CreateCodeModal({
           {visibleBrands.length > 1 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label>Applicable Brands</Label>
+                <label className="text-sm font-medium text-white/70">Applicable Brands</label>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">All brands</span>
+                  <span className="text-xs text-white/40">All brands</span>
                   <Switch checked={allBrands} onCheckedChange={setAllBrands} />
                 </div>
               </div>
               {!allBrands && (
-                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select brand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {visibleBrands.map(brand => (
-                      <SelectItem key={brand.id} value={brand.id}>{brand.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={selectedBrand}
+                  onChange={(e) => setSelectedBrand(e.target.value)}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy/50"
+                >
+                  <option value="" className="bg-[#0a0a14]">Select brand</option>
+                  {visibleBrands.map(brand => (
+                    <option key={brand.id} value={brand.id} className="bg-[#0a0a14]">{brand.name}</option>
+                  ))}
+                </select>
               )}
             </div>
           )}
 
           {/* Assign to Promoter */}
           <div className="space-y-3">
-            <Label>Assign to Promoter (Optional)</Label>
-            <Select value={assignedPromoter} onValueChange={setAssignedPromoter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select promoter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  <span className="flex items-center gap-2">
-                    <Tag className="size-3.5" />
-                    None (Brand code)
-                  </span>
-                </SelectItem>
-                {isAffiliate && visibleBrands.length > 1 ? (
-                  // Grouped by brand for affiliates
-                  visibleBrands.map(brand => {
-                    const brandPromoters = promotersByBrand[brand.id as keyof typeof promotersByBrand] || []
-                    if (brandPromoters.length === 0) return null
-                    return (
-                      <SelectGroup key={brand.id}>
-                        <SelectLabel className="text-xs">{brand.name}</SelectLabel>
-                        {brandPromoters.map(promoter => (
-                          <SelectItem key={promoter.id} value={promoter.id}>
-                            <span className="flex items-center gap-2">
-                              <User className="size-3.5" />
-                              {promoter.name}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    )
-                  })
-                ) : (
-                  // Flat list for brand users
-                  availablePromoters.map(promoter => (
-                    <SelectItem key={promoter.id} value={promoter.id}>
-                      <span className="flex items-center gap-2">
-                        <User className="size-3.5" />
-                        {promoter.name}
-                      </span>
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
+            <label className="text-sm font-medium text-white/70">Assign to Promoter (Optional)</label>
+            <select
+              value={assignedPromoter}
+              onChange={(e) => setAssignedPromoter(e.target.value)}
+              className="w-full rounded-xl bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy/50"
+            >
+              <option value="none" className="bg-[#0a0a14]">None (Brand code)</option>
+              {availablePromoters.map(promoter => (
+                <option key={promoter.id} value={promoter.id} className="bg-[#0a0a14]">
+                  {promoter.name} ({promoter.brandName})
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-white/40">
               If assigned, this code's sales will be attributed to the promoter
             </p>
           </div>
 
           {/* Active Status */}
-          <div className="flex items-center justify-between p-3 bg-lavender rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-xl">
             <div>
-              <p className="font-medium text-dark-navy">Active</p>
-              <p className="text-xs text-muted-foreground">Code can be used immediately</p>
+              <p className="font-medium text-white">Active</p>
+              <p className="text-xs text-white/40">Code can be used immediately</p>
             </div>
             <Switch defaultChecked />
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-white p-6 border-t border-border/50">
+        <div className="sticky bottom-0 bg-[#0a0a14] p-6 border-t border-white/[0.06]">
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={onClose}>
+            <button
+              onClick={onClose}
+              className="flex-1 rounded-xl border border-white/10 bg-transparent px-4 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all"
+            >
               Cancel
-            </Button>
-            <Button variant="accent" className="flex-1" onClick={onClose}>
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 rounded-xl bg-gradient-to-r from-coral to-pink-500 px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-all shadow-lg shadow-coral/20"
+            >
               Create Code
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -458,23 +446,26 @@ function CreateCodeModal({
 
 function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
-    <Card className="bg-white border-border/50">
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] border-gradient">
       <div className="py-16 text-center">
         <div className="flex justify-center mb-4">
-          <div className="size-16 rounded-full bg-lavender flex items-center justify-center">
-            <TicketPercent className="size-8 text-navy" />
+          <div className="size-16 rounded-2xl bg-gradient-to-br from-navy to-sky-600 flex items-center justify-center shadow-lg shadow-navy/20">
+            <TicketPercent className="size-8 text-white" />
           </div>
         </div>
-        <h3 className="text-xl font-bold text-dark-navy mb-2">No discount codes yet</h3>
-        <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+        <h3 className="font-bricolage text-xl font-semibold text-white mb-2">No discount codes yet</h3>
+        <p className="text-white/50 mb-6 max-w-sm mx-auto">
           Create your first promotional code to drive sales and reward your customers
         </p>
-        <Button variant="accent" onClick={onCreateClick}>
+        <button
+          onClick={onCreateClick}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-coral to-pink-500 px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-all shadow-lg shadow-coral/20"
+        >
           <Plus className="size-4" />
           Create Your First Code
-        </Button>
+        </button>
       </div>
-    </Card>
+    </div>
   )
 }
 
@@ -537,268 +528,246 @@ export default function AffiliateDiscountsPage() {
 
   const showEmptyState = discountCodes.length === 0
 
+  const statCards = [
+    { label: "Total Codes", value: stats.totalCodes.toString(), icon: Tag, gradient: "from-navy/60 to-sky-500/40", iconBg: "bg-gradient-to-br from-navy to-sky-600" },
+    { label: "Active Codes", value: stats.activeCodes.toString(), icon: Check, gradient: "from-emerald-500/60 to-teal-500/40", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500", valueClass: "text-emerald-400" },
+    { label: "Redemptions", value: stats.totalRedemptions.toString(), icon: Hash, gradient: "from-violet-500/60 to-purple-500/40", iconBg: "bg-gradient-to-br from-violet-500 to-purple-500" },
+    { label: "Revenue", value: stats.revenueFromCodes, icon: TrendingUp, gradient: "from-amber-500/60 to-orange-500/40", iconBg: "bg-gradient-to-br from-amber-500 to-orange-500", valueClass: "text-emerald-400" },
+  ]
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-dark-navy">
-            {selectedBrand ? `${selectedBrand.name} Discounts` : "Discount Codes"}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {selectedBrand 
-              ? `Promotional codes for ${selectedBrand.name}`
-              : "Create and manage promotional codes"
-            }
-          </p>
-        </div>
-        <Button variant="accent" className="w-full sm:w-auto" onClick={() => setShowCreateModal(true)}>
-          <Plus className="size-4" />
-          Create Code
-        </Button>
+    <div className="min-h-full bg-[#050510] text-white">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
       </div>
 
-      {showEmptyState ? (
-        <EmptyState onCreateClick={() => setShowCreateModal(true)} />
-      ) : (
-        <>
-          {/* Stats */}
-          <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-white border-border/50">
-              <div className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                    <Tag className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Codes</p>
-                    <p className="text-xl font-bold text-dark-navy">{stats.totalCodes}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            <Card className="bg-white border-border/50">
-              <div className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                    <Check className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Active Codes</p>
-                    <p className="text-xl font-bold text-green-600">{stats.activeCodes}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            <Card className="bg-white border-border/50">
-              <div className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                    <Hash className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Redemptions</p>
-                    <p className="text-xl font-bold text-dark-navy">{stats.totalRedemptions}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            <Card className="bg-white border-border/50">
-              <div className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-lavender text-navy">
-                    <TrendingUp className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Revenue</p>
-                    <p className="text-xl font-bold text-green-600">{stats.revenueFromCodes}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="font-bricolage text-xl sm:text-2xl font-semibold text-white">
+              {selectedBrand ? `${selectedBrand.name} Discounts` : "Discount Codes"}
+            </h2>
+            <p className="text-sm text-white/50 mt-1">
+              {selectedBrand 
+                ? `Promotional codes for ${selectedBrand.name}`
+                : "Create and manage promotional codes"
+              }
+            </p>
           </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-coral to-pink-500 px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-all shadow-lg shadow-coral/20 w-full sm:w-auto"
+          >
+            <Plus className="size-4" />
+            Create Code
+          </button>
+        </div>
 
-          {/* Filters */}
-          <Card className="bg-white border-border/50">
-            <div className="p-4">
+        {showEmptyState ? (
+          <EmptyState onCreateClick={() => setShowCreateModal(true)} />
+        ) : (
+          <>
+            {/* Stats */}
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+              {statCards.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex size-10 items-center justify-center rounded-xl ${stat.iconBg} shadow-lg shrink-0`}>
+                        <stat.icon className="size-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/40 uppercase tracking-wider">{stat.label}</p>
+                        <p className={`font-bricolage text-xl font-semibold ${stat.valueClass || 'text-white'}`}>{stat.value}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Filters */}
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 border-gradient">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/40" />
+                  <input
                     placeholder="Search codes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-navy/50 focus:border-navy/50 text-sm transition-all"
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[130px]">
-                    <SelectValue placeholder="All Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="expired">Expired</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={assignedFilter} onValueChange={setAssignedFilter}>
-                  <SelectTrigger className="w-full sm:w-[160px]">
-                    <SelectValue placeholder="Assigned To" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Codes</SelectItem>
-                    <SelectItem value="unassigned">Unassigned (Brand)</SelectItem>
-                    {allPromoters.map(promoter => (
-                      <SelectItem key={promoter.id} value={promoter.id}>
-                        {promoter.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full sm:w-[140px] rounded-xl bg-white/5 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy/50"
+                >
+                  <option value="all" className="bg-[#0a0a14]">All Status</option>
+                  <option value="active" className="bg-[#0a0a14]">Active</option>
+                  <option value="inactive" className="bg-[#0a0a14]">Inactive</option>
+                  <option value="expired" className="bg-[#0a0a14]">Expired</option>
+                </select>
+                <select
+                  value={assignedFilter}
+                  onChange={(e) => setAssignedFilter(e.target.value)}
+                  className="w-full sm:w-[170px] rounded-xl bg-white/5 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy/50"
+                >
+                  <option value="all" className="bg-[#0a0a14]">All Codes</option>
+                  <option value="unassigned" className="bg-[#0a0a14]">Unassigned (Brand)</option>
+                  {allPromoters.map(promoter => (
+                    <option key={promoter.id} value={promoter.id} className="bg-[#0a0a14]">
+                      {promoter.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          </Card>
 
-          {/* Table */}
-          <Card className="bg-white border-border/50 overflow-hidden">
-            <div className="p-0 overflow-x-auto">
-              {filteredCodes.length === 0 ? (
-                <div className="p-8 text-center">
-                  <TicketPercent className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="text-muted-foreground">No codes match your filters</p>
-                </div>
-              ) : (
-                <table className="w-full min-w-[900px]">
-                  <thead>
-                    <tr className="border-b border-border/50 bg-lavender/30">
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Code</th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Discount</th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Status</th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Uses</th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Assigned To</th>
-                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Revenue</th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-dark-navy">Expires</th>
-                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-dark-navy">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCodes.map((code) => {
-                      const usagePercent = code.limit ? (code.uses / code.limit) * 100 : 0
-                      return (
-                        <tr key={code.id} className="border-b border-border/50 last:border-0 hover:bg-lavender/20">
-                          <td className="px-4 sm:px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <code className="px-2 py-1 bg-lavender rounded text-sm font-mono font-bold text-navy">
-                                {code.code}
-                              </code>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-7"
-                                onClick={() => copyCode(code.code)}
-                              >
-                                {copiedCode === code.code ? (
-                                  <Check className="size-3 text-green-600" />
-                                ) : (
-                                  <Copy className="size-3" />
-                                )}
-                              </Button>
-                            </div>
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            <span className="font-semibold text-dark-navy">{code.discount}</span>
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            {getStatusBadge(code.status)}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            <div className="space-y-1">
-                              <span className="text-sm">
-                                <span className="font-semibold text-dark-navy">{code.uses}</span>
-                                <span className="text-muted-foreground">
-                                  {code.limit ? ` / ${code.limit}` : " (unlimited)"}
-                                </span>
-                              </span>
-                              {code.limit && (
-                                <div className="w-20 h-1.5 bg-lavender rounded-full overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full ${
-                                      usagePercent >= 90 ? "bg-coral" : "bg-navy"
-                                    }`}
-                                    style={{ width: `${Math.min(usagePercent, 100)}%` }}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            {code.assignedToName ? (
-                              <div className="flex items-center gap-1.5">
-                                <User className="size-3.5 text-muted-foreground" />
-                                <span className="text-sm text-dark-navy">{code.assignedToName}</span>
+            {/* Table */}
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
+              <div className="overflow-x-auto">
+                {filteredCodes.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <TicketPercent className="size-12 mx-auto text-white/20 mb-3" />
+                    <p className="text-white/50">No codes match your filters</p>
+                  </div>
+                ) : (
+                  <table className="w-full min-w-[900px]">
+                    <thead>
+                      <tr className="border-b border-white/[0.06]">
+                        <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Code</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Discount</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Status</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Uses</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Assigned To</th>
+                        <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-white/40">Revenue</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-white/40">Expires</th>
+                        <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-white/40">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCodes.map((code) => {
+                        const usagePercent = code.limit ? (code.uses / code.limit) * 100 : 0
+                        return (
+                          <tr key={code.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors">
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-2">
+                                <code className="px-2.5 py-1 bg-navy/30 rounded-lg text-sm font-mono font-bold text-sky-300 ring-1 ring-navy/50">
+                                  {code.code}
+                                </code>
+                                <button
+                                  onClick={() => copyCode(code.code)}
+                                  className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                                >
+                                  {copiedCode === code.code ? (
+                                    <Check className="size-3.5 text-emerald-400" />
+                                  ) : (
+                                    <Copy className="size-3.5" />
+                                  )}
+                                </button>
                               </div>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 text-right">
-                            <span className="font-semibold text-green-600">{code.revenue}</span>
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                              {code.expires ? (
-                                <>
-                                  <Calendar className="size-3" />
-                                  {code.expires}
-                                </>
-                              ) : (
-                                <span>No expiry</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8">
-                                  <MoreHorizontal className="size-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => copyCode(code.code)}>
-                                  Copy Code
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>View Analytics</DropdownMenuItem>
-                                {!code.assignedTo && (
-                                  <DropdownMenuItem>
-                                    <User className="size-4 mr-2" />
-                                    Assign to Promoter
-                                  </DropdownMenuItem>
+                            </td>
+                            <td className="px-5 py-4">
+                              <span className="font-semibold text-white">{code.discount}</span>
+                            </td>
+                            <td className="px-5 py-4">
+                              {getStatusBadge(code.status)}
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="space-y-1.5">
+                                <span className="text-sm">
+                                  <span className="font-medium text-white">{code.uses}</span>
+                                  <span className="text-white/40">
+                                    {code.limit ? ` / ${code.limit}` : " (unlimited)"}
+                                  </span>
+                                </span>
+                                {code.limit && (
+                                  <div className="w-20 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${
+                                        usagePercent >= 90 ? "bg-gradient-to-r from-coral to-pink-500" : "bg-gradient-to-r from-navy to-sky-500"
+                                      }`}
+                                      style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                                    />
+                                  </div>
                                 )}
-                                <DropdownMenuItem className="text-coral">
-                                  {code.status === "active" ? "Deactivate" : "Activate"}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
+                              </div>
+                            </td>
+                            <td className="px-5 py-4">
+                              {code.assignedToName ? (
+                                <div className="flex items-center gap-1.5">
+                                  <User className="size-3.5 text-white/40" />
+                                  <span className="text-sm text-white">{code.assignedToName}</span>
+                                </div>
+                              ) : (
+                                <span className="text-sm text-white/30">—</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-4 text-right">
+                              <span className="font-mono font-semibold text-emerald-400">{code.revenue}</span>
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-1.5 text-sm text-white/50">
+                                {code.expires ? (
+                                  <>
+                                    <Calendar className="size-3.5" />
+                                    {code.expires}
+                                  </>
+                                ) : (
+                                  <span>No expiry</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-5 py-4 text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                                    <MoreHorizontal className="size-4" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-[#0a0a14] border-white/10">
+                                  <DropdownMenuItem onClick={() => copyCode(code.code)} className="text-white/70 hover:text-white focus:text-white focus:bg-white/10">
+                                    Copy Code
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="text-white/70 hover:text-white focus:text-white focus:bg-white/10">Edit</DropdownMenuItem>
+                                  <DropdownMenuItem className="text-white/70 hover:text-white focus:text-white focus:bg-white/10">View Analytics</DropdownMenuItem>
+                                  {!code.assignedTo && (
+                                    <DropdownMenuItem className="text-white/70 hover:text-white focus:text-white focus:bg-white/10">
+                                      <User className="size-4 mr-2" />
+                                      Assign to Promoter
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuItem className="text-coral hover:text-coral focus:text-coral focus:bg-coral/10">
+                                    {code.status === "active" ? "Deactivate" : "Activate"}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
-          </Card>
-        </>
-      )}
+          </>
+        )}
 
-      <CreateCodeModal 
-        open={showCreateModal} 
-        onClose={() => setShowCreateModal(false)} 
-        visibleBrands={visibleBrands}
-        isAffiliate={isAffiliate}
-      />
+        <CreateCodeModal 
+          open={showCreateModal} 
+          onClose={() => setShowCreateModal(false)} 
+          visibleBrands={visibleBrands}
+          isAffiliate={isAffiliate}
+        />
+      </div>
     </div>
   )
 }
