@@ -1,16 +1,17 @@
-import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from 'next-themes';
+import './globals.css';
+import { cn } from '@/utils/cn';
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
 });
 
 export const metadata: Metadata = {
-  title: "Peptiful - B2B Peptide Dropshipping Platform",
-  description: "Premium B2B dropshipping platform for peptide brands",
+  title: 'Peptiful - B2B Peptide Dropshipping Platform',
+  description: 'Premium B2B dropshipping platform for peptide brands',
 };
 
 export default function RootLayout({
@@ -19,9 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${dmSans.variable} font-sans antialiased`}>
-        {children}
+    <html lang='en' className={cn(inter.variable, 'antialiased')} suppressHydrationWarning>
+      <body>
+        <ThemeProvider attribute='class' defaultTheme='light' enableSystem={false} disableTransitionOnChange>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { Logo } from "@/components/logo"
+import { PeptifulLogomark } from "@/components/logo"
 import { useAffiliate } from "../context"
 
 export default function AffiliateLoginPage() {
@@ -43,7 +43,7 @@ export default function AffiliateLoginPage() {
         {/* Logo & Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <Logo size="lg" />
+            <PeptifulLogomark variant="white" className="size-12" />
           </div>
           <h1 className="font-bricolage text-3xl font-bold text-white">Affiliate Portal</h1>
           <p className="text-white/50 mt-2">

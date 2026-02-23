@@ -1,181 +1,113 @@
-import Link from "next/link"
-import {
-  LayoutDashboard,
-  Package,
-  Plug,
-  TrendingUp,
-  Megaphone,
-  ArrowUpRight,
-} from "lucide-react"
+'use client';
 
-const interfaces = [
+import Link from 'next/link';
+import { cn } from '@/utils/cn';
+import {
+  RiShieldLine,
+  RiHandHeartLine,
+  RiStore2Line,
+  RiMegaphoneLine,
+  RiArrowRightLine,
+} from '@remixicon/react';
+import { PeptifulLogo } from '@/components/logo';
+
+const portals = [
   {
-    title: "Admin Dashboard",
-    description: "Manage partners, orders, and commissions",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    tag: "Internal",
-    iconBg: "from-sky-500 to-blue-600",
-    accent: "text-sky-400",
-    glowColor: "rgba(56,189,248,0.15)",
+    title: 'Admin',
+    description: 'Platform management',
+    icon: RiShieldLine,
+    href: '/admin',
+    accent: 'bg-red-500/10 text-red-600 group-hover:bg-red-500 group-hover:text-white',
   },
   {
-    title: "Fulfillment",
-    description: "Warehouse order processing queue",
-    href: "/fulfillment",
-    icon: Package,
-    tag: "Operations",
-    iconBg: "from-amber-500 to-orange-500",
-    accent: "text-amber-400",
-    glowColor: "rgba(251,191,36,0.12)",
+    title: 'Partner',
+    description: 'Referral & earnings',
+    icon: RiHandHeartLine,
+    href: '/partner',
+    accent: 'bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-white',
   },
   {
-    title: "Partner Plugin",
-    description: "WordPress & WooCommerce integration",
-    href: "/wordpress",
-    icon: Plug,
-    tag: "Integration",
-    iconBg: "from-violet-500 to-purple-600",
-    accent: "text-violet-400",
-    glowColor: "rgba(139,92,246,0.15)",
+    title: 'Brand',
+    description: 'Store & products',
+    icon: RiStore2Line,
+    href: '/brand',
+    accent: 'bg-primary-alpha-10 text-primary-base group-hover:bg-primary-base group-hover:text-white',
   },
   {
-    title: "Affiliate Portal",
-    description: "Partner earnings and insights",
-    href: "/affiliate",
-    icon: TrendingUp,
-    tag: "External",
-    iconBg: "from-emerald-500 to-teal-500",
-    accent: "text-emerald-400",
-    glowColor: "rgba(52,211,153,0.15)",
+    title: 'Promoter',
+    description: 'Affiliate tools',
+    icon: RiMegaphoneLine,
+    href: '/affiliate',
+    accent: 'bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white',
   },
-  {
-    title: "Promoter Portal",
-    description: "Influencer earnings & codes",
-    href: "/promoter",
-    icon: Megaphone,
-    tag: "Influencer",
-    iconBg: "from-coral to-rose-500",
-    accent: "text-coral",
-    glowColor: "rgba(235,92,106,0.15)",
-  },
-]
+];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#050510] text-white flex flex-col relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(10,69,145,0.12)_0%,transparent_70%)]" />
-        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.08)_0%,transparent_70%)]" />
-        <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(235,92,106,0.08)_0%,transparent_70%)]" />
-        
-        {/* Subtle grid overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
-          }}
-        />
+    <div className='flex min-h-screen flex-col items-center justify-center bg-bg-white-0 px-6'>
+      {/* Subtle gradient backdrop */}
+      <div className='pointer-events-none fixed inset-0 overflow-hidden'>
+        <div className='absolute -top-1/2 left-1/2 h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-b from-primary-alpha-10 to-transparent blur-3xl' />
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 sm:py-24">
-        {/* Logo + Badge */}
-        <div className="flex items-center gap-5 mb-12">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/30 to-violet-500/30 rounded-2xl blur-2xl scale-150 group-hover:scale-175 transition-transform duration-500" />
-            <div className="relative flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-sm">
-              <img 
-                src="/logos/Logomark white.svg" 
-                alt="Peptiful" 
-                className="h-9 w-9"
-              />
-            </div>
-          </div>
-          <div className="h-12 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-          <div className="flex flex-col">
-            <span className="font-bricolage text-2xl font-bold tracking-tight text-white">
-              Peptiful
-            </span>
-            <span className="text-[11px] uppercase tracking-[0.25em] text-white/40 font-medium">
-              Platform Hub
-            </span>
-          </div>
-        </div>
-
-        {/* Tagline */}
-        <p className="text-white/40 text-center mb-14 max-w-md text-base">
-          Select an interface to continue
+      <div className='relative flex w-full max-w-lg flex-col items-center'>
+        {/* Logo + Wordmark */}
+        <PeptifulLogo
+          variant='gradient'
+          wordmarkVariant='dark'
+          markClassName='size-10'
+          wordmarkClassName='text-title-h4'
+          className='mb-3'
+        />
+        <p className='mb-12 text-paragraph-sm text-text-sub-600'>
+          B2B Peptide Dropshipping Platform
         </p>
 
-        {/* Cards Grid */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-5xl">
-          {interfaces.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.15] hover:shadow-2xl hover:shadow-black/20 overflow-hidden"
-            >
-              {/* Subtle glow on hover */}
-              <div 
-                className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{ backgroundColor: item.glowColor }}
-              />
-              
-              <div className="relative z-10">
-                {/* Header row */}
-                <div className="flex items-start justify-between mb-6">
-                  {/* Icon */}
-                  <div className="relative">
-                    <div 
-                      className="absolute inset-0 rounded-xl blur-xl scale-150 opacity-0 group-hover:opacity-60 transition-opacity duration-300"
-                      style={{ backgroundColor: item.glowColor }}
-                    />
-                    <div className={`relative flex items-center justify-center size-14 rounded-xl bg-gradient-to-br ${item.iconBg} shadow-xl`}>
-                      <item.icon className="size-7 text-white" />
-                    </div>
-                  </div>
-                  {/* Tag */}
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full bg-white/[0.06] ${item.accent} group-hover:bg-white/[0.1] transition-colors`}>
-                    {item.tag}
-                  </span>
+        {/* Portal Grid */}
+        <div className='grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
+          {portals.map((p) => {
+            const Icon = p.icon;
+            return (
+              <Link
+                key={p.href}
+                href={p.href}
+                className='group flex items-center gap-4 rounded-2xl border border-stroke-soft-200 bg-bg-white-0 px-5 py-4 transition-all duration-200 hover:border-stroke-sub-300 hover:shadow-regular-sm'
+              >
+                <div
+                  className={cn(
+                    'flex size-11 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
+                    p.accent,
+                  )}
+                >
+                  <Icon className='size-5' />
                 </div>
-
-                {/* Content */}
-                <h2 className="font-bricolage text-xl font-semibold text-white mb-2">
-                  {item.title}
-                </h2>
-                <p className="text-sm text-white/40 mb-6 group-hover:text-white/60 transition-colors leading-relaxed">
-                  {item.description}
-                </p>
-
-                {/* Link */}
-                <div className={`flex items-center gap-2 text-sm font-medium ${item.accent} opacity-60 group-hover:opacity-100 transition-all`}>
-                  <span>Enter</span>
-                  <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <div className='min-w-0 flex-1'>
+                  <p className='text-label-sm text-text-strong-950'>{p.title}</p>
+                  <p className='text-paragraph-xs text-text-sub-600'>{p.description}</p>
                 </div>
-              </div>
-            </Link>
-          ))}
+                <RiArrowRightLine className='size-4 text-text-soft-400 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100' />
+              </Link>
+            );
+          })}
         </div>
 
-        {/* Status */}
-        <div className="mt-16 flex items-center gap-4">
-          <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-xs font-medium text-emerald-400">All systems operational</span>
-            </div>
-            <span className="text-white/10">|</span>
-            <span className="text-xs text-white/30 font-mono">v1.0.0</span>
-          </div>
+        {/* Auth */}
+        <div className='mt-10 flex items-center gap-6'>
+          <Link
+            href='/login'
+            className='text-label-xs text-text-sub-600 transition-colors hover:text-primary-base'
+          >
+            Sign in
+          </Link>
+          <span className='h-3.5 w-px bg-stroke-soft-200' />
+          <Link
+            href='/register'
+            className='text-label-xs text-primary-base transition-colors hover:text-primary-dark'
+          >
+            Create account
+          </Link>
         </div>
-      </main>
+      </div>
     </div>
-  )
+  );
 }
