@@ -67,14 +67,14 @@ export default function CatalogProductDetailPage() {
       <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
         {/* Left: Product Image */}
         <div>
-          <div className='relative flex aspect-square items-center justify-center rounded-xl border border-stroke-soft-200 bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden'>
-            <Image src='/peptiful-vial.jpg' alt={product.name} fill className='object-contain p-8' sizes='(max-width: 1024px) 100vw, 50vw' priority />
+          <div className='relative flex aspect-square items-center justify-center rounded-xl border border-stroke-soft-200 bg-bg-weak-50 overflow-hidden'>
+            <Image src='/peptiful-vial.png' alt={product.name} fill className='object-cover' sizes='(max-width: 1024px) 100vw, 50vw' priority />
           </div>
           {/* Thumbnail row */}
           <div className='mt-3 flex gap-2'>
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className={cn('relative flex size-16 items-center justify-center rounded-lg border overflow-hidden bg-slate-50 cursor-pointer', i === 1 ? 'border-primary-base ring-2 ring-primary-alpha-10' : 'border-stroke-soft-200')}>
-                <Image src='/peptiful-vial.jpg' alt='' fill className='object-contain p-1' sizes='64px' />
+              <div key={i} className={cn('relative flex size-16 items-center justify-center rounded-lg border overflow-hidden bg-bg-weak-50 cursor-pointer', i === 1 ? 'border-primary-base ring-2 ring-primary-alpha-10' : 'border-stroke-soft-200')}>
+                <Image src='/peptiful-vial.png' alt='' fill className='object-cover' sizes='64px' />
               </div>
             ))}
           </div>

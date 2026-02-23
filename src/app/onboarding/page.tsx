@@ -263,7 +263,7 @@ export default function OnboardingPage() {
                       'relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-10 transition-colors',
                       isSelected ? 'ring-2 ring-primary-base' : 'bg-bg-weak-50',
                     )}>
-                      <Image src='/peptiful-vial.jpg' alt={product.name} fill className='object-contain p-1' sizes='48px' />
+                      <Image src='/peptiful-vial.png' alt={product.name} fill className='object-contain p-1' sizes='48px' />
                       {isSelected && (
                         <div className='absolute inset-0 flex items-center justify-center bg-primary-base/80'>
                           <RiCheckLine className='size-5 text-white' />
@@ -517,7 +517,7 @@ export default function OnboardingPage() {
                 <div className='mt-4 flex items-center justify-center gap-3'>
                   {selectedProducts.slice(0, 4).map((sp) => (
                     <div key={sp.id} className='relative size-12 overflow-hidden rounded-lg bg-bg-weak-50'>
-                      <Image src='/peptiful-vial.jpg' alt='Product' fill className='object-contain p-1' sizes='48px' />
+                      <Image src='/peptiful-vial.png' alt='Product' fill className='object-contain p-1' sizes='48px' />
                     </div>
                   ))}
                   {selectedProducts.length > 4 && (

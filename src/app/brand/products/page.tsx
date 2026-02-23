@@ -118,7 +118,7 @@ export default function ProductsPage() {
                 <td className='px-4 py-3'>
                   <div className='flex items-center gap-3'>
                     <div className={cn('relative size-10 shrink-0 overflow-hidden rounded-10', product.color)}>
-                      <Image src='/peptiful-vial.jpg' alt={product.name} fill className='object-contain p-0.5' sizes='40px' />
+                      <Image src='/peptiful-vial.png' alt={product.name} fill className='object-cover' sizes='40px' />
                     </div>
                     <span className='text-label-sm text-text-strong-950'>{product.name}</span>
                   </div>

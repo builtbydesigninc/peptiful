@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className='relative hidden w-[480px] shrink-0 flex-col justify-between overflow-hidden bg-primary-base p-10 lg:flex'>
         <div className='absolute inset-0 bg-gradient-to-b from-primary-base/80 via-primary-base/40 to-primary-base/90 z-10' />
         <Image
-          src='/peptiful-vial.jpg'
+          src='/peptiful-vial.png'
           alt='Peptiful product vial'
           fill
           className='object-cover object-center opacity-40 mix-blend-luminosity'

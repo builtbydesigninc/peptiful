@@ -235,21 +235,14 @@ export default function CatalogPage() {
             href={`/brand/catalog/${product.id}`}
             className='group flex flex-col overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs transition-shadow hover:shadow-regular-sm'
           >
-            <div className='relative h-[180px] shrink-0'>
-              <div
-                className={cn(
-                  'relative flex h-full w-full items-center justify-center bg-gradient-to-br',
-                  product.gradient,
-                )}
-              >
-                <Image
-                  src='/peptiful-vial.jpg'
-                  alt={product.name}
-                  fill
-                  className='object-contain p-4 transition-transform duration-300 group-hover:scale-105'
-                  sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
-                />
-              </div>
+            <div className='relative h-[180px] shrink-0 overflow-hidden bg-bg-weak-50'>
+              <Image
+                src='/peptiful-vial.png'
+                alt={product.name}
+                fill
+                className='object-cover transition-transform duration-300 group-hover:scale-105'
+                sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
+              />
               {product.isNew && (
                 <Badge
                   variant='filled'

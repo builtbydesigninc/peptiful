@@ -52,7 +52,7 @@ export default function AffiliateDashboardPage() {
           <div className='hidden items-center gap-2 sm:flex'>
             {[1, 2, 3].map((i) => (
               <div key={i} className='relative size-16 overflow-hidden rounded-xl bg-bg-weak-50 shadow-regular-xs'>
-                <Image src='/peptiful-vial.jpg' alt='Product' fill className='object-contain p-1.5' sizes='64px' />
+                <Image src='/peptiful-vial.png' alt='Product' fill className='object-contain p-1.5' sizes='64px' />
               </div>
             ))}
           </div>

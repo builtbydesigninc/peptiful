@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     <div className='relative flex min-h-screen items-center justify-center bg-bg-weak-50 px-6'>
       <div className='pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden'>
         <div className='relative h-[600px] w-[600px] opacity-[0.04]'>
-          <Image src='/peptiful-vial.jpg' alt='' fill className='object-contain' />
+          <Image src='/peptiful-vial.png' alt='' fill className='object-contain' />
         </div>
       </div>
       <div className='relative w-full max-w-md'>

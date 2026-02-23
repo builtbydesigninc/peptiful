@@ -10,19 +10,19 @@ import {
 } from '@remixicon/react';
 
 const recentActivity = [
-  { type: 'brand', msg: 'AlphaRecovery signed up via partner Marcus Rivera', time: '2 hours ago' },
-  { type: 'order', msg: 'Order #PG-1156 completed — BPC-157 x2 to Alex Thompson', time: '3 hours ago' },
-  { type: 'payout', msg: 'Partner payout $4,520 processed to Marcus Rivera', time: '1 day ago' },
-  { type: 'brand', msg: 'CellRegen Labs signed up via partner Marcus Rivera', time: '1 day ago' },
-  { type: 'commission', msg: 'Commission $17.00 calculated for affiliate Jessica Parker', time: '2 days ago' },
+  { type: 'brand', msg: 'AlphaRecovery signed up via partner Marcus Rivera', time: '2 hours ago', href: '/admin/brands' },
+  { type: 'order', msg: 'Order #PG-1156 completed — BPC-157 x2 to Alex Thompson', time: '3 hours ago', href: '/admin/orders/1156' },
+  { type: 'payout', msg: 'Partner payout $4,520 processed to Marcus Rivera', time: '1 day ago', href: '/admin/payouts' },
+  { type: 'brand', msg: 'CellRegen Labs signed up via partner Marcus Rivera', time: '1 day ago', href: '/admin/brands' },
+  { type: 'commission', msg: 'Commission $17.00 calculated for affiliate Jessica Parker', time: '2 days ago', href: '/admin/commissions' },
 ];
 
 const topBrands = [
-  { name: 'BioStack Health', orders: 210, revenue: '$18,900' },
-  { name: 'PeptideGains', orders: 156, revenue: '$12,450' },
-  { name: 'Apex Longevity', orders: 134, revenue: '$11,200' },
-  { name: 'TheraPep Co', orders: 95, revenue: '$8,100' },
-  { name: 'VitalPure Labs', orders: 89, revenue: '$7,820' },
+  { name: 'BioStack Health', orders: 210, revenue: '$18,900', href: '/admin/brands' },
+  { name: 'PeptideGains', orders: 156, revenue: '$12,450', href: '/admin/brands' },
+  { name: 'Apex Longevity', orders: 134, revenue: '$11,200', href: '/admin/brands' },
+  { name: 'TheraPep Co', orders: 95, revenue: '$8,100', href: '/admin/brands' },
+  { name: 'VitalPure Labs', orders: 89, revenue: '$7,820', href: '/admin/brands' },
 ];
 
 export default function AdminOverviewPage() {
@@ -55,13 +55,14 @@ export default function AdminOverviewPage() {
           </div>
           <div className='divide-y divide-stroke-soft-200'>
             {recentActivity.map((a, i) => (
-              <div key={i} className='flex items-start gap-3 px-5 py-3.5'>
+              <Link key={i} href={a.href} className='flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-bg-weak-50'>
                 <div className='mt-0.5 size-2 shrink-0 rounded-full bg-primary-base' />
                 <div className='flex-1 min-w-0'>
                   <p className='text-paragraph-sm text-text-strong-950'>{a.msg}</p>
                   <p className='text-paragraph-xs text-text-soft-400'>{a.time}</p>
                 </div>
-              </div>
+                <RiArrowRightLine className='mt-1 size-4 shrink-0 text-text-soft-400' />
+              </Link>
             ))}
           </div>
         </div>
@@ -76,16 +77,19 @@ export default function AdminOverviewPage() {
           </div>
           <div className='divide-y divide-stroke-soft-200'>
             {topBrands.map((b, i) => (
-              <div key={b.name} className='flex items-center justify-between px-5 py-3.5'>
+              <Link key={b.name} href={b.href} className='flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-bg-weak-50'>
                 <div className='flex items-center gap-3'>
                   <span className='flex size-7 items-center justify-center rounded-full bg-bg-weak-50 text-label-2xs text-text-sub-600'>{i + 1}</span>
                   <span className='text-label-sm text-text-strong-950'>{b.name}</span>
                 </div>
-                <div className='text-right'>
-                  <p className='text-label-sm text-text-strong-950'>{b.revenue}</p>
-                  <p className='text-paragraph-xs text-text-sub-600'>{b.orders} orders</p>
+                <div className='flex items-center gap-3'>
+                  <div className='text-right'>
+                    <p className='text-label-sm text-text-strong-950'>{b.revenue}</p>
+                    <p className='text-paragraph-xs text-text-sub-600'>{b.orders} orders</p>
+                  </div>
+                  <RiArrowRightLine className='size-4 text-text-soft-400' />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
