@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { cn } from '@/utils/cn';
 import { Badge } from '@/components/ui/badge-new';
 import { Button } from '@/components/ui/button-new';
@@ -66,14 +67,14 @@ export default function CatalogProductDetailPage() {
       <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
         {/* Left: Product Image */}
         <div>
-          <div className='flex aspect-square items-center justify-center rounded-xl border border-stroke-soft-200 bg-gradient-to-br from-emerald-50 to-emerald-100'>
-            <span className='text-6xl font-semibold text-text-strong-950/10'>BPC</span>
+          <div className='relative flex aspect-square items-center justify-center rounded-xl border border-stroke-soft-200 bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden'>
+            <Image src='/peptiful-vial.jpg' alt={product.name} fill className='object-contain p-8' sizes='(max-width: 1024px) 100vw, 50vw' priority />
           </div>
           {/* Thumbnail row */}
           <div className='mt-3 flex gap-2'>
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className={cn('flex size-16 items-center justify-center rounded-lg border bg-gradient-to-br from-emerald-50 to-emerald-100 cursor-pointer', i === 1 ? 'border-primary-base ring-2 ring-primary-alpha-10' : 'border-stroke-soft-200')}>
-                <span className='text-xs text-text-soft-400'>{i}</span>
+              <div key={i} className={cn('relative flex size-16 items-center justify-center rounded-lg border overflow-hidden bg-slate-50 cursor-pointer', i === 1 ? 'border-primary-base ring-2 ring-primary-alpha-10' : 'border-stroke-soft-200')}>
+                <Image src='/peptiful-vial.jpg' alt='' fill className='object-contain p-1' sizes='64px' />
               </div>
             ))}
           </div>

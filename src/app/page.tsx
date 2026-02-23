@@ -9,6 +9,7 @@ import {
   RiMegaphoneLine,
   RiArrowRightLine,
 } from '@remixicon/react';
+import Image from 'next/image';
 import { PeptifulLogo } from '@/components/logo';
 
 const portals = [
@@ -51,6 +52,17 @@ export default function HomePage() {
       </div>
 
       <div className='relative flex w-full max-w-lg flex-col items-center'>
+        {/* Product Hero */}
+        <div className='relative mb-8 h-48 w-64 sm:h-56 sm:w-72'>
+          <Image
+            src='/peptiful-vial.jpg'
+            alt='Peptiful product vial'
+            fill
+            className='object-contain drop-shadow-2xl'
+            priority
+          />
+        </div>
+
         {/* Logo + Wordmark */}
         <PeptifulLogo
           variant='gradient'

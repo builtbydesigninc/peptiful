@@ -6,6 +6,7 @@ import { cn } from '@/utils/cn';
 import { StatCard } from '@/components/ui/stat-card-new';
 import { Badge } from '@/components/ui/badge-new';
 import { Button } from '@/components/ui/button-new';
+import Image from 'next/image';
 import {
   RiMoneyDollarCircleLine, RiShoppingBag3Line, RiFileList3Line, RiTeamLine,
   RiExternalLinkLine, RiCheckLine, RiGridLine, RiSettings4Line, RiArrowRightLine,
@@ -104,6 +105,30 @@ export default function BrandHomePage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Top Seller Highlight */}
+      <div className='overflow-hidden rounded-xl border border-stroke-soft-200 bg-gradient-to-r from-primary-alpha-10/40 via-bg-white-0 to-bg-white-0 shadow-regular-xs'>
+        <div className='flex items-center gap-6 p-6'>
+          <div className='relative hidden h-32 w-24 shrink-0 sm:block'>
+            <Image src='/peptiful-vial.jpg' alt='Top selling product' fill className='object-contain drop-shadow-lg' sizes='96px' />
+          </div>
+          <div className='flex-1'>
+            <Badge variant='light' color='primary' size='sm'>Top Seller</Badge>
+            <h3 className='mt-2 text-label-md text-text-strong-950'>BPC-157 Peptide Complex</h3>
+            <p className='mt-1 text-paragraph-sm text-text-sub-600'>
+              Your best performer this month — 42 orders, $3,779.58 revenue
+            </p>
+            <div className='mt-3 flex items-center gap-3'>
+              <Button variant='secondary' size='sm' asChild>
+                <Link href='/brand/products/1'>View Details</Link>
+              </Button>
+              <Button variant='ghost' size='sm' asChild>
+                <Link href='/brand/catalog'>Browse Catalog <RiArrowRightLine className='size-4' /></Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -24,6 +24,7 @@ import {
   RiCheckboxCircleLine,
   RiStarLine,
 } from '@remixicon/react';
+import Image from 'next/image';
 import { PeptifulLogo } from '@/components/logo';
 
 const STEPS = [
@@ -259,10 +260,15 @@ export default function OnboardingPage() {
                     )}
                   >
                     <div className={cn(
-                      'flex size-10 shrink-0 items-center justify-center rounded-10 transition-colors',
-                      isSelected ? 'bg-primary-base text-white' : 'bg-bg-weak-50 text-text-soft-400',
+                      'relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-10 transition-colors',
+                      isSelected ? 'ring-2 ring-primary-base' : 'bg-bg-weak-50',
                     )}>
-                      {isSelected ? <RiCheckLine className='size-5' /> : <RiAddLine className='size-5' />}
+                      <Image src='/peptiful-vial.jpg' alt={product.name} fill className='object-contain p-1' sizes='48px' />
+                      {isSelected && (
+                        <div className='absolute inset-0 flex items-center justify-center bg-primary-base/80'>
+                          <RiCheckLine className='size-5 text-white' />
+                        </div>
+                      )}
                     </div>
                     <div className='flex-1 min-w-0'>
                       <p className='text-label-sm text-text-strong-950'>{product.name}</p>
@@ -508,9 +514,23 @@ export default function OnboardingPage() {
                 <p className='mt-2 text-paragraph-sm text-text-sub-600'>
                   {description || 'Premium peptides and supplements'}
                 </p>
-                <div className='mt-4 flex items-center justify-center gap-2 text-paragraph-xs text-text-soft-400'>
-                  <RiShoppingBag3Line className='size-3.5' />
-                  {selectedProducts.length} products
+                <div className='mt-4 flex items-center justify-center gap-3'>
+                  {selectedProducts.slice(0, 4).map((sp) => (
+                    <div key={sp.id} className='relative size-12 overflow-hidden rounded-lg bg-bg-weak-50'>
+                      <Image src='/peptiful-vial.jpg' alt='Product' fill className='object-contain p-1' sizes='48px' />
+                    </div>
+                  ))}
+                  {selectedProducts.length > 4 && (
+                    <div className='flex size-12 items-center justify-center rounded-lg bg-bg-soft-200 text-label-xs text-text-sub-600'>
+                      +{selectedProducts.length - 4}
+                    </div>
+                  )}
+                  {selectedProducts.length === 0 && (
+                    <div className='flex items-center gap-2 text-paragraph-xs text-text-soft-400'>
+                      <RiShoppingBag3Line className='size-3.5' />
+                      No products yet
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

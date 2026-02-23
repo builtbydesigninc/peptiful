@@ -4,14 +4,20 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button-new';
 import { RiArrowLeftLine, RiMailSendLine, RiCheckboxCircleLine } from '@remixicon/react';
+import Image from 'next/image';
 import { PeptifulLogo } from '@/components/logo';
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = React.useState(false);
 
   return (
-    <div className='flex min-h-screen items-center justify-center bg-bg-weak-50 px-6'>
-      <div className='w-full max-w-md'>
+    <div className='relative flex min-h-screen items-center justify-center bg-bg-weak-50 px-6'>
+      <div className='pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden'>
+        <div className='relative h-[600px] w-[600px] opacity-[0.04]'>
+          <Image src='/peptiful-vial.jpg' alt='' fill className='object-contain' />
+        </div>
+      </div>
+      <div className='relative w-full max-w-md'>
         <div className='mb-8'>
           <PeptifulLogo variant='gradient' markClassName='size-9' wordmarkClassName='text-label-md' />
         </div>

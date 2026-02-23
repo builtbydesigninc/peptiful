@@ -15,6 +15,7 @@ import {
 import { AppShell } from '@/components/layout/app-shell';
 import type { SidebarConfig } from '@/components/layout/app-sidebar';
 import { PeptifulLogomark } from '@/components/logo';
+import { AffiliateProvider } from './context';
 
 const affiliateSidebarConfig: SidebarConfig = {
   logo: <PeptifulLogomark variant='gradient' className='size-8' />,
@@ -36,5 +37,9 @@ const affiliateSidebarConfig: SidebarConfig = {
 };
 
 export default function AffiliateLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell sidebarConfig={affiliateSidebarConfig}>{children}</AppShell>;
+  return (
+    <AffiliateProvider>
+      <AppShell sidebarConfig={affiliateSidebarConfig}>{children}</AppShell>
+    </AffiliateProvider>
+  );
 }

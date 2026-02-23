@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { StatCard } from '@/components/ui/stat-card-new';
 import { Badge } from '@/components/ui/badge-new';
 import { Button } from '@/components/ui/button-new';
+import Image from 'next/image';
 import {
   RiMoneyDollarCircleLine, RiFileList3Line, RiTeamLine, RiLineChartLine,
   RiArrowRightLine, RiFileCopyLine, RiCheckLine,
@@ -38,6 +39,24 @@ export default function AffiliateDashboardPage() {
           {copied ? <RiCheckLine className='size-3.5' /> : <RiFileCopyLine className='size-3.5' />}
           {copied ? 'Copied' : 'Copy'}
         </Button>
+      </div>
+
+      {/* Featured Products Banner */}
+      <div className='overflow-hidden rounded-xl border border-stroke-soft-200 bg-gradient-to-r from-bg-white-0 to-primary-alpha-10/30 shadow-regular-xs'>
+        <div className='flex items-center justify-between px-6 py-5'>
+          <div>
+            <p className='text-label-xs text-text-sub-600 uppercase tracking-wider'>Trending Now</p>
+            <h3 className='mt-1 text-label-md text-text-strong-950'>BPC-157 &middot; Semaglutide &middot; TB-500</h3>
+            <p className='mt-1 text-paragraph-xs text-text-sub-600'>Share these top sellers with your audience for higher conversions</p>
+          </div>
+          <div className='hidden items-center gap-2 sm:flex'>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className='relative size-16 overflow-hidden rounded-xl bg-bg-weak-50 shadow-regular-xs'>
+                <Image src='/peptiful-vial.jpg' alt='Product' fill className='object-contain p-1.5' sizes='64px' />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>

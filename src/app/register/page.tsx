@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui/button-new';
 import { RiArrowRightLine, RiArrowLeftLine } from '@remixicon/react';
+import Image from 'next/image';
 import { PeptifulLogo, PeptifulLogomark } from '@/components/logo';
 
 const roleOptions = [
@@ -26,15 +27,23 @@ export default function RegisterPage() {
 
   return (
     <div className='flex min-h-screen'>
-      <div className='hidden w-[480px] shrink-0 flex-col justify-between bg-primary-base p-10 lg:flex'>
-        <PeptifulLogo variant='white' wordmarkVariant='light' markClassName='size-10' wordmarkClassName='text-label-lg' />
-        <div>
+      <div className='relative hidden w-[480px] shrink-0 flex-col justify-between overflow-hidden bg-primary-base p-10 lg:flex'>
+        <div className='absolute inset-0 bg-gradient-to-b from-primary-base/80 via-primary-base/40 to-primary-base/90 z-10' />
+        <Image
+          src='/peptiful-vial.jpg'
+          alt='Peptiful product vial'
+          fill
+          className='object-cover object-center opacity-40 mix-blend-luminosity'
+          priority
+        />
+        <PeptifulLogo variant='white' wordmarkVariant='light' markClassName='size-10' wordmarkClassName='text-label-lg' className='relative z-20' />
+        <div className='relative z-20'>
           <h2 className='text-title-h3 text-white'>Join the fastest growing peptide marketplace</h2>
           <p className='mt-4 text-paragraph-md text-white/70'>
             Whether you&apos;re a brand, partner, or affiliate — get started in minutes.
           </p>
         </div>
-        <p className='text-paragraph-xs text-white/40'>2026 Peptiful. All rights reserved.</p>
+        <p className='relative z-20 text-paragraph-xs text-white/40'>2026 Peptiful. All rights reserved.</p>
       </div>
 
       <div className='flex flex-1 items-center justify-center bg-bg-weak-50 px-6'>

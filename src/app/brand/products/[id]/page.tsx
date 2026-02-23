@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { cn } from '@/utils/cn';
 import { Badge } from '@/components/ui/badge-new';
 import { Button } from '@/components/ui/button-new';
@@ -48,9 +49,10 @@ export default function ProductEditPage() {
         {/* Left: Image + Steps */}
         <div className='space-y-5'>
           {/* Product Image with Label Overlay */}
-          <div className='relative flex aspect-[4/5] items-center justify-center rounded-xl border border-stroke-soft-200 bg-gradient-to-br from-emerald-50 to-emerald-100 overflow-hidden'>
+          <div className='relative flex aspect-[4/5] items-center justify-center rounded-xl border border-stroke-soft-200 bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden'>
+            <Image src='/peptiful-vial.jpg' alt='Product preview' fill className='object-contain p-8' sizes='(max-width: 1024px) 100vw, 50vw' />
             <div className='absolute inset-0 flex items-center justify-center'>
-              <div className='rounded-lg border-2 border-dashed border-primary-alpha-16 bg-bg-white-0/80 px-6 py-10 text-center'>
+              <div className='rounded-lg border-2 border-dashed border-primary-alpha-16 bg-bg-white-0/80 px-6 py-10 text-center backdrop-blur-sm'>
                 <RiImageLine className='mx-auto size-8 text-text-disabled-300' />
                 <p className='mt-2 text-label-xs text-text-sub-600'>YOUR DESIGN HERE</p>
                 <p className='text-paragraph-xs text-text-soft-400'>Label preview area</p>

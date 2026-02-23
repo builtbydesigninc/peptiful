@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { cn } from '@/utils/cn';
 import { RiSearchLine, RiMoreLine, RiArrowUpLine, RiEyeLine, RiEditLine, RiDeleteBinLine, RiCheckLine, RiForbidLine } from '@remixicon/react';
 import { StatCard } from '@/components/ui/stat-card-new';
@@ -116,7 +117,9 @@ export default function ProductsPage() {
                 </td>
                 <td className='px-4 py-3'>
                   <div className='flex items-center gap-3'>
-                    <div className={cn('size-10 shrink-0 rounded-10', product.color)} />
+                    <div className={cn('relative size-10 shrink-0 overflow-hidden rounded-10', product.color)}>
+                      <Image src='/peptiful-vial.jpg' alt={product.name} fill className='object-contain p-0.5' sizes='40px' />
+                    </div>
                     <span className='text-label-sm text-text-strong-950'>{product.name}</span>
                   </div>
                 </td>

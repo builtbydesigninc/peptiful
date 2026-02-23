@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { RiSearchLine, RiArrowDownSLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 import { PageHeader } from '@/components/ui/page-header-new';
@@ -237,13 +238,17 @@ export default function CatalogPage() {
             <div className='relative h-[180px] shrink-0'>
               <div
                 className={cn(
-                  'flex h-full w-full items-center justify-center bg-gradient-to-br',
+                  'relative flex h-full w-full items-center justify-center bg-gradient-to-br',
                   product.gradient,
                 )}
               >
-                <span className='text-3xl font-semibold text-text-strong-950/20'>
-                  {product.initials}
-                </span>
+                <Image
+                  src='/peptiful-vial.jpg'
+                  alt={product.name}
+                  fill
+                  className='object-contain p-4 transition-transform duration-300 group-hover:scale-105'
+                  sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
+                />
               </div>
               {product.isNew && (
                 <Badge
