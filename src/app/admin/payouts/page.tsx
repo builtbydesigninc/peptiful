@@ -9,24 +9,26 @@ import { RiWallet3Line, RiTimeLine, RiCheckboxCircleLine, RiMoneyDollarCircleLin
 import { adminApi } from '@/lib/api-client';
 
 export default function AdminPayoutsPage() {
-  const [payouts, setPayouts] = React.useState<any[]>([]);
+  const [queue, setQueue] = React.useState<any[]>([]);
+  const [recent, setRecent] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [stats, setStats] = React.useState<any>(null);
 
-  const fetchPayouts = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response: any = await adminApi.getPayouts();
-      const data = Array.isArray(response) ? response : (response.data || []);
-      setPayouts(data);
-      // Mock stats based on data for now or fetch from a stats endpoint
-      const totalPending = data.filter((p: any) => p.status === 'PENDING').reduce((acc: number, p: any) => acc + parseFloat(p.amount), 0);
-      const totalCompleted = data.filter((p: any) => p.status === 'COMPLETED').reduce((acc: number, p: any) => acc + parseFloat(p.amount), 0);
+      const [queueData, recentData, statData] = await Promise.all([
+        adminApi.getPayoutQueue(),
+        adminApi.getRecentPayouts(),
+        adminApi.getPayoutStats()
+      ]);
+      setQueue(queueData.data || []);
+      setRecent(recentData.data || []);
       setStats({
-        pendingPayouts: `$${totalPending.toFixed(2)}`,
-        processedThisMonth: `$${totalCompleted.toFixed(2)}`,
-        totalPaid: `$${totalCompleted.toFixed(2)}`,
-        queueCount: data.filter((p: any) => p.status === 'PENDING').length
+        pendingPayouts: `$${(statData.pending?.amount || 0).toLocaleString()}`,
+        processedThisMonth: `$${(statData.completedThisMonth?.amount || 0).toLocaleString()}`,
+        totalPaid: `$${(statData.completed?.amount || 0).toLocaleString()}`,
+        queueCount: statData.pending?.count || 0
       });
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -36,15 +38,24 @@ export default function AdminPayoutsPage() {
   };
 
   React.useEffect(() => {
-    fetchPayouts();
+    fetchData();
   }, []);
 
   const handleApprove = async (id: string) => {
     try {
       await adminApi.approvePayout(id);
-      fetchPayouts();
+      fetchData();
     } catch (error) {
       console.error('Failed to approve payout:', error);
+    }
+  };
+
+  const handleProcess = async (id: string) => {
+    try {
+      await adminApi.processPayout(id);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to process payout:', error);
     }
   };
 
@@ -56,12 +67,21 @@ export default function AdminPayoutsPage() {
     );
   }
 
-  const pendingPayouts = payouts.filter(p => p.status === 'PENDING');
-  const processedPayouts = payouts.filter(p => p.status !== 'PENDING');
+  const pendingPayouts = queue;
+  const processedPayouts = recent;
 
   return (
     <div className='space-y-6'>
-      <PageHeader title='Payouts' description='Manage payout queue and history' actions={<Button size='md' onClick={() => { }}>Process All Pending</Button>} />
+      <PageHeader
+        title='Payouts'
+        description='Manage payout queue and history'
+        actions={
+          <div className='flex gap-3'>
+            <Button variant='secondary' onClick={() => adminApi.approveAllPayouts().then(fetchData)}>Approve All Pending</Button>
+            <Button onClick={() => adminApi.processAllPayouts().then(fetchData)}>Process All Approved</Button>
+          </div>
+        }
+      />
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <StatCard title='Pending Payouts' value={stats.pendingPayouts} icon={RiTimeLine} />
         <StatCard title='Processed This Month' value={stats.processedThisMonth} icon={RiCheckboxCircleLine} />
@@ -92,10 +112,16 @@ export default function AdminPayoutsPage() {
                 <td className='px-5 py-3.5 text-label-sm text-text-strong-950'>${p.amount}</td>
                 <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{new Date(p.createdAt).toLocaleDateString()}</td>
                 <td className='px-5 py-3.5'>
-                  <Badge variant='light' color='warning' size='sm' dot>Pending</Badge>
+                  <Badge variant='light' color={p.status === 'APPROVED' ? 'information' : 'warning'} size='sm' dot>
+                    {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
+                  </Badge>
                 </td>
                 <td className='px-5 py-3.5'>
-                  <Button variant='secondary' size='xs' onClick={() => handleApprove(p.id)}>Approve</Button>
+                  {p.status === 'PENDING' ? (
+                    <Button variant='secondary' size='xs' onClick={() => handleApprove(p.id)}>Approve</Button>
+                  ) : (
+                    <Button variant='primary' size='xs' onClick={() => handleProcess(p.id)}>Process</Button>
+                  )}
                 </td>
               </tr>
             ))}

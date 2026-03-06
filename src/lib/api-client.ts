@@ -91,10 +91,67 @@ export const adminApi = {
     getOrders: (filter?: string) =>
         fetchApi<any[]>(`/admin/orders${filter && filter !== 'all' ? `?status=${filter.toUpperCase()}` : ''}`),
 
-    getPayouts: () => fetchApi<any[]>('/admin/payouts'),
+    getPayoutQueue: (filter?: any) => {
+        const params = new URLSearchParams();
+        if (filter?.recipientType) params.append('recipientType', filter.recipientType);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/admin/payouts/queue${query ? `?${query}` : ''}`);
+    },
+
+    getRecentPayouts: (filter?: any) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/admin/payouts/recent${query ? `?${query}` : ''}`);
+    },
+
+    getPayoutStats: () =>
+        fetchApi<any>('/admin/stats/payouts'),
 
     approvePayout: (id: string) =>
-        fetchApi(`/admin/payouts/${id}/approve`, { method: 'POST' }),
+        fetchApi(`/admin/payouts/${id}/approve`, { method: 'PATCH' }),
+
+    processPayout: (id: string) =>
+        fetchApi(`/admin/payouts/${id}/process`, { method: 'POST' }),
+
+    approveAllPayouts: (maxAmount?: number) =>
+        fetchApi(`/admin/payouts/approve-all${maxAmount ? `?maxAmount=${maxAmount}` : ''}`, { method: 'POST' }),
+
+    processAllPayouts: () =>
+        fetchApi('/admin/payouts/process-all', { method: 'POST' }),
+
+    getCommissions: (filter?: any) => {
+        const params = new URLSearchParams();
+        if (filter?.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+        if (filter?.recipientType) params.append('recipientType', filter.recipientType);
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+
+        const query = params.toString();
+        return fetchApi<any>(`/admin/commissions${query ? `?${query}` : ''}`);
+    },
+
+    getCommissionStats: () =>
+        fetchApi<any>('/admin/stats/commissions'),
+
+    getSettings: () =>
+        fetchApi<any>('/admin/settings'),
+
+    updateSettings: (settings: Record<string, any>) =>
+        fetchApi('/admin/settings', {
+            method: 'PUT',
+            body: JSON.stringify({ settings }),
+        }),
+
+    updateFeatureFlags: (flags: Record<string, boolean>) =>
+        fetchApi('/admin/settings/features', {
+            method: 'PUT',
+            body: JSON.stringify({ flags }),
+        }),
 
     login: (data: any) =>
         fetchApi<{ accessToken: string; user: any }>('/auth/login', {
