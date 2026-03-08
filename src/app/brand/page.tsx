@@ -11,8 +11,18 @@ import {
   RiMoneyDollarCircleLine, RiShoppingBag3Line, RiFileList3Line, RiTeamLine,
   RiExternalLinkLine, RiCheckLine, RiGridLine, RiSettings4Line, RiArrowRightLine,
   RiUserAddLine, RiPaintBrushLine, RiSecurePaymentLine, RiStore2Line, RiRocketLine,
-  RiCloseLine, RiListCheck3,
+  RiCloseLine,
 } from '@remixicon/react';
+import { brandApi } from '@/lib/api-client';
+
+const checklistStepIcons: Record<number, any> = {
+  1: RiUserAddLine,
+  2: RiShoppingBag3Line,
+  3: RiMoneyDollarCircleLine,
+  4: RiPaintBrushLine,
+  5: RiSecurePaymentLine,
+  6: RiRocketLine,
+};
 
 const defaultSteps = [
   { id: 1, title: 'Complete Profile', desc: 'Add business details', icon: RiUserAddLine, href: '/brand/settings' },
@@ -23,14 +33,6 @@ const defaultSteps = [
   { id: 6, title: 'Publish Store', desc: 'Go live', icon: RiRocketLine, href: '/onboarding' },
 ];
 
-const recentOrders = [
-  { id: '#PG-1156', date: 'Feb 22, 2026', customer: 'Alex Thompson', items: 2, total: '$169.98', status: 'Delivered', statusColor: 'success' as const },
-  { id: '#PG-1155', date: 'Feb 22, 2026', customer: 'Maria Garcia', items: 1, total: '$89.99', status: 'Shipped', statusColor: 'warning' as const },
-  { id: '#PG-1154', date: 'Feb 21, 2026', customer: 'James Wilson', items: 3, total: '$154.97', status: 'Processing', statusColor: 'information' as const },
-  { id: '#PG-1153', date: 'Feb 21, 2026', customer: 'Emily Davis', items: 1, total: '$42.00', status: 'New', statusColor: 'gray' as const },
-  { id: '#PG-1152', date: 'Feb 20, 2026', customer: 'Robert Brown', items: 2, total: '$124.99', status: 'Delivered', statusColor: 'success' as const },
-];
-
 const quickActions = [
   { title: 'Browse Catalog', desc: 'Add new products to your store', icon: RiGridLine, href: '/brand/catalog' },
   { title: 'Manage Affiliates', desc: 'Recruit and track affiliates', icon: RiTeamLine, href: '/brand/affiliates' },
@@ -38,16 +40,73 @@ const quickActions = [
 ];
 
 export default function BrandHomePage() {
-  const [completedIds, setCompletedIds] = React.useState<Set<number>>(new Set([1, 2, 3]));
+  const [profile, setProfile] = React.useState<any>(null);
+  const [stats, setStats] = React.useState<any>(null);
+  const [orders, setOrders] = React.useState<any[]>([]);
+  const [topSeller, setTopSeller] = React.useState<any>(null);
+  const [checklist, setChecklist] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [checklistOpen, setChecklistOpen] = React.useState(false);
-  const completedCount = completedIds.size;
 
-  const toggleStep = (id: number) => {
-    setCompletedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [p, s, o, ts, cl] = await Promise.all([
+        brandApi.getProfile(),
+        brandApi.getStats(),
+        brandApi.getOrders({ limit: 5 }),
+        brandApi.getTopSeller(),
+        brandApi.getChecklist(),
+      ]);
+      setProfile(p);
+      setStats(s);
+      setOrders(o.data || []);
+      setTopSeller(ts.topSeller);
+      const stepsCompleted = cl.stepsCompleted || {};
+      const mappedChecklist = defaultSteps.map(step => ({
+        step: step.id,
+        completed: !!stepsCompleted[step.id.toString()]
+      }));
+      setChecklist(mappedChecklist);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  const toggleStep = async (stepId: number, currentStatus: boolean) => {
+    try {
+      await brandApi.updateChecklist(stepId, !currentStatus);
+      setChecklist(prev => prev.map(s => s.step === stepId ? { ...s, completed: !currentStatus } : s));
+    } catch (error) {
+      console.error('Failed to update checklist:', error);
+    }
+  };
+
+  const completedCount = checklist.filter(s => s.completed).length;
+  const totalSteps = checklist.length || defaultSteps.length;
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center p-24'>
+        <div className='animate-spin rounded-full h-8 w-8 border-t-2 border-primary-base' />
+      </div>
+    );
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'DELIVERED': return 'success';
+      case 'SHIPPED': return 'warning';
+      case 'CANCELLED': return 'error';
+      case 'PROCESSING': return 'information';
+      default: return 'gray';
+    }
   };
 
   return (
@@ -55,24 +114,26 @@ export default function BrandHomePage() {
       {/* Welcome Header */}
       <div className='flex items-start justify-between'>
         <div>
-          <h1 className='text-title-h4 text-text-strong-950'>Welcome back, Sarah</h1>
+          <h1 className='text-title-h4 text-text-strong-950'>Welcome back, {profile?.name || 'Partner'}</h1>
           <p className='mt-1 text-paragraph-sm text-text-sub-600'>Here&apos;s how your store is performing</p>
         </div>
-        <Button variant='secondary' size='sm' asChild>
-          <Link href='https://peptidegains.peptiful.com' target='_blank'>
-            <RiStore2Line className='size-4' />
-            Visit Store
-            <RiExternalLinkLine className='size-3.5' />
-          </Link>
-        </Button>
+        {profile?.slug && (
+          <Button variant='secondary' size='sm' asChild>
+            <Link href={`https://${profile.slug}.peptiful.com`} target='_blank'>
+              <RiStore2Line className='size-4' />
+              Visit Store
+              <RiExternalLinkLine className='size-3.5' />
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Stat Cards */}
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        <StatCard title='Revenue This Month' value='$12,450' change='+18.2% vs last month' trend='up' icon={RiMoneyDollarCircleLine} />
-        <StatCard title='Active Products' value='8' icon={RiShoppingBag3Line} />
-        <StatCard title='Total Orders' value='156' change='+12% this week' trend='up' icon={RiFileList3Line} />
-        <StatCard title='Active Affiliates' value='24' icon={RiTeamLine} />
+        <StatCard title='Total Revenue' value={`$${(stats?.totalRevenue || 0).toLocaleString()}`} icon={RiMoneyDollarCircleLine} />
+        <StatCard title='Active Products' value={stats?.activeProducts || 0} icon={RiShoppingBag3Line} />
+        <StatCard title='Total Orders' value={stats?.totalOrders || 0} icon={RiFileList3Line} />
+        <StatCard title='Active Affiliates' value={stats?.activeAffiliates || 0} icon={RiTeamLine} />
       </div>
 
       {/* Recent Orders */}
@@ -93,44 +154,55 @@ export default function BrandHomePage() {
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((order) => (
+              {orders.map((order) => (
                 <tr key={order.id} className='border-b border-stroke-soft-200 last:border-0 hover:bg-bg-weak-50 transition-colors'>
-                  <td className='px-5 py-3.5 text-label-sm text-primary-base'>{order.id}</td>
-                  <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{order.date}</td>
-                  <td className='px-5 py-3.5 text-paragraph-sm text-text-strong-950'>{order.customer}</td>
-                  <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{order.items}</td>
-                  <td className='px-5 py-3.5 text-label-sm text-text-strong-950'>{order.total}</td>
-                  <td className='px-5 py-3.5'><Badge variant='light' color={order.statusColor} size='sm' dot>{order.status}</Badge></td>
+                  <td className='px-5 py-3.5 text-label-sm text-primary-base'>#{order.orderNumber}</td>
+                  <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td className='px-5 py-3.5 text-paragraph-sm text-text-strong-950'>{order.customer?.name}</td>
+                  <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{order.itemsCount}</td>
+                  <td className='px-5 py-3.5 text-label-sm text-text-strong-950'>${Number(order.total).toFixed(2)}</td>
+                  <td className='px-5 py-3.5'><Badge variant='light' color={getStatusColor(order.status) as any} size='sm' dot>{order.status}</Badge></td>
                 </tr>
               ))}
+              {orders.length === 0 && (
+                <tr>
+                  <td colSpan={6} className='px-5 py-12 text-center text-text-sub-600'>No orders found yet</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Top Seller Highlight */}
-      <div className='overflow-hidden rounded-xl border border-stroke-soft-200 bg-gradient-to-r from-primary-alpha-10/40 via-bg-white-0 to-bg-white-0 shadow-regular-xs'>
-        <div className='flex items-center gap-6 p-6'>
-          <div className='relative hidden h-32 w-24 shrink-0 sm:block'>
-            <Image src='/peptiful-vial.png' alt='Top selling product' fill className='object-contain drop-shadow-lg' sizes='96px' />
-          </div>
-          <div className='flex-1'>
-            <Badge variant='light' color='primary' size='sm'>Top Seller</Badge>
-            <h3 className='mt-2 text-label-md text-text-strong-950'>BPC-157 Peptide Complex</h3>
-            <p className='mt-1 text-paragraph-sm text-text-sub-600'>
-              Your best performer this month — 42 orders, $3,779.58 revenue
-            </p>
-            <div className='mt-3 flex items-center gap-3'>
-              <Button variant='secondary' size='sm' asChild>
-                <Link href='/brand/products/1'>View Details</Link>
-              </Button>
-              <Button variant='ghost' size='sm' asChild>
-                <Link href='/brand/catalog'>Browse Catalog <RiArrowRightLine className='size-4' /></Link>
-              </Button>
+      {topSeller ? (
+        <div className='overflow-hidden rounded-xl border border-stroke-soft-200 bg-gradient-to-r from-primary-alpha-10/40 via-bg-white-0 to-bg-white-0 shadow-regular-xs'>
+          <div className='flex items-center gap-6 p-6'>
+            <div className='relative hidden h-32 w-24 shrink-0 sm:block'>
+              <Image src='/peptiful-vial.png' alt='Top selling product' fill className='object-contain drop-shadow-lg' sizes='96px' />
+            </div>
+            <div className='flex-1'>
+              <Badge variant='light' color='primary' size='sm'>Top Seller</Badge>
+              <h3 className='mt-2 text-label-md text-text-strong-950'>{topSeller.name}</h3>
+              <p className='mt-1 text-paragraph-sm text-text-sub-600'>
+                Your best performer this month — {topSeller.orderCount} orders, ${Number(topSeller.revenue).toLocaleString()} revenue
+              </p>
+              <div className='mt-3 flex items-center gap-3'>
+                <Button variant='secondary' size='sm' asChild>
+                  <Link href={`/brand/products/${topSeller.id}`}>View Details</Link>
+                </Button>
+                <Button variant='ghost' size='sm' asChild>
+                  <Link href='/brand/catalog'>Browse Catalog <RiArrowRightLine className='size-4' /></Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className='rounded-xl border border-dashed border-stroke-soft-200 p-8 text-center'>
+          <p className='text-paragraph-sm text-text-sub-600'>Add more products and start selling to see your first top performers!</p>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div>
@@ -161,9 +233,9 @@ export default function BrandHomePage() {
         <div className='relative size-8'>
           <svg className='size-8 -rotate-90' viewBox='0 0 32 32'>
             <circle cx='16' cy='16' r='13' fill='none' stroke='#ebebeb' strokeWidth='3' />
-            <circle cx='16' cy='16' r='13' fill='none' stroke='#0A4591' strokeWidth='3' strokeDasharray={`${(completedCount / defaultSteps.length) * 81.68} 81.68`} strokeLinecap='round' />
+            <circle cx='16' cy='16' r='13' fill='none' stroke='#0A4591' strokeWidth='3' strokeDasharray={`${(completedCount / totalSteps) * 81.68} 81.68`} strokeLinecap='round' />
           </svg>
-          <span className='absolute inset-0 flex items-center justify-center text-label-2xs text-primary-base'>{completedCount}/{defaultSteps.length}</span>
+          <span className='absolute inset-0 flex items-center justify-center text-label-2xs text-primary-base'>{completedCount}/{totalSteps}</span>
         </div>
         <span className='text-label-xs text-text-strong-950'>Launch Checklist</span>
       </button>
@@ -178,29 +250,33 @@ export default function BrandHomePage() {
                 <h3 className='text-label-md text-text-strong-950'>Steps to complete</h3>
                 <div className='mt-1 flex items-center gap-2'>
                   <span className='text-paragraph-xs text-text-sub-600'>Your progress</span>
-                  <span className='text-label-xs text-text-strong-950'>{completedCount} of {defaultSteps.length} completed</span>
+                  <span className='text-label-xs text-text-strong-950'>{completedCount} of {totalSteps} completed</span>
                 </div>
                 <div className='mt-2 h-1.5 w-full overflow-hidden rounded-full bg-bg-soft-200'>
-                  <div className='h-full rounded-full bg-primary-base transition-all' style={{ width: `${(completedCount / defaultSteps.length) * 100}%` }} />
+                  <div className='h-full rounded-full bg-primary-base transition-all' style={{ width: `${(completedCount / totalSteps) * 100}%` }} />
                 </div>
               </div>
               <Button variant='ghost' size='xs' iconOnly onClick={() => setChecklistOpen(false)}><RiCloseLine className='size-5' /></Button>
             </div>
             <div className='flex-1 overflow-y-auto px-3 py-3'>
-              {defaultSteps.map((step) => {
-                const done = completedIds.has(step.id);
-                const Icon = step.icon;
+              {checklist.map((step) => {
+                const Icon = checklistStepIcons[step.step] || RiCheckLine;
+                const stepDetails = defaultSteps.find(s => s.id === step.step);
                 return (
-                  <div key={step.id} className={cn('mb-2 flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-all', done ? 'border-success-light bg-success-lighter/40' : 'border-stroke-soft-200 bg-bg-white-0 hover:border-primary-alpha-16')}>
-                    <button onClick={() => toggleStep(step.id)} className={cn('flex size-8 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer', done ? 'bg-success-base text-white' : 'border-2 border-stroke-soft-200 text-transparent hover:border-primary-base')}>
+                  <div key={step.step} className={cn('mb-2 flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-all', step.completed ? 'border-success-light bg-success-lighter/40' : 'border-stroke-soft-200 bg-bg-white-0 hover:border-primary-alpha-16')}>
+                    <button onClick={() => toggleStep(step.step, step.completed)} className={cn('flex size-8 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer', step.completed ? 'bg-success-base text-white' : 'border-2 border-stroke-soft-200 text-transparent hover:border-primary-base')}>
                       <RiCheckLine className='size-4' />
                     </button>
-                    <Link href={step.href} className='flex-1 min-w-0' onClick={() => setChecklistOpen(false)}>
-                      <p className={cn('text-label-sm', done ? 'text-text-sub-600 line-through' : 'text-text-strong-950')}>{step.title}</p>
-                      <p className='text-paragraph-xs text-text-sub-600'>{step.desc}</p>
-                    </Link>
-                    {!done && (
-                      <Link href={step.href} onClick={() => setChecklistOpen(false)} className='text-text-soft-400 hover:text-primary-base'>
+                    {stepDetails ? (
+                      <Link href={stepDetails.href} className='flex-1 min-w-0' onClick={() => setChecklistOpen(false)}>
+                        <p className={cn('text-label-sm', step.completed ? 'text-text-sub-600 line-through' : 'text-text-strong-950')}>{stepDetails.title}</p>
+                        <p className='text-paragraph-xs text-text-sub-600'>{stepDetails.desc}</p>
+                      </Link>
+                    ) : (
+                      <div className='flex-1'>Step {step.step}</div>
+                    )}
+                    {!step.completed && stepDetails && (
+                      <Link href={stepDetails.href} onClick={() => setChecklistOpen(false)} className='text-text-soft-400 hover:text-primary-base'>
                         <RiArrowRightLine className='size-4' />
                       </Link>
                     )}
