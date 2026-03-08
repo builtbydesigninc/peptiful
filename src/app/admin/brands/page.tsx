@@ -99,14 +99,24 @@ export default function AdminBrandsPage() {
   const handleAction = async (brandId: string, action: string) => {
     if (action === 'delete') {
       if (confirm('Are you sure you want to delete this brand?')) {
-        await adminApi.deleteBrand(brandId);
-        fetchBrands();
+        try {
+          await adminApi.deleteBrand(brandId);
+          fetchBrands();
+        } catch (error) {
+          console.error('Failed to delete brand:', error);
+          alert('Failed to delete brand. Check console for details.');
+        }
       }
     } else if (action === 'toggle') {
       const brand = brands.find(b => b.id === brandId);
       const newStatus = brand.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
-      await adminApi.updateBrand(brandId, { status: newStatus });
-      fetchBrands();
+      try {
+        await adminApi.updateBrand(brandId, { status: newStatus });
+        fetchBrands();
+      } catch (error) {
+        console.error('Failed to update brand status:', error);
+        alert('Failed to update brand status. Check console for details.');
+      }
     }
   };
 
