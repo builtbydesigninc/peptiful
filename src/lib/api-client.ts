@@ -218,3 +218,204 @@ export const adminApi = {
             body: JSON.stringify(data),
         }),
 };
+
+export const brandApi = {
+    getProfile: () =>
+        fetchApi<any>('/brand/me'),
+
+    getStats: () =>
+        fetchApi<any>('/brand/dashboard/stats'),
+
+    getNavBadges: () =>
+        fetchApi<any>('/brand/nav-badges'),
+
+    getChecklist: () =>
+        fetchApi<any>('/brand/onboarding/checklist'),
+
+    updateChecklist: (step: number, completed: boolean) =>
+        fetchApi('/brand/onboarding/checklist', {
+            method: 'PATCH',
+            body: JSON.stringify({ step, completed }),
+        }),
+
+    getOrders: (filter?: { status?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/brand/orders${query ? `?${query}` : ''}`);
+    },
+
+    getOrder: (id: string) =>
+        fetchApi<any>(`/brand/orders/${id}`),
+
+    getProducts: (filter?: { status?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/brand/products${query ? `?${query}` : ''}`);
+    },
+
+    getTopSeller: () =>
+        fetchApi<any>('/brand/products/top-seller'),
+
+    getAffiliates: (filter?: { search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/brand/affiliates${query ? `?${query}` : ''}`);
+    },
+
+    getAffiliateStats: () =>
+        fetchApi<any>('/brand/affiliates/stats'),
+
+    getInviteLink: () =>
+        fetchApi<any>('/brand/affiliates/invite-link'),
+
+    inviteAffiliate: (email: string) =>
+        fetchApi('/brand/affiliates/invite', {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+        }),
+
+    getEarnings: () =>
+        fetchApi<any>('/brand/earnings/stats'),
+
+    getMonthlyEarnings: () =>
+        fetchApi<any[]>('/brand/earnings/monthly'),
+
+    getPayouts: (filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/brand/payouts${query ? `?${query}` : ''}`);
+    },
+
+    getNextPayout: () =>
+        fetchApi<any>('/brand/payouts/next'),
+
+    getPayoutSummary: () =>
+        fetchApi<any>('/brand/payouts/summary'),
+
+    getPaymentMethod: () =>
+        fetchApi<any>('/brand/payment-method'),
+
+    addProduct: (productId: string, retailPrice: number) =>
+        fetchApi('/brand/products', {
+            method: 'POST',
+            body: JSON.stringify({ productId, retailPrice }),
+        }),
+
+    // Settings
+    getSettings: () =>
+        fetchApi<any>('/brand/settings'),
+
+    updateGeneralSettings: (data: any) =>
+        fetchApi('/brand/settings/general', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    updateBrandingSettings: (data: any) =>
+        fetchApi('/brand/settings/branding', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    uploadLogo: (logoUrl: string) =>
+        fetchApi('/brand/settings/branding/logo', {
+            method: 'POST',
+            body: JSON.stringify({ logoUrl }),
+        }),
+
+    setCustomDomain: (domain: string) =>
+        fetchApi('/brand/settings/branding/custom-domain', {
+            method: 'PUT',
+            body: JSON.stringify({ domain }),
+        }),
+
+    removeCustomDomain: () =>
+        fetchApi('/brand/settings/branding/custom-domain', {
+            method: 'DELETE',
+        }),
+
+    verifyDns: () =>
+        fetchApi('/brand/settings/branding/verify-dns', {
+            method: 'POST',
+        }),
+
+    getDnsStatus: () =>
+        fetchApi<any>('/brand/settings/branding/dns-status'),
+
+    getBillingInfo: () =>
+        fetchApi<any>('/brand/settings/billing'),
+
+    updateBillingInfo: (data: any) =>
+        fetchApi('/brand/settings/billing/info', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    addPaymentMethod: (data: any) =>
+        fetchApi('/brand/settings/billing/payment-methods', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    removePaymentMethod: (id: string) =>
+        fetchApi(`/brand/settings/billing/payment-methods/${id}`, {
+            method: 'DELETE',
+        }),
+
+    updateCommission: (data: any) =>
+        fetchApi('/brand/settings/commission', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    updateAffiliateToggle: (data: { enabled: boolean }) =>
+        fetchApi('/brand/settings/affiliates', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    getNotificationPrefs: () =>
+        fetchApi<any>('/brand/settings/notifications'),
+
+    updateNotificationPrefs: (preferences: Record<string, boolean>) =>
+        fetchApi('/brand/settings/notifications', {
+            method: 'PUT',
+            body: JSON.stringify({ preferences }),
+        }),
+
+    rotateApiKey: () =>
+        fetchApi<any>('/brand/settings/rotate-api-key', {
+            method: 'POST',
+        }),
+};
+
+export const catalogApi = {
+    getProducts: (filter?: { categoryId?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.categoryId) params.append('categoryId', filter.categoryId);
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/catalog/products${query ? `?${query}` : ''}`);
+    },
+
+    getProduct: (id: string) =>
+        fetchApi<any>(`/catalog/products/${id}`),
+
+    getCategories: () =>
+        fetchApi<any[]>('/catalog/categories'),
+};
