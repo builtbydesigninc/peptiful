@@ -419,3 +419,95 @@ export const catalogApi = {
     getCategories: () =>
         fetchApi<any[]>('/catalog/categories'),
 };
+
+export const partnerApi = {
+    getProfile: () =>
+        fetchApi<any>('/partner/me'),
+
+    getStats: () =>
+        fetchApi<any>('/partner/dashboard'),
+
+    getBrands: (filter?: { search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/partner/brands${query ? `?${query}` : ''}`);
+    },
+
+    getBrandsStats: () =>
+        fetchApi<any>('/partner/brands/stats'),
+
+    getBrandsCount: () =>
+        fetchApi<any>('/partner/brands/count'),
+
+    getEarnings: () =>
+        fetchApi<any>('/partner/earnings'),
+
+    getMonthlyEarnings: () =>
+        fetchApi<any[]>('/partner/earnings/monthly'),
+
+    exportEarningsCSV: () =>
+        fetchApi<any>('/partner/earnings/export'),
+
+    getPayouts: (filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/partner/payouts${query ? `?${query}` : ''}`);
+    },
+
+    getPayoutSummary: () =>
+        fetchApi<any>('/partner/payouts/summary'),
+
+    getPayoutDetail: (id: string) =>
+        fetchApi<any>(`/partner/payouts/${id}`),
+
+    getPayoutReceipt: (id: string) =>
+        fetchApi<any>(`/partner/payouts/${id}/receipt`),
+
+    getPaymentMethod: () =>
+        fetchApi<any>('/partner/payment-method'),
+
+    updatePaymentMethod: (data: any) =>
+        fetchApi('/partner/payment-method', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    getReferralLink: () =>
+        fetchApi<any>('/partner/referral-link'),
+
+    getReferralLinks: (filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/partner/referral-links${query ? `?${query}` : ''}`);
+    },
+
+    createReferralLink: (data: any) =>
+        fetchApi('/partner/referral-links', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    getReferralStats: () =>
+        fetchApi<any>('/partner/referral-stats'),
+
+    trackReferralShare: (id: string) =>
+        fetchApi(`/partner/referral-links/${id}/track-share`, {
+            method: 'POST',
+        }),
+
+    getProfileFields: () =>
+        fetchApi<any>('/partner/profile'),
+
+    updateProfile: (data: any) =>
+        fetchApi('/partner/profile', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+};

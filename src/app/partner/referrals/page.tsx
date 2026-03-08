@@ -6,15 +6,48 @@ import { Button } from '@/components/ui/button-new';
 import { Badge } from '@/components/ui/badge-new';
 import { RiFileCopyLine, RiCheckLine, RiLink, RiMailLine, RiTwitterLine, RiLinkedinLine, RiQrCodeLine } from '@remixicon/react';
 
+import { partnerApi } from '@/lib/api-client';
+
 export default function ReferralToolsPage() {
   const [copied, setCopied] = React.useState<string | null>(null);
-  const copy = (key: string) => { setCopied(key); setTimeout(() => setCopied(null), 2000); };
+  const [loading, setLoading] = React.useState(true);
+  const [links, setLinks] = React.useState<any[]>([]);
+  const [stats, setStats] = React.useState<any>(null);
 
-  const links = [
-    { id: 'main', label: 'Main Referral Link', url: 'peptiful.com/join/partner_marcus', desc: 'General brand recruitment link' },
-    { id: 'landing', label: 'Custom Landing Page', url: 'peptiful.com/partners/marcus-rivera', desc: 'Branded landing page with your bio' },
-    { id: 'utm', label: 'UTM Tracked Link', url: 'peptiful.com/join/partner_marcus?utm_source=email&utm_medium=outreach', desc: 'For email campaigns' },
-  ];
+  const fetchData = React.useCallback(async () => {
+    try {
+      const [linksRes, statsRes] = await Promise.all([
+        partnerApi.getReferralLinks(),
+        partnerApi.getReferralStats(),
+      ]);
+      setLinks(linksRes.data || []);
+      setStats(statsRes);
+    } catch (error) {
+      console.error('Failed to fetch referral data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const copy = (key: string, url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="size-8 animate-spin rounded-full border-4 border-primary-base border-t-transparent" />
+      </div>
+    );
+  }
+
+  const conversion = stats?.clicks > 0 ? (stats.signups / stats.clicks) * 100 : 0;
 
   return (
     <div className='space-y-6'>
@@ -22,25 +55,31 @@ export default function ReferralToolsPage() {
 
       {/* Referral Links */}
       <div className='space-y-4'>
-        {links.map((link) => (
-          <div key={link.id} className='rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs'>
-            <div className='flex items-start justify-between mb-3'>
-              <div>
-                <p className='text-label-sm text-text-strong-950'>{link.label}</p>
-                <p className='text-paragraph-xs text-text-sub-600'>{link.desc}</p>
+        {links.length > 0 ? (
+          links.map((link) => (
+            <div key={link.id} className='rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs'>
+              <div className='flex items-start justify-between mb-3'>
+                <div>
+                  <p className='text-label-sm text-text-strong-950'>{link.label || 'Referral Link'}</p>
+                  <p className='text-paragraph-xs text-text-sub-600'>{link.description || 'General brand recruitment link'}</p>
+                </div>
+                <Badge variant='light' color='success' size='sm'>Active</Badge>
               </div>
-              <Badge variant='light' color='success' size='sm'>Active</Badge>
+              <div className='flex items-center gap-2 rounded-10 border border-stroke-soft-200 bg-bg-weak-50 px-3 py-2.5'>
+                <RiLink className='size-4 shrink-0 text-text-soft-400' />
+                <span className='flex-1 truncate text-paragraph-sm text-text-sub-600 font-mono'>{link.url}</span>
+                <Button variant='secondary' size='xs' onClick={() => copy(link.id, link.url)}>
+                  {copied === link.id ? <RiCheckLine className='size-3.5' /> : <RiFileCopyLine className='size-3.5' />}
+                  {copied === link.id ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
             </div>
-            <div className='flex items-center gap-2 rounded-10 border border-stroke-soft-200 bg-bg-weak-50 px-3 py-2.5'>
-              <RiLink className='size-4 shrink-0 text-text-soft-400' />
-              <span className='flex-1 truncate text-paragraph-sm text-text-sub-600'>{link.url}</span>
-              <Button variant='secondary' size='xs' onClick={() => copy(link.id)}>
-                {copied === link.id ? <RiCheckLine className='size-3.5' /> : <RiFileCopyLine className='size-3.5' />}
-                {copied === link.id ? 'Copied' : 'Copy'}
-              </Button>
-            </div>
+          ))
+        ) : (
+          <div className="rounded-xl border border-dashed border-stroke-soft-200 p-8 text-center text-paragraph-sm text-text-sub-600">
+            No referral links generated yet.
           </div>
-        ))}
+        )}
       </div>
 
       {/* Share Options */}
@@ -71,15 +110,17 @@ export default function ReferralToolsPage() {
         <h3 className='mb-4 text-label-md text-text-strong-950'>Link Performance</h3>
         <div className='grid grid-cols-3 gap-4'>
           <div className='rounded-10 bg-bg-weak-50 p-4 text-center'>
-            <p className='text-title-h5 text-text-strong-950'>248</p>
+            <p className='text-title-h5 text-text-strong-950'>{stats?.totalClicks || 0}</p>
             <p className='text-paragraph-xs text-text-sub-600'>Total Clicks</p>
           </div>
           <div className='rounded-10 bg-bg-weak-50 p-4 text-center'>
-            <p className='text-title-h5 text-text-strong-950'>12</p>
+            <p className='text-title-h5 text-text-strong-950'>{stats?.totalSignups || 0}</p>
             <p className='text-paragraph-xs text-text-sub-600'>Signups</p>
           </div>
           <div className='rounded-10 bg-bg-weak-50 p-4 text-center'>
-            <p className='text-title-h5 text-success-base'>4.8%</p>
+            <p className='text-title-h5 text-success-base'>
+              {conversion.toFixed(1)}%
+            </p>
             <p className='text-paragraph-xs text-text-sub-600'>Conversion</p>
           </div>
         </div>
