@@ -7,26 +7,61 @@ import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui/button-new';
 import { RiArrowRightLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react';
 import Image from 'next/image';
-import { PeptifulLogo, PeptifulLogomark } from '@/components/logo';
+import { PeptifulLogo } from '@/components/logo';
+import { adminApi, setApiToken } from '@/lib/api-client';
 
 const roles = [
-  { id: 'brand', label: 'Brand Owner', desc: 'Manage your storefront and products', href: '/brand' },
-  { id: 'partner', label: 'Partner', desc: 'Track referrals and commissions', href: '/partner' },
-  { id: 'affiliate', label: 'L1 Affiliate', desc: 'Manage your affiliate network', href: '/affiliate' },
-  { id: 'promoter', label: 'L2 Promoter', desc: 'Share codes and earn', href: '/promoter' },
-  { id: 'admin', label: 'Admin', desc: 'Platform administration', href: '/admin' },
+  { id: 'brand', label: 'Brand Owner', desc: 'Manage your storefront and products', href: '/brand', apiRole: 'BRAND' },
+  { id: 'partner', label: 'Partner', desc: 'Track referrals and commissions', href: '/partner', apiRole: 'PARTNER' },
+  { id: 'affiliate', label: 'L1 Affiliate', desc: 'Manage your affiliate network', href: '/affiliate', apiRole: 'AFFILIATE' },
+  { id: 'promoter', label: 'L2 Promoter', desc: 'Share codes and earn', href: '/promoter', apiRole: 'PROMOTER' },
+  { id: 'admin', label: 'Admin', desc: 'Platform administration', href: '/admin', apiRole: 'ADMIN' },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
   const [role, setRole] = React.useState('brand');
   const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const selectedRole = roles.find((r) => r.id === role)!;
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    router.push(selectedRole.href);
+    setError('');
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const { accessToken, user } = await adminApi.login({
+        email,
+        password
+      });
+
+      setApiToken(accessToken);
+
+      const roleRedirects: Record<string, string> = {
+        'SUPER_ADMIN': '/admin',
+        'ADMIN': '/admin',
+        'PARTNER': '/partner',
+        'BRAND_OWNER': '/brand',
+        'L1_AFFILIATE': '/affiliate',
+        'L2_AFFILIATE': '/promoter',
+        'LAB': '/lab',
+      };
+
+      const path = roleRedirects[user.role] || '/login';
+      router.push(path);
+    } catch (err: any) {
+      console.error('Login failed:', err);
+      setError(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,11 +98,18 @@ export default function LoginPage() {
             Select your role and enter your credentials.
           </p>
 
+          {error && (
+            <div className='mt-4 rounded-10 bg-error-lighter p-3 text-paragraph-xs text-error-base'>
+              {error}
+            </div>
+          )}
+
           {/* Role Selector */}
           <div className='mt-6 flex flex-wrap gap-2'>
             {roles.map((r) => (
               <button
                 key={r.id}
+                type='button'
                 onClick={() => setRole(r.id)}
                 className={cn(
                   'rounded-10 px-3 py-1.5 text-label-xs transition-all cursor-pointer',
@@ -85,8 +127,11 @@ export default function LoginPage() {
             <div className='space-y-1.5'>
               <label className='text-label-sm text-text-strong-950'>Email</label>
               <input
+                name='email'
                 type='email'
-                defaultValue='demo@peptiful.com'
+                required
+                placeholder='demo@peptiful.com'
+                autoComplete='email'
                 className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-strong-950 placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16'
               />
             </div>
@@ -97,8 +142,11 @@ export default function LoginPage() {
               </div>
               <div className='relative'>
                 <input
+                  name='password'
                   type={showPassword ? 'text' : 'password'}
-                  defaultValue='demo1234'
+                  required
+                  placeholder='Your password'
+                  autoComplete='current-password'
                   className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 pr-10 text-paragraph-sm text-text-strong-950 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16'
                 />
                 <button type='button' onClick={() => setShowPassword(!showPassword)} className='absolute right-3 top-1/2 -translate-y-1/2 text-text-soft-400 hover:text-text-strong-950 cursor-pointer'>
@@ -106,9 +154,9 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <Button type='submit' size='lg' className='w-full'>
-              Sign In as {selectedRole.label}
-              <RiArrowRightLine className='size-4' />
+            <Button type='submit' size='lg' className='w-full' disabled={loading}>
+              {loading ? 'Signing In...' : `Sign In as ${selectedRole.label}`}
+              {!loading && <RiArrowRightLine className='size-4' />}
             </Button>
           </form>
 
