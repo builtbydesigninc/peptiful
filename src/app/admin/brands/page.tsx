@@ -74,6 +74,10 @@ export default function AdminBrandsPage() {
     fetchBrands();
   }, [filter]);
 
+  React.useEffect(() => {
+    adminApi.getPartnersList().then(setPartners).catch(console.error);
+  }, []);
+
   const handleCreateBrand = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -204,6 +208,16 @@ export default function AdminBrandsPage() {
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Subdomain (Slug)</label>
                 <input name='slug' required placeholder='peptideking' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+              </div>
+
+              <div className='space-y-1.5'>
+                <label className='text-label-sm text-text-strong-950'>Partner (Optional)</label>
+                <select name='partnerId' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-strong-950 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16 cursor-pointer'>
+                  <option value=''>None (Direct)</option>
+                  {partners.map(p => (
+                    <option key={p.id} value={p.id}>{p.company || p.user?.fullName || 'Untitled Partner'}</option>
+                  ))}
+                </select>
               </div>
 
               <div className='grid grid-cols-2 gap-4'>

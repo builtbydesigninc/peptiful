@@ -14,11 +14,12 @@ export default function AdminOrdersPage() {
   const [filter, setFilter] = React.useState('all');
   const [orders, setOrders] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [search, setSearch] = React.useState('');
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response: any = await adminApi.getOrders(filter);
+      const response: any = await adminApi.getOrders({ status: filter, search });
       setOrders(Array.isArray(response) ? response : (response.data || []));
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -29,7 +30,7 @@ export default function AdminOrdersPage() {
 
   React.useEffect(() => {
     fetchOrders();
-  }, [filter]);
+  }, [filter, search]);
 
   return (
     <div className='space-y-6'>
@@ -37,7 +38,12 @@ export default function AdminOrdersPage() {
       <div className='flex items-center gap-3'>
         <div className='relative flex-1'>
           <RiSearchLine className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-soft-400' />
-          <input placeholder='Search orders by ID, email or brand...' className='h-9 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 pl-9 pr-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+          <input
+            placeholder='Search orders by ID, email or brand...'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className='h-9 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 pl-9 pr-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16'
+          />
         </div>
         {['all', 'confirmed', 'shipped', 'cancelled'].map((f) => (
           <Button key={f} variant='ghost' size='xs' className={cn(filter === f && 'bg-primary-alpha-10 text-primary-base')} onClick={() => setFilter(f)}>

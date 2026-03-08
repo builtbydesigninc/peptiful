@@ -1,21 +1,14 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function setApiToken(token: string) {
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', token);
-    }
+    // Session is now handled via HttpOnly cookies by the server
 }
 
 export async function fetchApi<T>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
-    const headers = new Headers(options.headers);
-    if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-    }
+    const headers = new Headers(options.headers || {});
     if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
     }
@@ -23,14 +16,26 @@ export async function fetchApi<T>(
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
+        credentials: 'include',
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+        if (response.status === 401 && typeof window !== 'undefined' && !endpoint.startsWith('/auth/')) {
+            // Redirect to login page - the backend cookie will be disregarded or cleared on login
+            window.location.href = '/login';
+            return new Promise(() => { });
+        }
+        const errText = await response.text();
+        const error = errText ? JSON.parse(errText) : { message: 'An unknown error occurred' };
         throw new Error(error.message || `API error: ${response.statusText}`);
     }
 
-    return response.json();
+    if (response.status === 204) {
+        return {} as T;
+    }
+
+    const text = await response.text();
+    return text ? JSON.parse(text) : {} as T;
 }
 
 export const adminApi = {
@@ -85,11 +90,59 @@ export const adminApi = {
             method: 'DELETE',
         }),
 
-    getPartners: (filter?: string) =>
-        fetchApi<any[]>(`/admin/partners${filter && filter !== 'all' ? `?status=${filter.toUpperCase()}` : ''}`),
+    getPartners: (filter?: string | { status?: string; search?: string }) => {
+        const params = new URLSearchParams();
+        if (typeof filter === 'string') {
+            if (filter !== 'all') params.append('status', filter.toUpperCase());
+        } else if (filter) {
+            if (filter.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+            if (filter.search && typeof filter.search === 'string') params.append('search', filter.search);
+        }
+        const query = params.toString();
+        return fetchApi<any[]>(`/admin/partners${query ? `?${query}` : ''}`);
+    },
+    getPartnersList: () =>
+        fetchApi<any[]>('/admin/partners/list'),
 
-    getOrders: (filter?: string) =>
-        fetchApi<any[]>(`/admin/orders${filter && filter !== 'all' ? `?status=${filter.toUpperCase()}` : ''}`),
+    createPartner: (data: any) =>
+        fetchApi('/admin/partners', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    updatePartner: (id: string, data: any) =>
+        fetchApi(`/admin/partners/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    changePartnerStatus: (id: string, status: string, reason?: string) =>
+        fetchApi(`/admin/partners/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status, reason }),
+        }),
+
+    deletePartner: (id: string) =>
+        fetchApi(`/admin/partners/${id}`, {
+            method: 'DELETE',
+        }),
+
+    getOrders: (filter?: string | { status?: string; search?: string }) => {
+        const params = new URLSearchParams();
+
+        if (typeof filter === 'string') {
+            if (filter !== 'all') params.append('status', filter.toUpperCase());
+        } else if (filter) {
+            if (filter.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+            if (filter.search && typeof filter.search === 'string') params.append('search', filter.search);
+        }
+
+        const query = params.toString();
+        return fetchApi<any[]>(`/admin/orders${query ? `?${query}` : ''}`);
+    },
+
+    getOrder: (id: string) =>
+        fetchApi<any>(`/admin/orders/${id}`),
 
     getPayoutQueue: (filter?: any) => {
         const params = new URLSearchParams();

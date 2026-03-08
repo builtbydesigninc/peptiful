@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 import { PageHeader } from '@/components/ui/page-header-new';
 import { Badge } from '@/components/ui/badge-new';
 import { Button } from '@/components/ui/button-new';
-import { RiSearchLine, RiAddLine, RiMoreLine, RiCloseLine, RiEyeLine, RiEditLine, RiForbidLine, RiCheckLine } from '@remixicon/react';
+import { RiSearchLine, RiAddLine, RiMoreLine, RiCloseLine, RiEyeLine, RiEditLine, RiForbidLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/react';
 import { adminApi } from '@/lib/api-client';
 
 function RowMenu({ partner, onAction }: { partner: any; onAction: (action: string) => void }) {
@@ -28,6 +28,7 @@ function RowMenu({ partner, onAction }: { partner: any; onAction: (action: strin
             { label: 'View Details', icon: RiEyeLine, action: 'view' },
             { label: 'Edit', icon: RiEditLine, action: 'edit' },
             { label: partner.status === 'SUSPENDED' ? 'Activate' : 'Suspend', icon: partner.status === 'SUSPENDED' ? RiCheckLine : RiForbidLine, action: 'toggle' },
+            { label: 'Delete', icon: RiDeleteBinLine, action: 'delete', danger: true },
           ].map((item) => {
             const Icon = item.icon;
             return (
@@ -35,7 +36,8 @@ function RowMenu({ partner, onAction }: { partner: any; onAction: (action: strin
                 key={item.action}
                 onClick={() => { setOpen(false); onAction(item.action); }}
                 className={cn(
-                  'flex w-full items-center gap-2.5 px-3 py-2 text-label-xs transition-colors cursor-pointer text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
+                  'flex w-full items-center gap-2.5 px-3 py-2 text-label-xs transition-colors cursor-pointer',
+                  item.danger ? 'text-error-base hover:bg-error-lighter' : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
                 )}
               >
                 <Icon className='size-4' />
@@ -54,11 +56,15 @@ export default function AdminPartnersPage() {
   const [partners, setPartners] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [showCreate, setShowCreate] = React.useState(false);
+  const [search, setSearch] = React.useState('');
 
   const fetchPartners = async () => {
     setLoading(true);
     try {
-      const response: any = await adminApi.getPartners(filter);
+      const response: any = await adminApi.getPartners({
+        status: filter === 'all' ? undefined : filter,
+        search: search || undefined
+      });
       setPartners(Array.isArray(response) ? response : (response.data || []));
     } catch (error) {
       console.error('Failed to fetch partners:', error);
@@ -67,9 +73,44 @@ export default function AdminPartnersPage() {
     }
   };
 
+  const handleAction = async (partnerId: string, action: string) => {
+    if (action === 'delete') {
+      if (confirm('Are you sure you want to delete this partner?')) {
+        await adminApi.deletePartner(partnerId);
+        fetchPartners();
+      }
+    } else if (action === 'toggle') {
+      const partner = partners.find(p => p.id === partnerId);
+      const newStatus = partner.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
+      await adminApi.changePartnerStatus(partnerId, newStatus);
+      fetchPartners();
+    }
+  };
+
+  const handleInvitePartner = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      fullName: formData.get('fullName'),
+      email: formData.get('email'),
+      company: formData.get('company'),
+      commissionRate: parseFloat(formData.get('commissionRate') as string),
+      password: 'Peptiful123!', // Using a default password for simplicity in this demo form
+    };
+
+    try {
+      await adminApi.createPartner(data);
+      setShowCreate(false);
+      fetchPartners();
+    } catch (error) {
+      console.error('Failed to invite partner:', error);
+      alert('Failed to invite partner.');
+    }
+  };
+
   React.useEffect(() => {
     fetchPartners();
-  }, [filter]);
+  }, [filter, search]);
 
   return (
     <div className='space-y-6'>
@@ -79,7 +120,12 @@ export default function AdminPartnersPage() {
       <div className='flex items-center gap-3'>
         <div className='relative flex-1'>
           <RiSearchLine className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-soft-400' />
-          <input placeholder='Search partners...' className='h-9 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 pl-9 pr-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+          <input
+            placeholder='Search partners...'
+            className='h-9 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 pl-9 pr-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
         {['all', 'active', 'pending', 'suspended'].map((f) => (
           <Button key={f} variant='ghost' size='xs' className={cn(filter === f && 'bg-primary-alpha-10 text-primary-base')} onClick={() => setFilter(f)}>
@@ -117,7 +163,7 @@ export default function AdminPartnersPage() {
                     </Badge>
                   </td>
                   <td className='px-5 py-3.5'>
-                    <RowMenu partner={p} onAction={() => { }} />
+                    <RowMenu partner={p} onAction={(action) => handleAction(p.id, action)} />
                   </td>
                 </tr>
               ))}
@@ -138,29 +184,32 @@ export default function AdminPartnersPage() {
               <h3 className='text-label-lg text-text-strong-950'>Add New Partner</h3>
               <Button variant='ghost' size='xs' iconOnly onClick={() => setShowCreate(false)}><RiCloseLine className='size-5' /></Button>
             </div>
-            <div className='space-y-4'>
-              {[
-                { label: 'Full Name', placeholder: 'e.g. John Smith' },
-                { label: 'Company', placeholder: 'e.g. Wellness Partners Co.' },
-                { label: 'Email', placeholder: 'john@company.com' },
-              ].map((f) => (
-                <div key={f.label} className='space-y-1.5'>
-                  <label className='text-label-sm text-text-strong-950'>{f.label}</label>
-                  <input placeholder={f.placeholder} className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
-                </div>
-              ))}
+            <form onSubmit={handleInvitePartner} className='space-y-4'>
+              <div className='space-y-1.5'>
+                <label className='text-label-sm text-text-strong-950'>Full Name</label>
+                <input name='fullName' placeholder='e.g. John Smith' required className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+              </div>
+              <div className='space-y-1.5'>
+                <label className='text-label-sm text-text-strong-950'>Company</label>
+                <input name='company' placeholder='e.g. Wellness Partners Co.' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+              </div>
+              <div className='space-y-1.5'>
+                <label className='text-label-sm text-text-strong-950'>Email</label>
+                <input name='email' type='email' placeholder='john@company.com' required className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+              </div>
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Commission Rate (% of wholesale)</label>
                 <div className='flex items-center gap-2'>
-                  <input defaultValue='10' type='number' className='h-10 w-24 rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                  <input name='commissionRate' defaultValue='10' type='number' className='h-10 w-24 rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
                   <span className='text-label-sm text-text-sub-600'>%</span>
                 </div>
               </div>
+              <p className='text-[10px] text-text-soft-400'>Note: A temporary password "Peptiful123!" will be assigned.</p>
               <div className='flex justify-end gap-3 pt-2'>
-                <Button variant='secondary' onClick={() => setShowCreate(false)}>Cancel</Button>
-                <Button onClick={() => setShowCreate(false)}>Add Partner</Button>
+                <Button variant='secondary' type='button' onClick={() => setShowCreate(false)}>Cancel</Button>
+                <Button type='submit'>Add Partner</Button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

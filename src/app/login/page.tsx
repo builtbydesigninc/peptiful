@@ -39,14 +39,23 @@ export default function LoginPage() {
     try {
       const { accessToken, user } = await adminApi.login({
         email,
-        password,
-        role: selectedRole.apiRole
+        password
       });
 
       setApiToken(accessToken);
 
-      // Redirect based on backend role or selected role
-      router.push(selectedRole.href);
+      const roleRedirects: Record<string, string> = {
+        'SUPER_ADMIN': '/admin',
+        'ADMIN': '/admin',
+        'PARTNER': '/partner',
+        'BRAND_OWNER': '/brand',
+        'L1_AFFILIATE': '/affiliate',
+        'L2_AFFILIATE': '/promoter',
+        'LAB': '/lab',
+      };
+
+      const path = roleRedirects[user.role] || '/login';
+      router.push(path);
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid email or password. Please try again.');
