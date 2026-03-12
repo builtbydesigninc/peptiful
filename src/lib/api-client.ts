@@ -4,38 +4,72 @@ export function setApiToken(token: string) {
     // Session is now handled via HttpOnly cookies by the server
 }
 
+const pendingRequests = new Map<string, Promise<any>>();
+
 export async function fetchApi<T>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> {
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+    const cacheKey = isGet ? `${endpoint}` : null;
+
+    if (isGet && cacheKey && pendingRequests.has(cacheKey)) {
+        return pendingRequests.get(cacheKey);
+    }
+
     const headers = new Headers(options.headers || {});
     if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers,
-        credentials: 'include',
-    });
+    const executeRequest = async (): Promise<T> => {
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...options,
+                headers,
+                credentials: 'include',
+            });
 
-    if (!response.ok) {
-        if (response.status === 401 && typeof window !== 'undefined' && !endpoint.startsWith('/auth/')) {
-            // Redirect to login page - the backend cookie will be disregarded or cleared on login
-            window.location.href = '/login';
-            return new Promise(() => { });
+            if (!response.ok) {
+                // If 401, redirect to appropriate login page, but NOT for auth endpoints themselves
+                const isAuthEndpoint = endpoint.includes('/auth/');
+                if (response.status === 401 && typeof window !== 'undefined' && !isAuthEndpoint) {
+                    const isAffiliatePath = window.location.pathname.startsWith('/affiliate');
+                    const targetPath = isAffiliatePath ? '/affiliate/login' : '/login';
+
+                    if (window.location.pathname !== targetPath) {
+                        window.location.href = targetPath;
+                    }
+                    return new Promise(() => { });
+                }
+
+                const errText = await response.text();
+                let error;
+                try {
+                    error = errText ? JSON.parse(errText) : { message: 'An unknown error occurred' };
+                } catch {
+                    error = { message: errText || 'An unknown error occurred' };
+                }
+                throw new Error(error.message || `API error: ${response.statusText}`);
+            }
+
+            if (response.status === 204) return {} as T;
+
+            const text = await response.text();
+            return text ? JSON.parse(text) : {} as T;
+        } finally {
+            if (isGet && cacheKey) {
+                pendingRequests.delete(cacheKey);
+            }
         }
-        const errText = await response.text();
-        const error = errText ? JSON.parse(errText) : { message: 'An unknown error occurred' };
-        throw new Error(error.message || `API error: ${response.statusText}`);
+    };
+
+    const requestPromise = executeRequest();
+    if (isGet && cacheKey) {
+        pendingRequests.set(cacheKey, requestPromise);
     }
 
-    if (response.status === 204) {
-        return {} as T;
-    }
-
-    const text = await response.text();
-    return text ? JSON.parse(text) : {} as T;
+    return requestPromise;
 }
 
 export const adminApi = {
@@ -217,6 +251,9 @@ export const adminApi = {
             method: 'POST',
             body: JSON.stringify(data),
         }),
+
+    logout: () =>
+        fetchApi('/auth/logout', { method: 'POST' }),
 };
 
 export const brandApi = {
@@ -510,4 +547,223 @@ export const partnerApi = {
             method: 'PUT',
             body: JSON.stringify(data),
         }),
+};
+
+export const affiliateApi = {
+    // Auth
+    login: (data: { email: string; password: string }) =>
+        fetchApi<{ accessToken: string; user: any }>('/affiliate/auth/login', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    logout: () =>
+        fetchApi('/affiliate/auth/logout', { method: 'POST' }),
+
+    getProfile: () =>
+        fetchApi<any>('/affiliate/me'),
+
+    updateProfile: (data: any) =>
+        fetchApi('/affiliate/me', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    selectBrand: (brandId: string) =>
+        fetchApi('/affiliate/me/selected-brand', {
+            method: 'PUT',
+            body: JSON.stringify({ brandId }),
+        }),
+
+    // Dashboard (requires X-Brand-Id header)
+    getDashboardStats: (brandId: string) =>
+        fetchApi<any>('/affiliate/dashboard/stats', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getReferralLink: (brandId: string) =>
+        fetchApi<any>('/affiliate/dashboard/referral-link', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getTrendingProducts: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/dashboard/trending-products', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    // Orders (requires X-Brand-Id header)
+    getOrders: (brandId: string, filter?: { page?: number; limit?: number; status?: string; dateFrom?: string; dateTo?: string }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        if (filter?.status) params.append('status', filter.status);
+        if (filter?.dateFrom) params.append('dateFrom', filter.dateFrom);
+        if (filter?.dateTo) params.append('dateTo', filter.dateTo);
+        const query = params.toString();
+        return fetchApi<any>(`/affiliate/orders${query ? `?${query}` : ''}`, {
+            headers: { 'X-Brand-Id': brandId },
+        });
+    },
+
+    getOrderStats: (brandId: string) =>
+        fetchApi<any>('/affiliate/orders/stats', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    // Earnings (requires X-Brand-Id header)
+    getEarningsStats: (brandId: string) =>
+        fetchApi<any>('/affiliate/earnings/stats', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getMonthlyEarnings: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/earnings/monthly', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getEarningsByCustomer: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/earnings/by-customer', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    // Team — L2 affiliates (requires X-Brand-Id header, L1 only)
+    getTeam: (brandId: string, filter?: { page?: number; limit?: number; search?: string }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        if (filter?.search) params.append('search', filter.search);
+        const query = params.toString();
+        return fetchApi<any>(`/affiliate/team${query ? `?${query}` : ''}`, {
+            headers: { 'X-Brand-Id': brandId },
+        });
+    },
+
+    getTeamStats: (brandId: string) =>
+        fetchApi<any>('/affiliate/team/stats', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    generateTeamInvite: (brandId: string) =>
+        fetchApi<any>('/affiliate/team/invite', {
+            method: 'POST',
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    updateTeamMember: (brandId: string, id: string, data: any) =>
+        fetchApi(`/affiliate/team/${id}`, {
+            method: 'PUT',
+            headers: { 'X-Brand-Id': brandId },
+            body: JSON.stringify(data),
+        }),
+
+    updateTeamMemberStatus: (brandId: string, id: string, data: any) =>
+        fetchApi(`/affiliate/team/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'X-Brand-Id': brandId },
+            body: JSON.stringify(data),
+        }),
+
+    // Payouts
+    getPayouts: (brandId: string, filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/affiliate/payouts${query ? `?${query}` : ''}`, {
+            headers: { 'X-Brand-Id': brandId },
+        });
+    },
+
+    getPayoutSummary: (brandId: string) =>
+        fetchApi<any>('/affiliate/payouts/summary', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getPaymentMethod: (brandId: string) =>
+        fetchApi<any>('/affiliate/payouts/payment-method', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    updatePaymentMethod: (brandId: string, data: any) =>
+        fetchApi('/affiliate/payouts/payment-method', {
+            method: 'PUT',
+            headers: { 'X-Brand-Id': brandId },
+            body: JSON.stringify(data),
+        }),
+
+    getPayoutDetail: (brandId: string, id: string) =>
+        fetchApi<any>(`/affiliate/payouts/${id}`, {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getPayoutReceipt: (brandId: string, id: string) =>
+        fetchApi<any>(`/affiliate/payouts/${id}/receipt`, {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    // Promo Codes — scoped to a brand (requires X-Brand-Id header)
+    getCodes: (brandId: string, filter?: { page?: number; limit?: number; search?: string }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        if (filter?.search) params.append('search', filter.search);
+        const query = params.toString();
+        return fetchApi<any>(`/affiliate/brands/${brandId}/codes${query ? `?${query}` : ''}`, {
+            headers: { 'X-Brand-Id': brandId },
+        });
+    },
+
+    createCode: (brandId: string, data: any) =>
+        fetchApi(`/affiliate/brands/${brandId}/codes`, {
+            method: 'POST',
+            headers: { 'X-Brand-Id': brandId },
+            body: JSON.stringify(data),
+        }),
+
+    assignCode: (brandId: string, codeId: string, data: any) =>
+        fetchApi(`/affiliate/brands/${brandId}/codes/${codeId}/assign`, {
+            method: 'POST',
+            headers: { 'X-Brand-Id': brandId },
+            body: JSON.stringify(data),
+        }),
+
+    // Share Toolkit (requires X-Brand-Id header)
+    getShareTemplates: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/share/templates', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getShareLinks: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/share/links', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    // Insights (requires X-Brand-Id header)
+    getCustomerStats: (brandId: string) =>
+        fetchApi<any>('/affiliate/insights/customers/stats', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getTopCustomers: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/insights/customers/top', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    getTopProducts: (brandId: string) =>
+        fetchApi<any[]>('/affiliate/insights/products/top', {
+            headers: { 'X-Brand-Id': brandId },
+        }),
+
+    sendOffer: (brandId: string, customerId: string, data: any) =>
+        fetchApi(`/affiliate/insights/customers/${customerId}/send-offer`, {
+            method: 'POST',
+            headers: { 'X-Brand-Id': brandId },
+            body: JSON.stringify(data),
+        }),
+
+    getBrands: () =>
+        fetchApi<any[]>('/affiliate/brands'),
+
+    getAllLinks: () =>
+        fetchApi<any[]>('/affiliate/links'),
 };

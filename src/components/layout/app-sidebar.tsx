@@ -15,7 +15,9 @@ import {
   RiUserLine,
   RiArrowUpSLine,
 } from '@remixicon/react';
+import { adminApi, affiliateApi, setApiToken } from '@/lib/api-client';
 import { useTheme } from 'next-themes';
+import { useAffiliate } from '@/app/affiliate/context';
 
 export type NavItem = {
   label: string;
@@ -175,6 +177,7 @@ export function AppSidebar({ config }: { config: SidebarConfig }) {
 function UserDropdown({ user, collapsed }: { user: { name: string; email: string }; collapsed: boolean }) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
+  const { logout } = useAffiliate();
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -229,7 +232,22 @@ function UserDropdown({ user, collapsed }: { user: { name: string; email: string
               View Profile
             </button>
             <button
-              onClick={() => { setOpen(false); router.push('/login'); }}
+              onClick={async () => {
+                setOpen(false);
+                const isAffiliatePath = window.location.pathname.startsWith('/affiliate');
+
+                try {
+                  if (logout) {
+                    await logout();
+                  } else {
+                    await adminApi.logout();
+                  }
+                } catch (err) {
+                  console.error("Logout failed:", err);
+                }
+
+                window.location.href = isAffiliatePath ? '/affiliate/login' : '/login';
+              }}
               className='flex w-full items-center gap-2.5 px-3 py-2 text-label-xs text-error-base hover:bg-error-lighter transition-colors cursor-pointer'
             >
               <RiLogoutBoxRLine className='size-4' />

@@ -1,168 +1,175 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-
-export type UserRole = "affiliate" | "brand"
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react"
+import { affiliateApi } from "@/lib/api-client"
+import { useRouter } from "next/navigation"
 
 export interface Brand {
   id: string
   name: string
-  storeUrl: string
-  status: "connected" | "disconnected"
-  ordersToday: number
-  revenue: string
-  commission: string
+  slug: string
+  logoUrl?: string
+  commissionRate: number
+  status: string
 }
 
 export interface AffiliateUser {
   id: string
   name: string
   email: string
-  role: UserRole
-  // For affiliates: all brands they own
-  // For brands: just their single brand
+  role: string
+  affiliateType: string  // 'L1_AFFILIATE' | 'L2_AFFILIATE'
   brands: Brand[]
-  // Currently selected brand (null = all brands for affiliates)
   selectedBrandId: string | null
-}
-
-// Mock data
-const mockBrands: Brand[] = [
-  {
-    id: "hoa",
-    name: "House of Aminos",
-    storeUrl: "houseofaminos.com",
-    status: "connected",
-    ordersToday: 12,
-    revenue: "$45,231",
-    commission: "$4,523",
-  },
-  {
-    id: "tpm",
-    name: "TPM",
-    storeUrl: "tpm-peptides.com",
-    status: "connected",
-    ordersToday: 8,
-    revenue: "$28,450",
-    commission: "$2,845",
-  },
-  {
-    id: "ps",
-    name: "Peptide Sciences",
-    storeUrl: "peptidesciences.com",
-    status: "disconnected",
-    ordersToday: 0,
-    revenue: "$0",
-    commission: "$0",
-  },
-]
-
-const mockUsers: Record<string, AffiliateUser> = {
-  "affiliate@builtbydesign.com": {
-    id: "aff-1",
-    name: "Built by Design",
-    email: "affiliate@builtbydesign.com",
-    role: "affiliate",
-    brands: mockBrands,
-    selectedBrandId: null,
-  },
-  "brand@houseofaminos.com": {
-    id: "brand-hoa",
-    name: "House of Aminos",
-    email: "brand@houseofaminos.com",
-    role: "brand",
-    brands: [mockBrands[0]],
-    selectedBrandId: "hoa",
-  },
-  "brand@tpm.com": {
-    id: "brand-tpm",
-    name: "TPM",
-    email: "brand@tpm.com",
-    role: "brand",
-    brands: [mockBrands[1]],
-    selectedBrandId: "tpm",
-  },
 }
 
 interface AffiliateContextType {
   user: AffiliateUser | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
+  selectedBrandId: string | null
   selectBrand: (brandId: string | null) => void
   getSelectedBrand: () => Brand | null
   getVisibleBrands: () => Brand[]
+  refreshProfile: () => Promise<void>
+  login: (email: string, password: string) => Promise<boolean>
+  logout: () => Promise<void>
 }
 
 const AffiliateContext = createContext<AffiliateContextType | null>(null)
 
 export function AffiliateProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AffiliateUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const [state, setState] = useState<{
+    user: AffiliateUser | null;
+    selectedBrandId: string | null;
+    isLoading: boolean;
+  }>({
+    user: null,
+    selectedBrandId: null,
+    isLoading: true,
+  })
 
-  useEffect(() => {
-    // Check for stored session
-    const stored = localStorage.getItem("affiliate_user")
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored))
-      } catch {
-        localStorage.removeItem("affiliate_user")
+  const fetchProfile = useCallback(async () => {
+    try {
+      const profile = await affiliateApi.getProfile()
+      const mapped: AffiliateUser = {
+        id: profile.id || '',
+        name: profile.fullName || profile.name || profile.email,
+        email: profile.email,
+        role: profile.role,
+        affiliateType: profile.affiliateType || profile.role,
+        brands: (profile.brands || []).map((b: any) => ({
+          id: b.brandId || b.id,
+          name: b.brand?.name || b.name,
+          slug: b.brand?.slug || b.slug || '',
+          logoUrl: b.brand?.logoUrl || b.logoUrl,
+          commissionRate: b.commissionRate ?? 0,
+          status: b.status || 'ACTIVE',
+        })),
+        selectedBrandId: profile.selectedBrandId ?? null,
       }
+
+      // Determine initial brand
+      let brandId = null
+      const storedBrandId = localStorage.getItem("affiliate_brand_id")
+      if (storedBrandId && mapped.brands.find(b => b.id === storedBrandId)) {
+        brandId = storedBrandId
+      } else if (mapped.selectedBrandId) {
+        brandId = mapped.selectedBrandId
+      } else if (mapped.brands.length > 0) {
+        brandId = mapped.brands[0].id
+      }
+
+      setState({
+        user: mapped,
+        selectedBrandId: brandId,
+        isLoading: false,
+      })
+    } catch (err) {
+      // Not authenticated — context just stays empty, middleware will handle redirect
+      setState(prev => ({ ...prev, user: null, isLoading: false }))
     }
-    setIsLoading(false)
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 800))
-    
-    const mockUser = mockUsers[email.toLowerCase()]
-    if (mockUser && password.length >= 4) {
-      setUser(mockUser)
-      localStorage.setItem("affiliate_user", JSON.stringify(mockUser))
+  const handleLogin = useCallback(async (email: string, password: string): Promise<boolean> => {
+    try {
+      await affiliateApi.login({ email, password })
+      await fetchProfile()
       return true
+    } catch (err) {
+      console.error("Affiliate login failed:", err)
+      return false
     }
-    return false
-  }
+  }, [fetchProfile])
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("affiliate_user")
-  }
+  const handleLogout = useCallback(async () => {
+    try {
+      await affiliateApi.logout()
+    } catch (err) {
+      console.error("Logout failed API side:", err)
+    } finally {
+      localStorage.removeItem("affiliate_brand_id")
+      setState({
+        user: null,
+        selectedBrandId: null,
+        isLoading: false,
+      })
+    }
+  }, [])
 
-  const selectBrand = (brandId: string | null) => {
-    if (!user || user.role === "brand") return // Brands can't switch
-    
-    const updated = { ...user, selectedBrandId: brandId }
-    setUser(updated)
-    localStorage.setItem("affiliate_user", JSON.stringify(updated))
-  }
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname === '/affiliate/login') {
+      setState(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+    fetchProfile()
+  }, [fetchProfile])
 
-  const getSelectedBrand = (): Brand | null => {
+  const selectBrand = useCallback((brandId: string | null) => {
+    setState(prev => ({ ...prev, selectedBrandId: brandId }))
+    if (brandId) {
+      localStorage.setItem("affiliate_brand_id", brandId)
+      affiliateApi.selectBrand(brandId).catch(() => { })
+    } else {
+      localStorage.removeItem("affiliate_brand_id")
+    }
+  }, [])
+
+  const getSelectedBrand = useCallback((): Brand | null => {
+    const { user, selectedBrandId } = state
     if (!user) return null
-    if (user.role === "brand") return user.brands[0]
-    if (!user.selectedBrandId) return null
-    return user.brands.find((b) => b.id === user.selectedBrandId) || null
-  }
+    if (!selectedBrandId) return user.brands[0] ?? null
+    return user.brands.find(b => b.id === selectedBrandId) ?? null
+  }, [state.user, state.selectedBrandId])
 
-  const getVisibleBrands = (): Brand[] => {
-    if (!user) return []
-    return user.brands
-  }
+  const getVisibleBrands = useCallback((): Brand[] => {
+    return state.user?.brands || []
+  }, [state.user])
+
+  const value = useMemo(() => ({
+    user: state.user,
+    isLoading: state.isLoading,
+    selectedBrandId: state.selectedBrandId,
+    selectBrand,
+    getSelectedBrand,
+    getVisibleBrands,
+    refreshProfile: fetchProfile,
+    login: handleLogin,
+    logout: handleLogout,
+  }), [
+    state.user,
+    state.isLoading,
+    state.selectedBrandId,
+    selectBrand,
+    getSelectedBrand,
+    getVisibleBrands,
+    fetchProfile,
+    handleLogin,
+    handleLogout
+  ])
 
   return (
-    <AffiliateContext.Provider
-      value={{
-        user,
-        isLoading,
-        login,
-        logout,
-        selectBrand,
-        getSelectedBrand,
-        getVisibleBrands,
-      }}
-    >
+    <AffiliateContext.Provider value={value}>
       {children}
     </AffiliateContext.Provider>
   )

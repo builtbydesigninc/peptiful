@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button-new';
 import { RiArrowRightLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react';
 import Image from 'next/image';
 import { PeptifulLogo } from '@/components/logo';
-import { adminApi, setApiToken } from '@/lib/api-client';
+import { adminApi, affiliateApi, setApiToken } from '@/lib/api-client';
 
 const roles = [
   { id: 'brand', label: 'Brand Owner', desc: 'Manage your storefront and products', href: '/brand', apiRole: 'BRAND' },
@@ -37,25 +37,29 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
 
     try {
-      const { accessToken, user } = await adminApi.login({
-        email,
-        password
-      });
+      if (role === 'affiliate' || role === 'promoter') {
+        // Affiliate login returns { accessToken, refreshToken, brands[] } — no user object
+        const { accessToken } = await affiliateApi.login({ email, password });
+        setApiToken(accessToken);
+        router.push('/affiliate');
+      } else {
+        // Admin/Brand/Partner login returns { accessToken, user: { role, ... } }
+        const { accessToken, user } = await adminApi.login({ email, password });
+        setApiToken(accessToken);
 
-      setApiToken(accessToken);
+        const roleRedirects: Record<string, string> = {
+          'SUPER_ADMIN': '/admin',
+          'ADMIN': '/admin',
+          'PARTNER': '/partner',
+          'BRAND_OWNER': '/brand',
+          'L1_AFFILIATE': '/affiliate',
+          'L2_AFFILIATE': '/affiliate',
+          'LAB': '/lab',
+        };
 
-      const roleRedirects: Record<string, string> = {
-        'SUPER_ADMIN': '/admin',
-        'ADMIN': '/admin',
-        'PARTNER': '/partner',
-        'BRAND_OWNER': '/brand',
-        'L1_AFFILIATE': '/affiliate',
-        'L2_AFFILIATE': '/promoter',
-        'LAB': '/lab',
-      };
-
-      const path = roleRedirects[user.role] || '/login';
-      router.push(path);
+        const path = roleRedirects[user.role] || '/login';
+        router.push(path);
+      }
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid email or password. Please try again.');
