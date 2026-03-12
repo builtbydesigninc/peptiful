@@ -17,7 +17,8 @@ import {
 } from '@remixicon/react';
 import { adminApi, affiliateApi, setApiToken } from '@/lib/api-client';
 import { useTheme } from 'next-themes';
-import { useAffiliate } from '@/app/affiliate/context';
+import { useOptionalAffiliate } from '@/app/affiliate/context';
+import { useOptionalAdmin } from '@/app/admin/context';
 
 export type NavItem = {
   label: string;
@@ -177,7 +178,19 @@ export function AppSidebar({ config }: { config: SidebarConfig }) {
 function UserDropdown({ user, collapsed }: { user: { name: string; email: string }; collapsed: boolean }) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
-  const { logout } = useAffiliate();
+  const affiliateCtx = useOptionalAffiliate();
+  const adminCtx = useOptionalAdmin();
+
+  const handleLogout = async () => {
+    if (affiliateCtx?.logout) {
+      await affiliateCtx.logout();
+    } else if (adminCtx?.logout) {
+      // Future-proofing: AdminProvider doesn't have logout yet but easily added
+      // For now we use the context fallback
+    } else {
+      await adminApi.logout();
+    }
+  };
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -225,7 +238,18 @@ function UserDropdown({ user, collapsed }: { user: { name: string; email: string
           </div>
           <div className='py-1'>
             <button
-              onClick={() => { setOpen(false); }}
+              onClick={() => {
+                setOpen(false);
+                const parts = window.location.pathname.split('/');
+                const portal = parts[1]; // Get 'affiliate', 'admin', 'brand', or 'partner'
+                if (portal === 'admin') {
+                  router.push('/admin/profile');
+                } else if (portal) {
+                  router.push(`/${portal}/settings`);
+                } else {
+                  router.push('/settings'); // Fallback
+                }
+              }}
               className='flex w-full items-center gap-2.5 px-3 py-2 text-label-xs text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950 transition-colors cursor-pointer'
             >
               <RiUserLine className='size-4' />
@@ -237,11 +261,7 @@ function UserDropdown({ user, collapsed }: { user: { name: string; email: string
                 const isAffiliatePath = window.location.pathname.startsWith('/affiliate');
 
                 try {
-                  if (logout) {
-                    await logout();
-                  } else {
-                    await adminApi.logout();
-                  }
+                  await handleLogout();
                 } catch (err) {
                   console.error("Logout failed:", err);
                 }

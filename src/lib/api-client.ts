@@ -254,6 +254,15 @@ export const adminApi = {
 
     logout: () =>
         fetchApi('/auth/logout', { method: 'POST' }),
+
+    getMe: () =>
+        fetchApi<any>('/auth/me'),
+
+    updateMe: (data: any) =>
+        fetchApi<any>('/auth/me', {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        }),
 };
 
 export const brandApi = {

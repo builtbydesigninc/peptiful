@@ -100,27 +100,63 @@ export default function AdminBrandsPage() {
     }
   };
 
+  const [editingBrand, setEditingBrand] = React.useState<any>(null);
+  const [viewingBrand, setViewingBrand] = React.useState<any>(null);
+
   const handleAction = async (brandId: string, action: string) => {
+    const brand = brands.find(b => b.id === brandId);
+    if (!brand) return;
+
     if (action === 'delete') {
-      if (confirm('Are you sure you want to delete this brand?')) {
+      if (confirm(`Are you sure you want to delete ${brand.name}?`)) {
         try {
           await adminApi.deleteBrand(brandId);
           fetchBrands();
         } catch (error) {
           console.error('Failed to delete brand:', error);
-          alert('Failed to delete brand. Check console for details.');
+          alert('Failed to delete brand.');
         }
       }
     } else if (action === 'toggle') {
-      const brand = brands.find(b => b.id === brandId);
       const newStatus = brand.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
       try {
         await adminApi.updateBrand(brandId, { status: newStatus });
         fetchBrands();
       } catch (error) {
         console.error('Failed to update brand status:', error);
-        alert('Failed to update brand status. Check console for details.');
+        alert('Failed to update brand status.');
       }
+    } else if (action === 'edit') {
+      setEditingBrand(brand);
+    } else if (action === 'view') {
+      setViewingBrand(brand);
+    }
+  };
+
+  const handleSubmitBrand = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      slug: formData.get('slug'),
+      partnerId: formData.get('partnerId') || null,
+      l1CommissionRate: parseFloat(formData.get('l1CommissionRate') as string),
+      status: formData.get('status'),
+    };
+
+    try {
+      if (editingBrand) {
+        await adminApi.updateBrand(editingBrand.id, data);
+        setEditingBrand(null);
+      } else {
+        await adminApi.createBrand(data);
+        setShowCreate(false);
+      }
+      fetchBrands();
+    } catch (error) {
+      console.error('Failed to save brand:', error);
+      alert('Failed to save brand. Check console for details.');
     }
   };
 
@@ -186,33 +222,33 @@ export default function AdminBrandsPage() {
         )}
       </div>
 
-      {/* Create Brand Modal */}
-      {showCreate && (
+      {/* Create/Edit Brand Modal */}
+      {(showCreate || editingBrand) && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-overlay'>
-          <form onSubmit={handleCreateBrand} className='w-full max-w-lg rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-6 shadow-complex'>
+          <form onSubmit={handleSubmitBrand} className='w-full max-w-lg rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-6 shadow-complex'>
             <div className='flex items-center justify-between mb-5'>
-              <h3 className='text-label-lg text-text-strong-950'>Create New Brand</h3>
-              <Button type='button' variant='ghost' size='xs' iconOnly onClick={() => setShowCreate(false)}>
+              <h3 className='text-label-lg text-text-strong-950'>{editingBrand ? 'Edit Brand' : 'Create New Brand'}</h3>
+              <Button type='button' variant='ghost' size='xs' iconOnly onClick={() => { setShowCreate(false); setEditingBrand(null); }}>
                 <RiCloseLine className='size-5' />
               </Button>
             </div>
             <div className='space-y-4'>
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Brand Name</label>
-                <input name='name' required placeholder='e.g. PeptideKing' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                <input name='name' required defaultValue={editingBrand?.name} placeholder='e.g. PeptideKing' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
               </div>
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Contact Email</label>
-                <input name='email' type='email' required placeholder='founder@brand.com' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                <input name='email' type='email' required defaultValue={editingBrand?.email} placeholder='founder@brand.com' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
               </div>
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Subdomain (Slug)</label>
-                <input name='slug' required placeholder='peptideking' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                <input name='slug' required defaultValue={editingBrand?.slug} placeholder='peptideking' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
               </div>
 
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Partner (Optional)</label>
-                <select name='partnerId' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-strong-950 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16 cursor-pointer'>
+                <select name='partnerId' defaultValue={editingBrand?.partnerId || ''} className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-strong-950 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16 cursor-pointer'>
                   <option value=''>None (Direct)</option>
                   {partners.map(p => (
                     <option key={p.id} value={p.id}>{p.company || p.user?.fullName || 'Untitled Partner'}</option>
@@ -223,23 +259,105 @@ export default function AdminBrandsPage() {
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-1.5'>
                   <label className='text-label-sm text-text-strong-950'>L1 Commission Rate (%)</label>
-                  <input name='l1CommissionRate' type='number' step='0.1' defaultValue='15' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                  <input name='l1CommissionRate' type='number' step='0.1' defaultValue={editingBrand?.l1CommissionRate || '15'} className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
                 </div>
                 <div className='space-y-1.5'>
-                  <label className='text-label-sm text-text-strong-950'>Initial Status</label>
-                  <select name='status' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-strong-950 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16 cursor-pointer'>
+                  <label className='text-label-sm text-text-strong-950'>Status</label>
+                  <select name='status' defaultValue={editingBrand?.status || 'ACTIVE'} className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-strong-950 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16 cursor-pointer'>
                     <option value='ACTIVE'>Active</option>
                     <option value='PENDING'>Pending</option>
+                    <option value='SUSPENDED'>Suspended</option>
                   </select>
                 </div>
               </div>
 
               <div className='flex justify-end gap-3 pt-2'>
-                <Button type='button' variant='secondary' onClick={() => setShowCreate(false)}>Cancel</Button>
-                <Button type='submit'>Create Brand</Button>
+                <Button type='button' variant='secondary' onClick={() => { setShowCreate(false); setEditingBrand(null); }}>Cancel</Button>
+                <Button type='submit'>{editingBrand ? 'Save Changes' : 'Create Brand'}</Button>
               </div>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* View Brand Modal */}
+      {viewingBrand && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4'>
+          <div className='w-full max-w-2xl rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-6 shadow-complex'>
+            <div className='flex items-center justify-between mb-6'>
+              <div>
+                <h3 className='text-label-lg text-text-strong-950'>{viewingBrand.name}</h3>
+                <p className='text-paragraph-xs text-text-sub-600'>{viewingBrand.slug}.peptiful.com</p>
+              </div>
+              <Button variant='ghost' size='xs' iconOnly onClick={() => setViewingBrand(null)}>
+                <RiCloseLine className='size-5' />
+              </Button>
+            </div>
+
+            <div className='grid grid-cols-2 gap-6'>
+              <div className='space-y-4'>
+                <div>
+                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Store Details</label>
+                  <div className='mt-2 space-y-2'>
+                    <div className='flex justify-between text-paragraph-sm'>
+                      <span className='text-text-sub-600'>Status</span>
+                      <Badge variant='light' color={viewingBrand.status === 'ACTIVE' ? 'success' : viewingBrand.status === 'PENDING' ? 'warning' : 'error'} size='sm'>
+                        {viewingBrand.status}
+                      </Badge>
+                    </div>
+                    <div className='flex justify-between text-paragraph-sm'>
+                      <span className='text-text-sub-600'>Partner</span>
+                      <span className='text-text-strong-950'>{viewingBrand.partner?.user?.fullName || 'Direct'}</span>
+                    </div>
+                    <div className='flex justify-between text-paragraph-sm'>
+                      <span className='text-text-sub-600'>L1 Commission</span>
+                      <span className='text-text-strong-950'>{viewingBrand.l1CommissionRate}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Performance</label>
+                  <div className='mt-2 space-y-2'>
+                    <div className='flex justify-between text-paragraph-sm'>
+                      <span className='text-text-sub-600'>Total Revenue</span>
+                      <span className='text-text-strong-950 font-medium'>${viewingBrand.totalRevenue || '0.00'}</span>
+                    </div>
+                    <div className='flex justify-between text-paragraph-sm'>
+                      <span className='text-text-sub-600'>Total Orders</span>
+                      <span className='text-text-strong-950'>{viewingBrand._count?.orders || 0}</span>
+                    </div>
+                    <div className='flex justify-between text-paragraph-sm'>
+                      <span className='text-text-sub-600'>Products</span>
+                      <span className='text-text-strong-950'>{viewingBrand._count?.brandProducts || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className='space-y-4'>
+                <div>
+                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Contact Information</label>
+                  <p className='mt-2 text-paragraph-sm text-text-strong-950'>{viewingBrand.email}</p>
+                </div>
+                {/* Placeholder for more details like created date etc */}
+                <div>
+                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Created At</label>
+                  <p className='mt-1 text-paragraph-sm text-text-sub-600'>
+                    {new Date(viewingBrand.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className='mt-8 pt-5 border-t border-stroke-soft-200 flex justify-end gap-3'>
+              <Button variant='secondary' onClick={() => setViewingBrand(null)}>Close</Button>
+              <Button onClick={() => { setViewingBrand(null); setEditingBrand(viewingBrand); }}>
+                <RiEditLine className='size-4' />
+                Edit Brand
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

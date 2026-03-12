@@ -182,3 +182,7 @@ export function useAffiliate() {
   }
   return context
 }
+
+export function useOptionalAffiliate() {
+  return useContext(AffiliateContext)
+}
