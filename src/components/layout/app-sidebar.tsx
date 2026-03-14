@@ -19,7 +19,7 @@ import { adminApi, affiliateApi, setApiToken } from '@/lib/api-client';
 import { useTheme } from 'next-themes';
 import { useOptionalAffiliate } from '@/app/affiliate/context';
 import { useOptionalAdmin } from '@/app/admin/context';
-import { useOptionalLab } from '@/app/lab/context';
+import { useOptionalLab } from '@/app/lab/(authenticated)/context';
 
 export type NavItem = {
   label: string;
