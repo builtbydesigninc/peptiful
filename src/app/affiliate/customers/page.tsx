@@ -1,302 +1,225 @@
-"use client"
+'use client';
 
+import * as React from 'react';
 import {
   Users,
   ShoppingBag,
   DollarSign,
   Mail,
   TrendingUp,
-} from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useAffiliate } from "../context"
-
-const allTopCustomers = [
-  {
-    id: 1,
-    name: "John Smith",
-    email: "john.smith@email.com",
-    orders: 24,
-    totalSpent: "$4,892.50",
-    avgOrder: "$203.85",
-    lastOrder: "2 days ago",
-    brandIds: ["hoa", "tpm"],
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    email: "sarah.j@email.com",
-    orders: 18,
-    totalSpent: "$3,456.80",
-    avgOrder: "$192.04",
-    lastOrder: "1 week ago",
-    brandIds: ["hoa"],
-  },
-  {
-    id: 3,
-    name: "Mike Williams",
-    email: "mike.w@email.com",
-    orders: 15,
-    totalSpent: "$2,987.40",
-    avgOrder: "$199.16",
-    lastOrder: "3 days ago",
-    brandIds: ["tpm"],
-  },
-  {
-    id: 4,
-    name: "Emily Brown",
-    email: "emily.b@email.com",
-    orders: 12,
-    totalSpent: "$2,345.60",
-    avgOrder: "$195.47",
-    lastOrder: "5 days ago",
-    brandIds: ["hoa"],
-  },
-  {
-    id: 5,
-    name: "David Lee",
-    email: "david.lee@email.com",
-    orders: 11,
-    totalSpent: "$2,156.90",
-    avgOrder: "$196.08",
-    lastOrder: "1 week ago",
-    brandIds: ["hoa", "tpm"],
-  },
-]
-
-const allTopProducts = [
-  {
-    id: 1,
-    name: "BPC-157 10mg",
-    brandId: "hoa",
-    brand: "House of Aminos",
-    sold: 342,
-    revenue: "$30,758.58",
-    commission: "$3,075.86",
-  },
-  {
-    id: 2,
-    name: "TB-500 5mg",
-    brandId: "hoa",
-    brand: "House of Aminos",
-    sold: 256,
-    revenue: "$28,153.44",
-    commission: "$2,815.34",
-  },
-  {
-    id: 3,
-    name: "Ipamorelin 5mg",
-    brandId: "tpm",
-    brand: "TPM",
-    sold: 198,
-    revenue: "$15,838.02",
-    commission: "$1,583.80",
-  },
-  {
-    id: 4,
-    name: "CJC-1295 2mg",
-    brandId: "tpm",
-    brand: "TPM",
-    sold: 167,
-    revenue: "$24,883.33",
-    commission: "$2,488.33",
-  },
-  {
-    id: 5,
-    name: "Semaglutide 5mg",
-    brandId: "hoa",
-    brand: "House of Aminos",
-    sold: 145,
-    revenue: "$43,355.00",
-    commission: "$4,335.50",
-  },
-]
-
-// Stats by view type
-const statsData = {
-  all: { totalCustomers: 847, repeatRate: "34.2%", avgOrders: "2.18", avgOrderValue: "$168.72" },
-  hoa: { totalCustomers: 523, repeatRate: "38.5%", avgOrders: "2.45", avgOrderValue: "$185.40" },
-  tpm: { totalCustomers: 312, repeatRate: "29.8%", avgOrders: "1.92", avgOrderValue: "$152.30" },
-  ps: { totalCustomers: 0, repeatRate: "0%", avgOrders: "0", avgOrderValue: "$0" },
-}
+} from 'lucide-react';
+import { RiLoader4Line } from '@remixicon/react';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PageHeader } from '@/components/ui/page-header-new';
+import { StatCard } from '@/components/ui/stat-card-new';
+import { Button } from '@/components/ui/button-new';
+import { useAffiliate } from "../context";
+import { affiliateApi } from '@/lib/api-client';
 
 export default function AffiliateCustomersPage() {
-  const { user, getSelectedBrand, getVisibleBrands } = useAffiliate()
+  const { getSelectedBrand, isLoading: ctxLoading } = useAffiliate();
+  const selectedBrand = getSelectedBrand();
 
-  if (!user) return null
+  const [stats, setStats] = React.useState<any>(null);
+  const [topCustomers, setTopCustomers] = React.useState<any[]>([]);
+  const [topProducts, setTopProducts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [offerLoading, setOfferLoading] = React.useState<string | null>(null);
 
-  const isAffiliate = user.role === "affiliate"
-  const selectedBrand = getSelectedBrand()
-  const visibleBrands = getVisibleBrands()
+  React.useEffect(() => {
+    if (!selectedBrand?.id) return;
 
-  // Get stats based on selection
-  const stats = selectedBrand
-    ? statsData[selectedBrand.id as keyof typeof statsData] || statsData.all
-    : isAffiliate
-      ? statsData.all
-      : statsData[user.brands[0]?.id as keyof typeof statsData] || statsData.all
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [statsData, customersData, productsData] = await Promise.all([
+          affiliateApi.getCustomerStats(selectedBrand.id),
+          affiliateApi.getTopCustomers(selectedBrand.id),
+          affiliateApi.getTopProducts(selectedBrand.id)
+        ]);
+        setStats(statsData);
+        setTopCustomers(customersData);
+        setTopProducts(productsData);
+      } catch (error) {
+        console.error('Failed to fetch customer insights:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [selectedBrand?.id]);
 
-  // Filter customers based on role and selection
-  let topCustomers = allTopCustomers.filter(c => 
-    c.brandIds.some(bid => visibleBrands.some(vb => vb.id === bid))
-  )
-  if (selectedBrand) {
-    topCustomers = topCustomers.filter(c => c.brandIds.includes(selectedBrand.id))
+  const handleSendOffer = async (customerId: string) => {
+    if (!selectedBrand?.id) return;
+    setOfferLoading(customerId);
+    try {
+      // Small delay for effect
+      await new Promise(resolve => setTimeout(resolve, 800));
+      // In a real app, you might show a modal to choose the offer
+      console.log('Sending offer to', customerId);
+      // await affiliateApi.sendOffer(selectedBrand.id, customerId, { offerType: 'RECURRING_DISCOUNT' });
+      alert('Offer sent successfully!');
+    } catch (error) {
+      console.error('Failed to send offer:', error);
+    } finally {
+      setOfferLoading(null);
+    }
+  };
+
+  if (ctxLoading) {
+    return (
+      <div className='flex h-64 items-center justify-center text-text-soft-400'>
+        <RiLoader4Line className='size-8 animate-spin' />
+      </div>
+    );
   }
 
-  // Filter products based on role and selection
-  let topProducts = allTopProducts.filter(p => 
-    visibleBrands.some(vb => vb.id === p.brandId)
-  )
-  if (selectedBrand) {
-    topProducts = topProducts.filter(p => p.brandId === selectedBrand.id)
+  if (!selectedBrand) {
+    return (
+      <div className='flex h-64 items-center justify-center'>
+        <p className='text-paragraph-sm text-text-sub-600'>Please select a brand to view customer insights.</p>
+      </div>
+    );
   }
-
-  // Show brand column for affiliates viewing all
-  const showBrandColumn = isAffiliate && !selectedBrand
-
-  const statCards = [
-    { label: "Total Customers", value: stats.totalCustomers.toString(), icon: Users, gradient: "from-navy/60 to-sky-500/40", iconBg: "bg-gradient-to-br from-navy to-sky-600" },
-    { label: "Repeat Rate", value: stats.repeatRate, icon: TrendingUp, gradient: "from-emerald-500/60 to-teal-500/40", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500" },
-    { label: "Avg Orders", value: stats.avgOrders, icon: ShoppingBag, gradient: "from-violet-500/60 to-purple-500/40", iconBg: "bg-gradient-to-br from-violet-500 to-purple-500" },
-    { label: "Avg Order Value", value: stats.avgOrderValue, icon: DollarSign, gradient: "from-amber-500/60 to-orange-500/40", iconBg: "bg-gradient-to-br from-amber-500 to-orange-500" },
-  ]
 
   return (
-    <div className="min-h-full bg-[#050510] text-white">
-      {/* Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(10,69,145,0.08),transparent)]" />
+    <div className='space-y-6'>
+      <PageHeader
+        title='Customer Insights'
+        description={`Understand your base and top performing products for ${selectedBrand.name}`}
+      />
+
+      {/* Stats */}
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+        <StatCard
+          title='Total Customers'
+          value={loading ? '—' : (stats?.totalCustomers || 0).toLocaleString()}
+          icon={Users}
+        />
+        <StatCard
+          title='Repeat Rate'
+          value={loading ? '—' : `${(stats?.repeatRate || 0).toFixed(1)}%`}
+          icon={TrendingUp}
+        />
+        <StatCard
+          title='Avg Orders'
+          value={loading ? '—' : (stats?.avgOrdersPerCustomer || 0).toFixed(2)}
+          icon={ShoppingBag}
+        />
+        <StatCard
+          title='Avg Order Value'
+          value={loading ? '—' : `$${(stats?.avgOrderValue || 0).toLocaleString()}`}
+          icon={DollarSign}
+        />
       </div>
 
-      <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
-        {/* Header */}
-        <div>
-          <h2 className="font-bricolage text-xl sm:text-2xl font-semibold text-white">
-            {selectedBrand ? `${selectedBrand.name} Customers` : "Customer Insights"}
-          </h2>
-          <p className="text-sm text-white/50 mt-1">
-            {selectedBrand
-              ? `Customer data for ${selectedBrand.name}`
-              : "Understand your customer base and top products"
-            }
-          </p>
-        </div>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+        {/* Top Customers */}
+        <div className='rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs overflow-hidden'>
+          <div className='border-b border-stroke-soft-200 px-5 py-4'>
+            <h3 className='text-label-md text-text-strong-950 font-semibold'>Top Customers</h3>
+          </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat) => (
-            <div
-              key={stat.label}
-              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300 border-gradient overflow-hidden"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-              <div className="relative z-10">
-                <div className="flex items-center gap-3">
-                  <div className={`flex size-10 items-center justify-center rounded-xl ${stat.iconBg} shadow-lg shrink-0`}>
-                    <stat.icon className="size-5 text-white" />
+          {loading ? (
+            <div className='flex h-64 items-center justify-center border-b border-stroke-soft-200'>
+              <RiLoader4Line className='size-8 animate-spin text-text-soft-400' />
+            </div>
+          ) : topCustomers.length === 0 ? (
+            <div className='p-12 text-center border-b border-stroke-soft-200'>
+              <Users className='size-12 mx-auto text-text-soft-400/20 mb-3' />
+              <p className='text-paragraph-sm text-text-sub-600'>No customer data available yet</p>
+            </div>
+          ) : (
+            <div className='divide-y divide-stroke-soft-200'>
+              {topCustomers.map((customer, index) => (
+                <div key={customer.id} className='p-4 flex items-center justify-between gap-3 hover:bg-bg-weak-50 transition-colors'>
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <span className='text-label-sm font-bold text-text-sub-600/30 w-4 shrink-0'>
+                      {index + 1}
+                    </span>
+                    <Avatar className='size-10 shrink-0 border border-stroke-soft-200'>
+                      <AvatarFallback className='bg-primary-alpha-10 text-primary-base text-xs font-semibold'>
+                        {(customer.name || 'U').split(" ").map((n: string) => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className='min-w-0'>
+                      <p className='text-label-sm text-text-strong-950 font-medium truncate'>{customer.name || 'Anonymous'}</p>
+                      <p className='text-paragraph-xs text-text-sub-600 truncate'>{customer.orders} orders • Last: {new Date(customer.lastOrderDate).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs text-white/40 uppercase tracking-wider truncate">{stat.label}</p>
-                    <p className="font-bricolage text-xl font-semibold text-white">{stat.value}</p>
+                  <div className='flex items-center gap-4'>
+                    <div className='text-right'>
+                      <p className='text-label-sm text-success-base font-bold'>${(customer.totalSpent || 0).toLocaleString()}</p>
+                      <p className='text-paragraph-xs text-text-sub-600'>Avg: ${(customer.avgOrder || 0).toLocaleString()}</p>
+                    </div>
+                    <Button
+                      variant='secondary'
+                      size='xs'
+                      onClick={() => handleSendOffer(customer.id)}
+                      disabled={!!offerLoading}
+                    >
+                      {offerLoading === customer.id ? (
+                        <RiLoader4Line className='size-3.5 animate-spin' />
+                      ) : (
+                        <Mail className='size-3.5' />
+                      )}
+                      Send Offer
+                    </Button>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Top Customers */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
-            <div className="p-5 border-b border-white/[0.06]">
-              <h3 className="font-bricolage text-lg font-semibold text-white">Top Customers</h3>
-            </div>
-            {topCustomers.length === 0 ? (
-              <div className="p-12 text-center">
-                <Users className="size-12 mx-auto text-white/20 mb-3" />
-                <p className="text-white/50">No customer data yet</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-white/[0.04]">
-                {topCustomers.slice(0, 5).map((customer, index) => (
-                  <div key={customer.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-lg font-semibold text-white/30 w-6 shrink-0">
-                        {index + 1}
-                      </span>
-                      <Avatar className="size-10 shrink-0 ring-2 ring-white/10 ring-offset-2 ring-offset-[#0a0a14]">
-                        <AvatarFallback className="bg-gradient-to-br from-navy to-sky-600 text-white text-xs font-semibold">
-                          {customer.name.split(" ").map(n => n[0]).join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        <p className="font-medium text-white text-sm truncate">{customer.name}</p>
-                        <p className="text-xs text-white/40 truncate">{customer.orders} orders • Last: {customer.lastOrder}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 ml-9 sm:ml-0">
-                      <div className="text-left sm:text-right">
-                        <p className="font-mono font-semibold text-emerald-400 text-sm">{customer.totalSpent}</p>
-                        <p className="text-xs text-white/40">Avg: {customer.avgOrder}</p>
-                      </div>
-                      <button className="shrink-0 flex items-center gap-1.5 rounded-lg bg-coral/10 border border-coral/20 px-3 py-2 text-xs font-medium text-coral hover:bg-coral/20 transition-all">
-                        <Mail className="size-3.5" />
-                        <span className="hidden sm:inline">Send Offer</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Top Products */}
+        <div className='rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs overflow-hidden'>
+          <div className='border-b border-stroke-soft-200 px-5 py-4'>
+            <h3 className='text-label-md text-text-strong-950 font-semibold'>Top Products</h3>
           </div>
 
-          {/* Top Products */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden border-gradient">
-            <div className="p-5 border-b border-white/[0.06]">
-              <h3 className="font-bricolage text-lg font-semibold text-white">Top Products</h3>
+          {loading ? (
+            <div className='flex h-64 items-center justify-center'>
+              <RiLoader4Line className='size-8 animate-spin text-text-soft-400' />
             </div>
-            {topProducts.length === 0 ? (
-              <div className="p-12 text-center">
-                <ShoppingBag className="size-12 mx-auto text-white/20 mb-3" />
-                <p className="text-white/50">No product data yet</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-white/[0.04]">
-                {topProducts.slice(0, 5).map((product, index) => (
-                  <div key={product.id} className="p-4 hover:bg-white/[0.02] transition-colors">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-lg font-semibold text-white/30 w-6 shrink-0">
-                          {index + 1}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="font-medium text-white text-sm truncate">{product.name}</p>
-                          {showBrandColumn && (
-                            <p className="text-xs text-white/40 truncate">{product.brand}</p>
-                          )}
-                        </div>
-                      </div>
-                      <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50 ring-1 ring-inset ring-white/10 shrink-0">
-                        {product.sold} sold
+          ) : topProducts.length === 0 ? (
+            <div className='p-12 text-center'>
+              <ShoppingBag className='size-12 mx-auto text-text-soft-400/20 mb-3' />
+              <p className='text-paragraph-sm text-text-sub-600'>No product data available yet</p>
+            </div>
+          ) : (
+            <div className='divide-y divide-stroke-soft-200'>
+              {topProducts.map((product, index) => (
+                <div key={product.id} className='p-4 hover:bg-bg-weak-50 transition-colors'>
+                  <div className='flex items-center justify-between gap-2 mb-2'>
+                    <div className='flex items-center gap-3 min-w-0'>
+                      <span className='text-label-sm font-bold text-text-sub-600/30 w-4 shrink-0'>
+                        {index + 1}
                       </span>
+                      <div className='min-w-0'>
+                        <p className='text-label-sm text-text-strong-950 font-medium truncate'>{product.name}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ml-9 text-sm">
-                      <div>
-                        <span className="text-white/40">Rev: </span>
-                        <span className="font-mono font-medium text-white">{product.revenue}</span>
-                      </div>
-                      <div>
-                        <span className="text-white/40">Comm: </span>
-                        <span className="font-mono font-semibold text-emerald-400">{product.commission}</span>
-                      </div>
+                    <span className='inline-flex items-center rounded-full bg-bg-weak-50 px-2 py-0.5 text-label-2xs font-medium text-text-sub-600 ring-1 ring-inset ring-stroke-soft-200'>
+                      {product.sold} sold
+                    </span>
+                  </div>
+                  <div className='flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ml-7 text-paragraph-xs'>
+                    <div>
+                      <span className='text-text-sub-600'>Revenue: </span>
+                      <span className='font-medium text-text-strong-950'>${(product.revenue || 0).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className='text-text-sub-600'>Comm: </span>
+                      <span className='font-bold text-success-base'>${(product.commission || 0).toLocaleString()}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -7,63 +7,150 @@ import { Button } from '@/components/ui/button-new';
 import Image from 'next/image';
 import {
   RiMoneyDollarCircleLine, RiFileList3Line, RiTeamLine, RiLineChartLine,
-  RiArrowRightLine, RiFileCopyLine, RiCheckLine,
+  RiArrowRightLine, RiFileCopyLine, RiCheckLine, RiLoader4Line,
 } from '@remixicon/react';
 import * as React from 'react';
-
-const recentOrders = [
-  { id: '#PG-1156', brand: 'PeptideGains', customer: 'Alex Thompson', total: '$169.98', commission: '$17.00', date: 'Feb 22', status: 'Delivered' },
-  { id: '#PG-1155', brand: 'PeptideGains', customer: 'Maria Garcia', total: '$89.99', commission: '$9.00', date: 'Feb 22', status: 'Shipped' },
-  { id: '#BS-0421', brand: 'BioStack Health', customer: 'James Wilson', total: '$154.97', commission: '$23.25', date: 'Feb 21', status: 'Delivered' },
-  { id: '#PG-1152', brand: 'PeptideGains', customer: 'Robert Brown', total: '$124.99', commission: '$12.50', date: 'Feb 20', status: 'Processing' },
-];
+import { useAffiliate } from './context';
+import { affiliateApi } from '@/lib/api-client';
 
 export default function AffiliateDashboardPage() {
+  const { getSelectedBrand, isLoading: ctxLoading, user } = useAffiliate();
   const [copied, setCopied] = React.useState(false);
-  const copy = () => { setCopied(true); setTimeout(() => setCopied(false), 2000); };
+  const [stats, setStats] = React.useState<any>(null);
+  const [referralLink, setReferralLink] = React.useState('');
+  const [trendingProducts, setTrendingProducts] = React.useState<any[]>([]);
+  const [recentOrders, setRecentOrders] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const selectedBrand = getSelectedBrand();
+
+  React.useEffect(() => {
+    if (!selectedBrand?.id) return;
+    setLoading(true);
+
+    Promise.all([
+      affiliateApi.getDashboardStats(selectedBrand.id),
+      affiliateApi.getReferralLink(selectedBrand.id),
+      affiliateApi.getTrendingProducts(selectedBrand.id),
+      affiliateApi.getOrders(selectedBrand.id, { limit: 5 }),
+    ])
+      .then(([statsData, linkData, products, ordersData]) => {
+        setStats(statsData);
+        setReferralLink(linkData?.url || linkData?.referralLink || '');
+        setTrendingProducts(Array.isArray(products) ? products : []);
+        setRecentOrders(ordersData?.data || ordersData?.orders || []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [selectedBrand?.id]);
+
+  const copy = () => {
+    if (referralLink) navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (ctxLoading) {
+    return (
+      <div className='flex h-64 items-center justify-center'>
+        <RiLoader4Line className='size-6 animate-spin text-text-soft-400' />
+      </div>
+    );
+  }
+
+  const displayName = user?.name?.split(' ')[0] ?? 'there';
 
   return (
     <div className='space-y-6'>
       <div>
-        <h1 className='text-title-h4 text-text-strong-950'>Welcome back, Jessica</h1>
-        <p className='mt-1 text-paragraph-sm text-text-sub-600'>Your affiliate performance overview</p>
+        <h1 className='text-title-h4 text-text-strong-950'>Welcome back, {displayName}</h1>
+        <p className='mt-1 text-paragraph-sm text-text-sub-600'>
+          {selectedBrand ? `${selectedBrand.name} · ` : ''}Your affiliate performance overview
+        </p>
       </div>
 
       {/* Quick referral link */}
       <div className='flex items-center gap-3 rounded-xl border border-primary-alpha-16 bg-primary-alpha-10/30 px-5 py-4'>
         <div className='flex-1 min-w-0'>
           <p className='text-label-xs text-text-sub-600'>Your Referral Link</p>
-          <p className='truncate text-paragraph-sm text-text-sub-600'>peptidegains.peptiful.com/?ref=jessica_parker</p>
+          <p className='truncate text-paragraph-sm text-text-sub-600'>
+            {referralLink || (loading ? 'Loading…' : 'No referral link available')}
+          </p>
         </div>
-        <Button variant='secondary' size='xs' onClick={copy}>
+        <Button variant='secondary' size='xs' onClick={copy} disabled={!referralLink}>
           {copied ? <RiCheckLine className='size-3.5' /> : <RiFileCopyLine className='size-3.5' />}
           {copied ? 'Copied' : 'Copy'}
         </Button>
       </div>
 
       {/* Featured Products Banner */}
-      <div className='overflow-hidden rounded-xl border border-stroke-soft-200 bg-gradient-to-r from-bg-white-0 to-primary-alpha-10/30 shadow-regular-xs'>
-        <div className='flex items-center justify-between px-6 py-5'>
-          <div>
-            <p className='text-label-xs text-text-sub-600 uppercase tracking-wider'>Trending Now</p>
-            <h3 className='mt-1 text-label-md text-text-strong-950'>BPC-157 &middot; Semaglutide &middot; TB-500</h3>
-            <p className='mt-1 text-paragraph-xs text-text-sub-600'>Share these top sellers with your audience for higher conversions</p>
-          </div>
-          <div className='hidden items-center gap-2 sm:flex'>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className='relative size-16 overflow-hidden rounded-xl bg-bg-weak-50 shadow-regular-xs'>
-                <Image src='/peptiful-vial.png' alt='Product' fill className='object-contain p-1.5' sizes='64px' />
-              </div>
-            ))}
+      {trendingProducts.length > 0 && (
+        <div className='overflow-hidden rounded-xl border border-stroke-soft-200 bg-gradient-to-r from-bg-white-0 to-primary-alpha-10/30 shadow-regular-xs'>
+          <div className='flex items-center justify-between px-6 py-5'>
+            <div>
+              <p className='text-label-xs text-text-sub-600 uppercase tracking-wider'>Trending Now</p>
+              <h3 className='mt-1 text-label-md text-text-strong-950'>
+                {trendingProducts.map((p: any) => p.name || p.handle).join(' · ')}
+              </h3>
+              <p className='mt-1 text-paragraph-xs text-text-sub-600'>
+                Share these top sellers with your audience for higher conversions
+              </p>
+            </div>
+            <div className='hidden items-center gap-2 sm:flex'>
+              {trendingProducts.slice(0, 3).map((p: any, i: number) => (
+                <div key={p.id || i} className='relative size-16 overflow-hidden rounded-xl bg-bg-white-0 shadow-regular-xs border border-stroke-soft-100'>
+                  <Image
+                    src={p.image || '/peptiful-vial.png'}
+                    alt={p.name || 'Product'}
+                    fill
+                    className='object-contain p-1.5'
+                    sizes='64px'
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        <StatCard title='Total Earnings' value='$4,280' change='+32% this month' trend='up' icon={RiMoneyDollarCircleLine} />
-        <StatCard title='Orders Referred' value='48' change='+8 this week' trend='up' icon={RiFileList3Line} />
-        <StatCard title='My L2 Team' value='6' icon={RiTeamLine} />
-        <StatCard title='Override Earnings' value='$680' change='From L2 sales' trend='up' icon={RiLineChartLine} />
+        <StatCard
+          title='Total Earnings'
+          value={stats ? `$${(stats.totalEarnings ?? stats.totalCommission ?? stats.ownEarnings ?? 0).toLocaleString()}` : '—'}
+          change={stats?.earningsChange ?? ''}
+          trend={stats?.earningsTrend ?? 'up'}
+          icon={RiMoneyDollarCircleLine}
+        />
+        <StatCard
+          title='Orders Referred'
+          value={stats ? String(stats.totalOrders ?? stats.ordersReferred ?? stats.ownOrders ?? 0) : '—'}
+          change={stats?.ordersChange ?? ''}
+          trend={stats?.ordersTrend ?? 'up'}
+          icon={RiFileList3Line}
+        />
+
+        {user?.role !== 'L2_AFFILIATE' ? (
+          <>
+            <StatCard
+              title='My L2 Team'
+              value={stats ? String(stats.teamSize ?? stats.l2Count ?? 0) : '—'}
+              icon={RiTeamLine}
+            />
+            <StatCard
+              title='Override Earnings'
+              value={stats ? `$${(stats.overrideEarnings ?? stats.l2Earnings ?? 0).toLocaleString()}` : '—'}
+              change={stats?.overrideChange ?? 'From L2 sales'}
+              trend='up'
+              icon={RiLineChartLine}
+            />
+          </>
+        ) : (
+          <StatCard
+            title='Total Customers'
+            value={stats ? String(stats.totalCustomers ?? 0) : '—'}
+            icon={RiTeamLine}
+          />
+        )}
       </div>
 
       {/* Recent Orders */}
@@ -74,29 +161,47 @@ export default function AffiliateDashboardPage() {
             <Link href='/affiliate/orders'>View All <RiArrowRightLine className='size-4' /></Link>
           </Button>
         </div>
-        <table className='w-full'>
-          <thead>
-            <tr className='border-b border-stroke-soft-200'>
-              {['Order', 'Brand', 'Customer', 'Total', 'Commission', 'Status'].map((h) => (
-                <th key={h} className='px-5 py-3 text-left text-label-xs uppercase tracking-wider text-text-sub-600'>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {recentOrders.map((o) => (
-              <tr key={o.id} className='border-b border-stroke-soft-200 last:border-0 hover:bg-bg-weak-50 transition-colors'>
-                <td className='px-5 py-3.5 text-label-sm text-primary-base'>{o.id}</td>
-                <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{o.brand}</td>
-                <td className='px-5 py-3.5 text-paragraph-sm text-text-strong-950'>{o.customer}</td>
-                <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{o.total}</td>
-                <td className='px-5 py-3.5 text-label-sm text-success-base'>{o.commission}</td>
-                <td className='px-5 py-3.5'>
-                  <Badge variant='light' color={o.status === 'Delivered' ? 'success' : o.status === 'Shipped' ? 'warning' : 'information'} size='sm' dot>{o.status}</Badge>
-                </td>
+
+        {loading ? (
+          <div className='flex h-40 items-center justify-center'>
+            <RiLoader4Line className='size-5 animate-spin text-text-soft-400' />
+          </div>
+        ) : recentOrders.length === 0 ? (
+          <div className='flex h-40 items-center justify-center'>
+            <p className='text-paragraph-sm text-text-sub-600'>No orders yet for this brand.</p>
+          </div>
+        ) : (
+          <table className='w-full'>
+            <thead>
+              <tr className='border-b border-stroke-soft-200'>
+                {['Order', 'Brand', 'Customer', 'Total', 'Commission', 'Status'].map((h) => (
+                  <th key={h} className='px-5 py-3 text-left text-label-xs uppercase tracking-wider text-text-sub-600'>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentOrders.map((o: any) => (
+                <tr key={o.id} className='border-b border-stroke-soft-200 last:border-0 hover:bg-bg-weak-50 transition-colors'>
+                  <td className='px-5 py-3.5 text-label-sm text-primary-base'>{o.orderNumber || o.id}</td>
+                  <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{o.brandName || o.brand?.name || '—'}</td>
+                  <td className='px-5 py-3.5 text-paragraph-sm text-text-strong-950'>{o.customerName || o.customer?.name || '—'}</td>
+                  <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>${(o.total ?? 0).toLocaleString()}</td>
+                  <td className='px-5 py-3.5 text-label-sm text-success-base'>${(o.commission ?? 0).toLocaleString()}</td>
+                  <td className='px-5 py-3.5'>
+                    <Badge
+                      variant='light'
+                      color={o.status === 'DELIVERED' ? 'success' : o.status === 'SHIPPED' ? 'warning' : 'information'}
+                      size='sm'
+                      dot
+                    >
+                      {o.status?.charAt(0) + o.status?.slice(1).toLowerCase()}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

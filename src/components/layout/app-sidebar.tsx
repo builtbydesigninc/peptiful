@@ -15,7 +15,11 @@ import {
   RiUserLine,
   RiArrowUpSLine,
 } from '@remixicon/react';
+import { adminApi, affiliateApi, setApiToken } from '@/lib/api-client';
 import { useTheme } from 'next-themes';
+import { useOptionalAffiliate } from '@/app/affiliate/context';
+import { useOptionalAdmin } from '@/app/admin/context';
+import { useOptionalLab } from '@/app/lab/context';
 
 export type NavItem = {
   label: string;
@@ -175,6 +179,23 @@ export function AppSidebar({ config }: { config: SidebarConfig }) {
 function UserDropdown({ user, collapsed }: { user: { name: string; email: string }; collapsed: boolean }) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
+  const affiliateCtx = useOptionalAffiliate();
+  const adminCtx = useOptionalAdmin();
+  const labCtx = useOptionalLab();
+
+  const handleLogout = async () => {
+    if (affiliateCtx?.logout) {
+      await affiliateCtx.logout();
+    } else if (adminCtx?.logout) {
+      await adminCtx.logout();
+    } else if (labCtx?.logout) {
+      await labCtx.logout();
+    } else {
+      try { await adminApi.logout(); } catch (e) { }
+      const { logout: purge } = await import('@/lib/api-client');
+      purge();
+    }
+  };
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -222,14 +243,36 @@ function UserDropdown({ user, collapsed }: { user: { name: string; email: string
           </div>
           <div className='py-1'>
             <button
-              onClick={() => { setOpen(false); }}
+              onClick={() => {
+                setOpen(false);
+                const parts = window.location.pathname.split('/');
+                const portal = parts[1]; // Get 'affiliate', 'admin', 'brand', or 'partner'
+                if (portal === 'admin') {
+                  router.push('/admin/profile');
+                } else if (portal) {
+                  router.push(`/${portal}/settings`);
+                } else {
+                  router.push('/settings'); // Fallback
+                }
+              }}
               className='flex w-full items-center gap-2.5 px-3 py-2 text-label-xs text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950 transition-colors cursor-pointer'
             >
               <RiUserLine className='size-4' />
               View Profile
             </button>
             <button
-              onClick={() => { setOpen(false); router.push('/login'); }}
+              onClick={async () => {
+                setOpen(false);
+                const isAffiliatePath = window.location.pathname.startsWith('/affiliate');
+
+                try {
+                  await handleLogout();
+                } catch (err) {
+                  console.error("Logout failed:", err);
+                }
+
+                window.location.href = isAffiliatePath ? '/affiliate/login' : '/login';
+              }}
               className='flex w-full items-center gap-2.5 px-3 py-2 text-label-xs text-error-base hover:bg-error-lighter transition-colors cursor-pointer'
             >
               <RiLogoutBoxRLine className='size-4' />

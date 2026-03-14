@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { cn } from '@/utils/cn';
 import { StatCard } from '@/components/ui/stat-card-new';
 import { PageHeader } from '@/components/ui/page-header-new';
@@ -12,35 +13,55 @@ import {
   RiPriceTag3Line,
   RiDownloadLine,
 } from '@remixicon/react';
-
-const monthlyData = [
-  { month: 'Sep 2025', revenue: '$8,240', wholesale: '$3,420', commissions: '$1,236', profit: '$3,584' },
-  { month: 'Oct 2025', revenue: '$9,810', wholesale: '$4,070', commissions: '$1,472', profit: '$4,268' },
-  { month: 'Nov 2025', revenue: '$11,450', wholesale: '$4,750', commissions: '$1,718', profit: '$4,982' },
-  { month: 'Dec 2025', revenue: '$14,920', wholesale: '$6,190', commissions: '$2,238', profit: '$6,492' },
-  { month: 'Jan 2026', revenue: '$10,680', wholesale: '$4,430', commissions: '$1,602', profit: '$4,648' },
-  { month: 'Feb 2026', revenue: '$12,450', wholesale: '$5,170', commissions: '$1,868', profit: '$5,412' },
-];
-
-const chartBars = [
-  { label: 'Sep', revenue: 8240, wholesale: 3420, commissions: 1236 },
-  { label: 'Oct', revenue: 9810, wholesale: 4070, commissions: 1472 },
-  { label: 'Nov', revenue: 11450, wholesale: 4750, commissions: 1718 },
-  { label: 'Dec', revenue: 14920, wholesale: 6190, commissions: 2238 },
-  { label: 'Jan', revenue: 10680, wholesale: 4430, commissions: 1602 },
-  { label: 'Feb', revenue: 12450, wholesale: 5170, commissions: 1868 },
-];
-
-const maxRevenue = Math.max(...chartBars.map((b) => b.revenue));
+import { brandApi } from '@/lib/api-client';
 
 export default function EarningsPage() {
+  const [stats, setStats] = React.useState<any>(null);
+  const [monthlyData, setMonthlyData] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [s, m] = await Promise.all([
+        brandApi.getEarnings(),
+        brandApi.getMonthlyEarnings()
+      ]);
+      setStats(s);
+      setMonthlyData(m);
+    } catch (error) {
+      console.error('Failed to fetch earnings data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center p-24'>
+        <div className='animate-spin rounded-full h-8 w-8 border-t-2 border-primary-base' />
+      </div>
+    );
+  }
+
+  const maxRevenue = Math.max(...monthlyData.map((b) => Number(b.revenue)), 1);
+  const totalRev = monthlyData.reduce((acc, curr) => acc + Number(curr.revenue), 0);
+  const totalWholesale = monthlyData.reduce((acc, curr) => acc + Number(curr.wholesaleCost), 0);
+  const totalCommissions = monthlyData.reduce((acc, curr) => acc + Number(curr.commissions), 0);
+  const totalProfit = monthlyData.reduce((acc, curr) => acc + Number(curr.netProfit), 0);
+  const totalMargin = totalRev > 0 ? ((totalProfit / totalRev) * 100).toFixed(1) : '0.0';
+
   return (
     <div className='space-y-6'>
       <PageHeader
         title='Earnings'
         description='Track your revenue, costs, and profit'
         actions={
-          <Button variant='secondary' size='sm'>
+          <Button variant='secondary' size='sm' onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/brand/earnings/export`}>
             <RiDownloadLine className='size-4' />
             Export CSV
           </Button>
@@ -48,10 +69,10 @@ export default function EarningsPage() {
       />
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        <StatCard title='Total Revenue' value='$67,550' change='+16.5% vs last 6 mo' trend='up' icon={RiMoneyDollarCircleLine} />
-        <StatCard title='Net Profit' value='$29,386' change='+18.2%' trend='up' icon={RiLineChartLine} />
-        <StatCard title='Commissions Paid' value='$10,134' icon={RiHandCoinLine} />
-        <StatCard title='Wholesale Cost' value='$28,030' icon={RiPriceTag3Line} />
+        <StatCard title='Total Revenue' value={`$${totalRev.toLocaleString()}`} icon={RiMoneyDollarCircleLine} />
+        <StatCard title='Net Profit' value={`$${totalProfit.toLocaleString()}`} icon={RiLineChartLine} />
+        <StatCard title='Commissions Paid' value={`$${totalCommissions.toLocaleString()}`} icon={RiHandCoinLine} />
+        <StatCard title='Wholesale Cost' value={`$${totalWholesale.toLocaleString()}`} icon={RiPriceTag3Line} />
       </div>
 
       {/* Revenue Breakdown Chart */}
@@ -74,26 +95,36 @@ export default function EarningsPage() {
           </div>
         </div>
         <div className='flex items-end gap-3' style={{ height: 192 }}>
-          {chartBars.map((bar) => {
+          {monthlyData.map((bar) => {
             const totalH = 180;
-            const barH = (bar.revenue / maxRevenue) * totalH;
-            const wholesaleH = (bar.wholesale / bar.revenue) * barH;
-            const commissionH = (bar.commissions / bar.revenue) * barH;
+            const revNum = Number(bar.revenue);
+            const wholesaleNum = Number(bar.wholesaleCost);
+            const commissionNum = Number(bar.commissions);
+
+            const barH = (revNum / maxRevenue) * totalH;
+            const wholesaleH = revNum > 0 ? (wholesaleNum / revNum) * barH : 0;
+            const commissionH = revNum > 0 ? (commissionNum / revNum) * barH : 0;
             const profitH = barH - wholesaleH - commissionH;
+
             return (
-              <div key={bar.label} className='flex flex-1 flex-col items-center justify-end gap-1.5 h-full'>
+              <div key={bar.month} className='flex flex-1 flex-col items-center justify-end gap-1.5 h-full'>
                 <div className='text-label-2xs text-text-sub-600'>
-                  ${(bar.revenue / 1000).toFixed(1)}k
+                  ${(revNum / 1000).toFixed(1)}k
                 </div>
                 <div className='flex w-10 flex-col overflow-hidden rounded-md'>
-                  <div className='bg-primary-base/20' style={{ height: profitH }} />
-                  <div className='bg-feature-base/30' style={{ height: commissionH }} />
-                  <div className='bg-warning-base/30' style={{ height: wholesaleH }} />
+                  <div className='border-b border-white/20 bg-primary-base/20' style={{ height: Math.max(profitH, 2) }} />
+                  <div className='border-b border-white/20 bg-feature-base/30' style={{ height: Math.max(commissionH, 2) }} />
+                  <div className='bg-warning-base/30' style={{ height: Math.max(wholesaleH, 2) }} />
                 </div>
-                <span className='text-label-2xs text-text-soft-400'>{bar.label}</span>
+                <span className='text-label-2xs text-text-soft-400'>{bar.month}</span>
               </div>
             );
           })}
+          {monthlyData.length === 0 && (
+            <div className='flex w-full items-center justify-center h-full text-text-sub-600'>
+              No historical data available
+            </div>
+          )}
         </div>
       </div>
 
@@ -114,36 +145,43 @@ export default function EarningsPage() {
             </tr>
           </thead>
           <tbody>
-            {monthlyData.map((row, i) => {
-              const rev = parseFloat(row.revenue.replace(/[$,]/g, ''));
-              const prof = parseFloat(row.profit.replace(/[$,]/g, ''));
-              const margin = ((prof / rev) * 100).toFixed(1);
+            {monthlyData.map((row) => {
+              const rev = Number(row.revenue);
+              const prof = Number(row.netProfit);
+              const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
               return (
                 <tr key={row.month} className='border-b border-stroke-soft-200 last:border-0 hover:bg-bg-weak-50 transition-colors'>
                   <td className='px-5 py-3.5 text-label-sm text-text-strong-950'>{row.month}</td>
-                  <td className='px-5 py-3.5 text-right text-paragraph-sm text-text-strong-950'>{row.revenue}</td>
-                  <td className='px-5 py-3.5 text-right text-paragraph-sm text-text-sub-600'>{row.wholesale}</td>
-                  <td className='px-5 py-3.5 text-right text-paragraph-sm text-text-sub-600'>{row.commissions}</td>
-                  <td className='px-5 py-3.5 text-right text-label-sm text-success-base'>{row.profit}</td>
+                  <td className='px-5 py-3.5 text-right text-paragraph-sm text-text-strong-950'>${rev.toLocaleString()}</td>
+                  <td className='px-5 py-3.5 text-right text-paragraph-sm text-text-sub-600'>${Number(row.wholesaleCost).toLocaleString()}</td>
+                  <td className='px-5 py-3.5 text-right text-paragraph-sm text-text-sub-600'>${Number(row.commissions).toLocaleString()}</td>
+                  <td className='px-5 py-3.5 text-right text-label-sm text-success-base'>${prof.toLocaleString()}</td>
                   <td className='px-5 py-3.5 text-right'>
                     <Badge variant='light' color='success' size='sm'>{margin}%</Badge>
                   </td>
                 </tr>
               );
             })}
+            {monthlyData.length === 0 && (
+              <tr>
+                <td colSpan={6} className='px-5 py-12 text-center text-text-sub-600'>No earnings data found</td>
+              </tr>
+            )}
           </tbody>
-          <tfoot>
-            <tr className='bg-bg-weak-50'>
-              <td className='px-5 py-3.5 text-label-sm text-text-strong-950'>Total</td>
-              <td className='px-5 py-3.5 text-right text-label-sm text-text-strong-950'>$67,550</td>
-              <td className='px-5 py-3.5 text-right text-label-sm text-text-sub-600'>$28,030</td>
-              <td className='px-5 py-3.5 text-right text-label-sm text-text-sub-600'>$10,134</td>
-              <td className='px-5 py-3.5 text-right text-label-sm text-success-base'>$29,386</td>
-              <td className='px-5 py-3.5 text-right'>
-                <Badge variant='filled' color='success' size='sm'>43.5%</Badge>
-              </td>
-            </tr>
-          </tfoot>
+          {monthlyData.length > 0 && (
+            <tfoot>
+              <tr className='bg-bg-weak-50'>
+                <td className='px-5 py-3.5 text-label-sm text-text-strong-950'>Total</td>
+                <td className='px-5 py-3.5 text-right text-label-sm text-text-strong-950'>${totalRev.toLocaleString()}</td>
+                <td className='px-5 py-3.5 text-right text-label-sm text-text-sub-600'>${totalWholesale.toLocaleString()}</td>
+                <td className='px-5 py-3.5 text-right text-label-sm text-text-sub-600'>${totalCommissions.toLocaleString()}</td>
+                <td className='px-5 py-3.5 text-right text-label-sm text-success-base'>${totalProfit.toLocaleString()}</td>
+                <td className='px-5 py-3.5 text-right'>
+                  <Badge variant='filled' color='success' size='sm'>{totalMargin}%</Badge>
+                </td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
     </div>
