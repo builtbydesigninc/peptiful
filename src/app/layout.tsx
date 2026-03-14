@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'sonner';
 import './globals.css';
 import { cn } from '@/utils/cn';
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute='class' defaultTheme='light' enableSystem={false} disableTransitionOnChange>
           {children}
+          <Toaster position='top-right' richColors expand />
         </ThemeProvider>
       </body>
     </html>

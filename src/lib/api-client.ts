@@ -1,4 +1,10 @@
+import { toast } from 'sonner';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+export interface FetchOptions extends RequestInit {
+    skipToast?: boolean;
+}
 
 export function setApiToken(token: string) {
     if (typeof window !== 'undefined') {
@@ -36,7 +42,7 @@ const pendingRequests = new Map<string, Promise<any>>();
 
 export async function fetchApi<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: FetchOptions = {}
 ): Promise<T> {
     const isGet = !options.method || options.method.toUpperCase() === 'GET';
     const cacheKey = isGet ? `${endpoint}` : null;
@@ -95,6 +101,37 @@ export async function fetchApi<T>(
                 } catch {
                     error = { message: errText || 'An unknown error occurred' };
                 }
+                if (typeof window !== 'undefined' && !options.skipToast) {
+                    const status = response.status;
+                    const message = error.message || response.statusText;
+
+                    switch (status) {
+                        case 400:
+                        case 422:
+                            toast.error('Validation Error', { description: message });
+                            break;
+                        case 403:
+                            toast.error('Permission Denied', { description: 'You do not have permission to perform this action.' });
+                            break;
+                        case 404:
+                            toast.error('Not Found', { description: message });
+                            break;
+                        case 409:
+                            toast.error('Conflict', { description: message });
+                            break;
+                        case 429:
+                            toast.error('Too Many Requests', { description: 'Please slow down and try again later.' });
+                            break;
+                        case 500:
+                            toast.error('Server Error', { description: 'Something went wrong on our end. Please try again later.' });
+                            break;
+                        default:
+                            if (status >= 400) {
+                                toast.error('Error', { description: message });
+                            }
+                    }
+                }
+
                 throw new Error(error.message || `API error: ${response.statusText}`);
             }
 
@@ -1001,5 +1038,73 @@ export const storefrontApi = {
     deleteReview: (brandSlug: string, handle: string, reviewId: string) =>
         fetchApi(`/v1/storefront/${brandSlug}/products/${handle}/reviews/${reviewId}`, {
             method: 'DELETE',
+        }),
+};
+
+export const labApi = {
+    getProfile: () =>
+        fetchApi<any>('/lab/me'),
+
+    getStats: () =>
+        fetchApi<any>('/lab/dashboard/stats'),
+
+    getNavBadges: () =>
+        fetchApi<any>('/lab/nav-badges'),
+
+    // Purchase Orders
+    getPurchaseOrders: (filter?: { status?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/lab/purchase-orders${query ? `?${query}` : ''}`);
+    },
+
+    getPurchaseOrder: (id: string) =>
+        fetchApi<any>(`/lab/purchase-orders/${id}`),
+
+    updatePOStatus: (id: string, status: string) =>
+        fetchApi(`/lab/purchase-orders/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: status.toUpperCase() }),
+        }),
+
+    addTracking: (id: string, data: { courier: string; trackingNumber: string }) =>
+        fetchApi(`/lab/purchase-orders/${id}/tracking`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    getLabel: (id: string) =>
+        fetchApi<any>(`/lab/purchase-orders/${id}/label`),
+
+    // Earnings & Payouts
+    getEarningsStats: () =>
+        fetchApi<any>('/lab/earnings/stats'),
+
+    getMonthlyEarnings: () =>
+        fetchApi<any[]>('/lab/earnings/monthly'),
+
+    getPayouts: (filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/lab/payouts${query ? `?${query}` : ''}`);
+    },
+
+    getPayoutReceipt: (id: string) =>
+        fetchApi<any>(`/lab/payouts/${id}/receipt`),
+
+    // Settings
+    getSettings: () =>
+        fetchApi<any>('/lab/settings'),
+
+    updateSettings: (data: any) =>
+        fetchApi('/lab/settings', {
+            method: 'PUT',
+            body: JSON.stringify(data),
         }),
 };
