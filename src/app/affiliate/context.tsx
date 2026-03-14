@@ -108,7 +108,8 @@ export function AffiliateProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error("Logout failed API side:", err)
     } finally {
-      localStorage.removeItem("affiliate_brand_id")
+      const { logout: clearLocalData } = await import("@/lib/api-client")
+      clearLocalData()
       setState({
         user: null,
         selectedBrandId: null,

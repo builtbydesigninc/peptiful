@@ -1,14 +1,48 @@
+import { toast } from 'sonner';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+export interface FetchOptions extends RequestInit {
+    skipToast?: boolean;
+}
+
 export function setApiToken(token: string) {
-    // Session is now handled via HttpOnly cookies by the server
+    if (typeof window !== 'undefined') {
+        if (token) {
+            localStorage.setItem('storefront_token', token);
+        } else {
+            localStorage.removeItem('storefront_token');
+        }
+    }
+}
+
+export function logout() {
+    if (typeof window !== 'undefined') {
+        // Clear auth token
+        localStorage.removeItem('storefront_token');
+
+        // Clear all cart-related keys
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('cart_')) {
+                localStorage.removeItem(key);
+            }
+        });
+
+        // Clear other known keys
+        localStorage.removeItem('affiliate_brand_id');
+        localStorage.removeItem('selected_brand_id');
+        localStorage.removeItem('brand_onboarding_step');
+
+        // Clear session storage
+        sessionStorage.clear();
+    }
 }
 
 const pendingRequests = new Map<string, Promise<any>>();
 
 export async function fetchApi<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: FetchOptions = {}
 ): Promise<T> {
     const isGet = !options.method || options.method.toUpperCase() === 'GET';
     const cacheKey = isGet ? `${endpoint}` : null;
@@ -20,6 +54,14 @@ export async function fetchApi<T>(
     const headers = new Headers(options.headers || {});
     if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
+    }
+
+    // Add JWT token if exists
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('storefront_token');
+        if (token && !headers.has('Authorization')) {
+            headers.set('Authorization', `Bearer ${token}`);
+        }
     }
 
     const executeRequest = async (): Promise<T> => {
@@ -35,9 +77,18 @@ export async function fetchApi<T>(
                 const isAuthEndpoint = endpoint.includes('/auth/');
                 if (response.status === 401 && typeof window !== 'undefined' && !isAuthEndpoint) {
                     const isAffiliatePath = window.location.pathname.startsWith('/affiliate');
-                    const targetPath = isAffiliatePath ? '/affiliate/login' : '/login';
+                    let targetPath = isAffiliatePath ? '/affiliate/login' : '/login';
+
+                    // For storefront (non-affiliate) paths, try to keep the brand slug
+                    if (!isAffiliatePath) {
+                        const pathParts = window.location.pathname.split('/').filter(Boolean);
+                        if (pathParts.length > 0 && pathParts[0] !== 'login' && pathParts[0] !== 'register') {
+                            targetPath = `/${pathParts[0]}/login`;
+                        }
+                    }
 
                     if (window.location.pathname !== targetPath) {
+                        logout();
                         window.location.href = targetPath;
                     }
                     return new Promise(() => { });
@@ -50,6 +101,37 @@ export async function fetchApi<T>(
                 } catch {
                     error = { message: errText || 'An unknown error occurred' };
                 }
+                if (typeof window !== 'undefined' && !options.skipToast) {
+                    const status = response.status;
+                    const message = error.message || response.statusText;
+
+                    switch (status) {
+                        case 400:
+                        case 422:
+                            toast.error('Validation Error', { description: message });
+                            break;
+                        case 403:
+                            toast.error('Permission Denied', { description: 'You do not have permission to perform this action.' });
+                            break;
+                        case 404:
+                            toast.error('Not Found', { description: message });
+                            break;
+                        case 409:
+                            toast.error('Conflict', { description: message });
+                            break;
+                        case 429:
+                            toast.error('Too Many Requests', { description: 'Please slow down and try again later.' });
+                            break;
+                        case 500:
+                            toast.error('Server Error', { description: 'Something went wrong on our end. Please try again later.' });
+                            break;
+                        default:
+                            if (status >= 400) {
+                                toast.error('Error', { description: message });
+                            }
+                    }
+                }
+
                 throw new Error(error.message || `API error: ${response.statusText}`);
             }
 
@@ -106,6 +188,9 @@ export const adminApi = {
 
     getBrands: (filter?: string) =>
         fetchApi<any[]>(`/admin/brands${filter && filter !== 'all' ? `?status=${filter.toUpperCase()}` : ''}`),
+
+    getBrand: (id: string) =>
+        fetchApi<any>(`/admin/brands/${id}`),
 
     createBrand: (data: any) =>
         fetchApi('/admin/brands', {
@@ -775,4 +860,251 @@ export const affiliateApi = {
 
     getAllLinks: () =>
         fetchApi<any[]>('/affiliate/links'),
+};
+
+export const storefrontApi = {
+    // Public Endpoints
+    getConfig: (brandSlug: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/config`),
+
+    getProducts: (brandSlug: string, filter?: { categoryId?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.categoryId) params.append('categoryId', filter.categoryId);
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/v1/storefront/${brandSlug}/products${query ? `?${query}` : ''}`);
+    },
+
+    getProduct: (brandSlug: string, handle: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/products/${handle}`),
+
+    trackClick: (brandSlug: string, data: { ref: string }) =>
+        fetchApi(`/v1/storefront/${brandSlug}/track`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    // Cart
+    createCart: (brandSlug: string, data?: { ref?: string }) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/cart`, {
+            method: 'POST',
+            body: JSON.stringify(data || {}),
+        }),
+
+    getCart: (brandSlug: string, cartId: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/cart/${cartId}`),
+
+    updateCart: (brandSlug: string, cartId: string, items: any[]) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/cart/${cartId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ items }),
+        }),
+
+    removeItem: (brandSlug: string, cartId: string, itemId: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/cart/${cartId}/items/${itemId}`, {
+            method: 'DELETE',
+        }),
+
+    applyDiscount: (brandSlug: string, cartId: string, code: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/cart/${cartId}/discount-code`, {
+            method: 'POST',
+            body: JSON.stringify({ code }),
+        }),
+
+    removeDiscount: (brandSlug: string, cartId: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/cart/${cartId}/discount-code`, {
+            method: 'DELETE',
+        }),
+
+    // Checkout
+    createCheckout: (brandSlug: string, data: { cartId: string; shippingAddress: any; email?: string; name?: string }) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/checkout`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    completeCheckout: (brandSlug: string, sessionId: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/checkout/${sessionId}/complete`, {
+            method: 'POST',
+        }),
+
+    // Auth
+    register: async (brandSlug: string, data: any) => {
+        const res = await fetchApi<{ accessToken: string; user: any }>(`/v1/storefront/${brandSlug}/auth/register`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (res.accessToken) setApiToken(res.accessToken);
+        return res;
+    },
+
+    login: async (brandSlug: string, data: any) => {
+        const res = await fetchApi<{ accessToken: string; user: any }>(`/v1/storefront/${brandSlug}/auth/login`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (res.accessToken) setApiToken(res.accessToken);
+        return res;
+    },
+
+    forgotPassword: (brandSlug: string, email: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/auth/forgot-password`, {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+        }),
+
+    resetPassword: (brandSlug: string, data: any) =>
+        fetchApi(`/v1/storefront/${brandSlug}/auth/reset-password`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    logout: (brandSlug: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/auth/logout`, { method: 'POST' }),
+
+    guestToAccount: async (brandSlug: string, data: any) => {
+        const res = await fetchApi<any>(`/v1/storefront/${brandSlug}/auth/guest-to-account`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (res.accessToken) setApiToken(res.accessToken);
+        return res;
+    },
+
+    // Account (Auth Required)
+    getAccount: (brandSlug: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account`),
+
+    updateAccount: (brandSlug: string, data: any) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    getOrders: (brandSlug: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account/orders`),
+
+    getOrder: (brandSlug: string, id: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account/orders/${id}`),
+
+    getAddresses: (brandSlug: string) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account/addresses`),
+
+    addAddress: (brandSlug: string, data: any) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account/addresses`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    updateAddress: (brandSlug: string, id: string, data: any) =>
+        fetchApi<any>(`/v1/storefront/${brandSlug}/account/addresses/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    deleteAddress: (brandSlug: string, id: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/account/addresses/${id}`, {
+            method: 'DELETE',
+        }),
+
+    getWishlist: (brandSlug: string) =>
+        fetchApi<any[]>(`/v1/storefront/${brandSlug}/account/wishlist`),
+
+    addToWishlist: (brandSlug: string, brandProductId: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/account/wishlist/${brandProductId}`, {
+            method: 'POST',
+        }),
+
+    removeFromWishlist: (brandSlug: string, brandProductId: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/account/wishlist/${brandProductId}`, {
+            method: 'DELETE',
+        }),
+
+    // Reviews
+    submitReview: (brandSlug: string, handle: string, data: any) =>
+        fetchApi(`/v1/storefront/${brandSlug}/products/${handle}/reviews`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+
+    updateReview: (brandSlug: string, handle: string, reviewId: string, data: any) =>
+        fetchApi(`/v1/storefront/${brandSlug}/products/${handle}/reviews/${reviewId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    deleteReview: (brandSlug: string, handle: string, reviewId: string) =>
+        fetchApi(`/v1/storefront/${brandSlug}/products/${handle}/reviews/${reviewId}`, {
+            method: 'DELETE',
+        }),
+};
+
+export const labApi = {
+    getProfile: () =>
+        fetchApi<any>('/lab/me'),
+
+    getStats: () =>
+        fetchApi<any>('/lab/dashboard/stats'),
+
+    getNavBadges: () =>
+        fetchApi<any>('/lab/nav-badges'),
+
+    // Purchase Orders
+    getPurchaseOrders: (filter?: { status?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/lab/purchase-orders${query ? `?${query}` : ''}`);
+    },
+
+    getPurchaseOrder: (id: string) =>
+        fetchApi<any>(`/lab/purchase-orders/${id}`),
+
+    updatePOStatus: (id: string, status: string) =>
+        fetchApi(`/lab/purchase-orders/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: status.toUpperCase() }),
+        }),
+
+    addTracking: (id: string, data: { courier: string; trackingNumber: string }) =>
+        fetchApi(`/lab/purchase-orders/${id}/tracking`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    getLabel: (id: string) =>
+        fetchApi<any>(`/lab/purchase-orders/${id}/label`),
+
+    // Earnings & Payouts
+    getEarningsStats: () =>
+        fetchApi<any>('/lab/earnings/stats'),
+
+    getMonthlyEarnings: () =>
+        fetchApi<any[]>('/lab/earnings/monthly'),
+
+    getPayouts: (filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/lab/payouts${query ? `?${query}` : ''}`);
+    },
+
+    getPayoutReceipt: (id: string) =>
+        fetchApi<any>(`/lab/payouts/${id}/receipt`),
+
+    // Settings
+    getSettings: () =>
+        fetchApi<any>('/lab/settings'),
+
+    updateSettings: (data: any) =>
+        fetchApi('/lab/settings', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
 };

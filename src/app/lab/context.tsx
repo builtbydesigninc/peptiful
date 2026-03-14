@@ -1,27 +1,28 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react"
-import { adminApi } from "@/lib/api-client"
+import { labApi } from "@/lib/api-client"
 
-export interface AdminUser {
+export interface LabUser {
     id: string
     name: string
     email: string
     role: string
+    labId: string
 }
 
-interface AdminContextType {
-    user: AdminUser | null
+interface LabContextType {
+    user: LabUser | null
     isLoading: boolean
     refreshProfile: () => Promise<void>
     logout: () => Promise<void>
 }
 
-const AdminContext = createContext<AdminContextType | null>(null)
+const LabContext = createContext<LabContextType | null>(null)
 
-export function AdminProvider({ children }: { children: ReactNode }) {
+export function LabProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<{
-        user: AdminUser | null;
+        user: LabUser | null;
         isLoading: boolean;
     }>({
         user: null,
@@ -30,20 +31,19 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     const fetchProfile = useCallback(async () => {
         try {
-            // Don't auto-fetch profile if we're on a login page to avoid loops
-            // (Though admin doesn't have a separate /admin/login usually, it's just /login)
             if (typeof window !== 'undefined' && window.location.pathname === '/login') {
                 setState({ user: null, isLoading: false });
                 return;
             }
 
-            const profile = await adminApi.getMe()
+            const profile = await labApi.getProfile()
             setState({
                 user: {
                     id: profile.id,
-                    name: profile.fullName || profile.name || profile.email,
+                    name: profile.name || profile.fullName || profile.email,
                     email: profile.email,
                     role: profile.role,
+                    labId: profile.labId || profile.id
                 },
                 isLoading: false,
             })
@@ -54,6 +54,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     const handleLogout = useCallback(async () => {
         try {
+            const { adminApi } = await import("@/lib/api-client")
             await adminApi.logout()
         } catch (err) {
             console.error("Logout failed API side:", err)
@@ -79,20 +80,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }), [state.user, state.isLoading, fetchProfile, handleLogout])
 
     return (
-        <AdminContext.Provider value={value}>
+        <LabContext.Provider value={value}>
             {children}
-        </AdminContext.Provider>
+        </LabContext.Provider>
     )
 }
 
-export function useAdmin() {
-    const context = useContext(AdminContext)
+export function useLab() {
+    const context = useContext(LabContext)
     if (!context) {
-        throw new Error("useAdmin must be used within AdminProvider")
+        throw new Error("useLab must be used within LabProvider")
     }
     return context
 }
 
-export function useOptionalAdmin() {
-    return useContext(AdminContext)
+export function useOptionalLab() {
+    return useContext(LabContext)
 }
