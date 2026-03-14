@@ -19,6 +19,7 @@ import { adminApi, affiliateApi, setApiToken } from '@/lib/api-client';
 import { useTheme } from 'next-themes';
 import { useOptionalAffiliate } from '@/app/affiliate/context';
 import { useOptionalAdmin } from '@/app/admin/context';
+import { useOptionalLab } from '@/app/lab/context';
 
 export type NavItem = {
   label: string;
@@ -180,12 +181,15 @@ function UserDropdown({ user, collapsed }: { user: { name: string; email: string
   const router = useRouter();
   const affiliateCtx = useOptionalAffiliate();
   const adminCtx = useOptionalAdmin();
+  const labCtx = useOptionalLab();
 
   const handleLogout = async () => {
     if (affiliateCtx?.logout) {
       await affiliateCtx.logout();
     } else if (adminCtx?.logout) {
       await adminCtx.logout();
+    } else if (labCtx?.logout) {
+      await labCtx.logout();
     } else {
       try { await adminApi.logout(); } catch (e) { }
       const { logout: purge } = await import('@/lib/api-client');

@@ -1003,3 +1003,71 @@ export const storefrontApi = {
             method: 'DELETE',
         }),
 };
+
+export const labApi = {
+    getProfile: () =>
+        fetchApi<any>('/lab/me'),
+
+    getStats: () =>
+        fetchApi<any>('/lab/dashboard/stats'),
+
+    getNavBadges: () =>
+        fetchApi<any>('/lab/nav-badges'),
+
+    // Purchase Orders
+    getPurchaseOrders: (filter?: { status?: string; search?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.status && filter.status !== 'all') params.append('status', filter.status.toUpperCase());
+        if (filter?.search) params.append('search', filter.search);
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/lab/purchase-orders${query ? `?${query}` : ''}`);
+    },
+
+    getPurchaseOrder: (id: string) =>
+        fetchApi<any>(`/lab/purchase-orders/${id}`),
+
+    updatePOStatus: (id: string, status: string) =>
+        fetchApi(`/lab/purchase-orders/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: status.toUpperCase() }),
+        }),
+
+    addTracking: (id: string, data: { courier: string; trackingNumber: string }) =>
+        fetchApi(`/lab/purchase-orders/${id}/tracking`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+
+    getLabel: (id: string) =>
+        fetchApi<any>(`/lab/purchase-orders/${id}/label`),
+
+    // Earnings & Payouts
+    getEarningsStats: () =>
+        fetchApi<any>('/lab/earnings/stats'),
+
+    getMonthlyEarnings: () =>
+        fetchApi<any[]>('/lab/earnings/monthly'),
+
+    getPayouts: (filter?: { page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filter?.page) params.append('page', filter.page.toString());
+        if (filter?.limit) params.append('limit', filter.limit.toString());
+        const query = params.toString();
+        return fetchApi<any>(`/lab/payouts${query ? `?${query}` : ''}`);
+    },
+
+    getPayoutReceipt: (id: string) =>
+        fetchApi<any>(`/lab/payouts/${id}/receipt`),
+
+    // Settings
+    getSettings: () =>
+        fetchApi<any>('/lab/settings'),
+
+    updateSettings: (data: any) =>
+        fetchApi('/lab/settings', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+};
