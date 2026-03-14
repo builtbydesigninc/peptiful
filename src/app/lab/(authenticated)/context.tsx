@@ -31,11 +31,6 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
     const fetchProfile = useCallback(async () => {
         try {
-            if (typeof window !== 'undefined' && window.location.pathname === '/login') {
-                setState({ user: null, isLoading: false });
-                return;
-            }
-
             const profile = await labApi.getProfile()
             setState({
                 user: {

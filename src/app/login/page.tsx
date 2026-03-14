@@ -14,7 +14,7 @@ const roles = [
   { id: 'brand', label: 'Brand Owner', desc: 'Manage your storefront and products', href: '/brand', apiRole: 'BRAND' },
   { id: 'partner', label: 'Partner', desc: 'Track referrals and commissions', href: '/partner', apiRole: 'PARTNER' },
   { id: 'affiliate', label: 'L1 Affiliate', desc: 'Manage your affiliate network', href: '/affiliate', apiRole: 'AFFILIATE' },
-  { id: 'promoter', label: 'L2 Promoter', desc: 'Share codes and earn', href: '/promoter', apiRole: 'PROMOTER' },
+  { id: 'promoter', label: 'L2 Promoter', desc: 'Share codes and earn', href: '/affiliate', apiRole: 'PROMOTER' },
   { id: 'admin', label: 'Admin', desc: 'Platform administration', href: '/admin', apiRole: 'ADMIN' },
 ];
 

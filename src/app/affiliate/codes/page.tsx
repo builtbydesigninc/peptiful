@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button-new';
 import { RiFileCopyLine, RiShareLine, RiLoader4Line } from '@remixicon/react';
 import { useAffiliate } from '../context';
 import { affiliateApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 export default function PromoterCodesPage() {
   const { getSelectedBrand, isLoading: ctxLoading } = useAffiliate();
@@ -14,6 +15,7 @@ export default function PromoterCodesPage() {
 
   const [codes, setCodes] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -21,11 +23,13 @@ export default function PromoterCodesPage() {
 
     const fetchCodes = async () => {
       setLoading(true);
+      setError(null);
       try {
         const result = await affiliateApi.getCodes(selectedBrand.id);
         setCodes(result.data || []);
       } catch (error) {
         console.error('Failed to fetch codes:', error);
+        setError('Failed to load promo codes. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -58,12 +62,37 @@ export default function PromoterCodesPage() {
   return (
     <div className='space-y-6'>
       <PageHeader title='My Codes' description='Your promo codes and their performance' />
+
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => {
+              if (!selectedBrand?.id) return;
+              setLoading(true);
+              setError(null);
+              affiliateApi.getCodes(selectedBrand.id).then(result => {
+                setCodes(result.data || []);
+                setLoading(false);
+              }).catch(err => {
+                console.error('Failed to fetch codes:', err);
+                setError('Failed to load promo codes. Please refresh the page.');
+                setLoading(false);
+              });
+            }
+          }}
+        />
+      )}
+
       <div className='grid gap-4'>
         {loading ? (
           <div className='flex h-64 items-center justify-center'>
             <RiLoader4Line className='size-8 animate-spin text-text-soft-400' />
           </div>
-        ) : codes.length === 0 ? (
+        ) : !error && codes.length === 0 ? (
           <div className='rounded-xl border border-dashed border-stroke-soft-200 p-12 text-center'>
             <p className='text-paragraph-sm text-text-sub-600'>No promo codes found for this brand.</p>
           </div>

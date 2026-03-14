@@ -14,6 +14,7 @@ import {
   RiCloseLine,
 } from '@remixicon/react';
 import { brandApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 const checklistStepIcons: Record<number, any> = {
   1: RiUserAddLine,
@@ -46,10 +47,12 @@ export default function BrandHomePage() {
   const [topSeller, setTopSeller] = React.useState<any>(null);
   const [checklist, setChecklist] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [checklistOpen, setChecklistOpen] = React.useState(false);
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [p, s, o, ts, cl] = await Promise.all([
         brandApi.getProfile(),
@@ -70,6 +73,7 @@ export default function BrandHomePage() {
       setChecklist(mappedChecklist);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      setError('Failed to load dashboard data. Please refresh the page.');
     } finally {
       setLoading(false);
     }
@@ -127,6 +131,18 @@ export default function BrandHomePage() {
           </Button>
         )}
       </div>
+
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => fetchData()
+          }}
+        />
+      )}
 
       {/* Stat Cards */}
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>

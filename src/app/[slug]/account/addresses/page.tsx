@@ -5,28 +5,109 @@ import { useParams } from 'next/navigation';
 import { storefrontApi } from '@/lib/api-client';
 import { Button } from '@/components/ui/button-new';
 import { Badge } from '@/components/ui/badge-new';
-import { RiMapPin2Line, RiAddLine, RiEdit2Line, RiDeleteBinLine } from '@remixicon/react';
+import { RiMapPin2Line, RiAddLine, RiEdit2Line, RiDeleteBinLine, RiLoader4Line } from '@remixicon/react';
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalFooter, ConfirmModal } from '@/components/ui/modal';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 export default function AddressesPage() {
     const { slug } = useParams();
     const [addresses, setAddresses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedAddress, setSelectedAddress] = useState<any>(null);
+    const [formData, setFormData] = useState({
+        label: '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: 'US',
+        isDefault: false
+    });
+
+    const fetchAddresses = async () => {
+        setLoading(true);
+        try {
+            const data = await storefrontApi.getAddresses(slug as string);
+            setAddresses(data || []);
+        } catch (error) {
+            console.error('Failed to fetch addresses:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchAddresses = async () => {
-            try {
-                const data = await storefrontApi.getAddresses(slug as string);
-                // Based on backend service, this returns a simple array
-                setAddresses(data || []);
-            } catch (error) {
-                console.error('Failed to fetch addresses:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchAddresses();
     }, [slug]);
+
+    const handleOpenForm = (addr?: any) => {
+        if (addr) {
+            setSelectedAddress(addr);
+            setFormData({
+                label: addr.label || '',
+                addressLine1: addr.addressLine1 || '',
+                addressLine2: addr.addressLine2 || '',
+                city: addr.city || '',
+                state: addr.state || '',
+                zip: addr.zip || '',
+                country: addr.country || 'US',
+                isDefault: addr.isDefault || false
+            });
+        } else {
+            setSelectedAddress(null);
+            setFormData({
+                label: '',
+                addressLine1: '',
+                addressLine2: '',
+                city: '',
+                state: '',
+                zip: '',
+                country: 'US',
+                isDefault: false
+            });
+        }
+        setIsFormOpen(true);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setActionLoading(true);
+        try {
+            if (selectedAddress) {
+                await storefrontApi.updateAddress(slug as string, selectedAddress.id, formData);
+                toast.success('Address updated successfully');
+            } else {
+                await storefrontApi.addAddress(slug as string, formData);
+                toast.success('Address added successfully');
+            }
+            await fetchAddresses();
+            setIsFormOpen(false);
+        } catch (error) {
+            console.error('Failed to save address:', error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedAddress) return;
+        setActionLoading(true);
+        try {
+            await storefrontApi.deleteAddress(slug as string, selectedAddress.id);
+            toast.success('Address deleted successfully');
+            await fetchAddresses();
+            setIsDeleteOpen(false);
+        } catch (error) {
+            console.error('Failed to delete address:', error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -44,7 +125,7 @@ export default function AddressesPage() {
                     <h1 className="text-3xl font-extrabold text-gray-900">Lab Gateways</h1>
                     <p className="mt-1 text-sm text-gray-500">Manage your shipping destinations and billing credentials.</p>
                 </div>
-                <Button className="rounded-2xl">
+                <Button className="rounded-2xl" onClick={() => handleOpenForm()}>
                     <RiAddLine className="size-4 mr-2" />
                     New Address
                 </Button>
@@ -59,7 +140,7 @@ export default function AddressesPage() {
                     <p className="mt-2 text-sm text-gray-500 max-w-xs mx-auto">
                         Save your primary research laboratory as a shipping destination for faster checkout.
                     </p>
-                    <Button variant="secondary" className="mt-8 rounded-xl px-6">
+                    <Button variant="secondary" className="mt-8 rounded-xl px-6" onClick={() => handleOpenForm()}>
                         Add Primary Address
                     </Button>
                 </div>
@@ -75,10 +156,19 @@ export default function AddressesPage() {
                                     )}
                                 </div>
                                 <div className="flex gap-2">
-                                    <button className="size-8 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-white hover:shadow-sm transition-all">
+                                    <button
+                                        className="size-8 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-white hover:shadow-sm transition-all"
+                                        onClick={() => handleOpenForm(addr)}
+                                    >
                                         <RiEdit2Line className="size-4" />
                                     </button>
-                                    <button className="size-8 rounded-xl bg-gray-50 flex items-center justify-center text-red-300 hover:text-red-500 hover:bg-red-50 transition-all">
+                                    <button
+                                        className="size-8 rounded-xl bg-gray-50 flex items-center justify-center text-red-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                                        onClick={() => {
+                                            setSelectedAddress(addr);
+                                            setIsDeleteOpen(true);
+                                        }}
+                                    >
                                         <RiDeleteBinLine className="size-4" />
                                     </button>
                                 </div>
@@ -94,6 +184,97 @@ export default function AddressesPage() {
                     ))}
                 </div>
             )}
+
+            <Modal open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <ModalContent>
+                    <ModalHeader>
+                        <ModalTitle>{selectedAddress ? 'Edit Gateway' : 'New Lab Gateway'}</ModalTitle>
+                    </ModalHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="col-span-2 space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Label</label>
+                                <Input
+                                    placeholder="e.g. Primary Lab"
+                                    value={formData.label}
+                                    onChange={e => setFormData({ ...formData, label: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-2 space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Address Line 1</label>
+                                <Input
+                                    placeholder="St. Anne's Bio-Research Park"
+                                    value={formData.addressLine1}
+                                    onChange={e => setFormData({ ...formData, addressLine1: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-2 space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Address Line 2</label>
+                                <Input
+                                    placeholder="Building 4, Suite 201"
+                                    value={formData.addressLine2}
+                                    onChange={e => setFormData({ ...formData, addressLine2: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">City</label>
+                                <Input
+                                    placeholder="Boston"
+                                    value={formData.city}
+                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">State</label>
+                                <Input
+                                    placeholder="MA"
+                                    value={formData.state}
+                                    onChange={e => setFormData({ ...formData, state: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">ZIP</label>
+                                <Input
+                                    placeholder="02108"
+                                    value={formData.zip}
+                                    onChange={e => setFormData({ ...formData, zip: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Country</label>
+                                <Input
+                                    placeholder="US"
+                                    value={formData.country}
+                                    onChange={e => setFormData({ ...formData, country: e.target.value })}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <ModalFooter className="mt-8">
+                            <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)} disabled={actionLoading}>Cancel</Button>
+                            <Button type="submit" disabled={actionLoading}>
+                                {actionLoading ? <RiLoader4Line className="size-4 animate-spin mr-2" /> : null}
+                                {selectedAddress ? 'Update Gateway' : 'Add Gateway'}
+                            </Button>
+                        </ModalFooter>
+                    </form>
+                </ModalContent>
+            </Modal>
+
+            <ConfirmModal
+                open={isDeleteOpen}
+                onOpenChange={setIsDeleteOpen}
+                title="Decommission Gateway?"
+                description="This will permanently disconnect this laboratory gateway from your account. This action cannot be undone."
+                confirmText="Decommission"
+                variant="destructive"
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

@@ -12,6 +12,7 @@ import {
 import * as React from 'react';
 import { useAffiliate } from './context';
 import { affiliateApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 export default function AffiliateDashboardPage() {
   const { getSelectedBrand, isLoading: ctxLoading, user } = useAffiliate();
@@ -21,27 +22,35 @@ export default function AffiliateDashboardPage() {
   const [trendingProducts, setTrendingProducts] = React.useState<any[]>([]);
   const [recentOrders, setRecentOrders] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const selectedBrand = getSelectedBrand();
 
   React.useEffect(() => {
-    if (!selectedBrand?.id) return;
-    setLoading(true);
+    const fetchData = async () => {
+      if (!selectedBrand?.id) return;
+      setLoading(true);
+      setError(null);
 
-    Promise.all([
-      affiliateApi.getDashboardStats(selectedBrand.id),
-      affiliateApi.getReferralLink(selectedBrand.id),
-      affiliateApi.getTrendingProducts(selectedBrand.id),
-      affiliateApi.getOrders(selectedBrand.id, { limit: 5 }),
-    ])
-      .then(([statsData, linkData, products, ordersData]) => {
+      try {
+        const [statsData, linkData, products, ordersData] = await Promise.all([
+          affiliateApi.getDashboardStats(selectedBrand.id),
+          affiliateApi.getReferralLink(selectedBrand.id),
+          affiliateApi.getTrendingProducts(selectedBrand.id),
+          affiliateApi.getOrders(selectedBrand.id, { limit: 5 }),
+        ]);
         setStats(statsData);
         setReferralLink(linkData?.url || linkData?.referralLink || '');
         setTrendingProducts(Array.isArray(products) ? products : []);
         setRecentOrders(ordersData?.data || ordersData?.orders || []);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load dashboard data. Please refresh the page.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [selectedBrand?.id]);
 
   const copy = () => {
@@ -68,6 +77,38 @@ export default function AffiliateDashboardPage() {
           {selectedBrand ? `${selectedBrand.name} · ` : ''}Your affiliate performance overview
         </p>
       </div>
+
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => {
+              if (!selectedBrand?.id) return;
+              setLoading(true);
+              setError(null);
+              Promise.all([
+                affiliateApi.getDashboardStats(selectedBrand.id),
+                affiliateApi.getReferralLink(selectedBrand.id),
+                affiliateApi.getTrendingProducts(selectedBrand.id),
+                affiliateApi.getOrders(selectedBrand.id, { limit: 5 }),
+              ]).then(([statsData, linkData, products, ordersData]) => {
+                setStats(statsData);
+                setReferralLink(linkData?.url || linkData?.referralLink || '');
+                setTrendingProducts(Array.isArray(products) ? products : []);
+                setRecentOrders(ordersData?.data || ordersData?.orders || []);
+                setLoading(false);
+              }).catch(err => {
+                console.error('Failed to fetch dashboard data:', err);
+                setError('Failed to load dashboard data. Please refresh the page.');
+                setLoading(false);
+              });
+            }
+          }}
+        />
+      )}
 
       {/* Quick referral link */}
       <div className='flex items-center gap-3 rounded-xl border border-primary-alpha-16 bg-primary-alpha-10/30 px-5 py-4'>
@@ -166,11 +207,11 @@ export default function AffiliateDashboardPage() {
           <div className='flex h-40 items-center justify-center'>
             <RiLoader4Line className='size-5 animate-spin text-text-soft-400' />
           </div>
-        ) : recentOrders.length === 0 ? (
+        ) : !error && recentOrders.length === 0 ? (
           <div className='flex h-40 items-center justify-center'>
             <p className='text-paragraph-sm text-text-sub-600'>No orders yet for this brand.</p>
           </div>
-        ) : (
+        ) : !error ? (
           <table className='w-full'>
             <thead>
               <tr className='border-b border-stroke-soft-200'>
@@ -201,7 +242,7 @@ export default function AffiliateDashboardPage() {
               ))}
             </tbody>
           </table>
-        )}
+        ) : null}
       </div>
     </div>
   );

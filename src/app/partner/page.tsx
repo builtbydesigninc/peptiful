@@ -17,6 +17,7 @@ import {
   RiExternalLinkLine,
 } from '@remixicon/react';
 import { partnerApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import * as React from 'react';
 
 export default function PartnerHomePage() {
@@ -26,8 +27,11 @@ export default function PartnerHomePage() {
   const [stats, setStats] = React.useState<any>(null);
   const [brands, setBrands] = React.useState<any[]>([]);
   const [referralLink, setReferralLink] = React.useState<any>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
   const fetchData = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const [profileRes, statsRes, brandsRes, linkRes] = await Promise.all([
         partnerApi.getProfile(),
@@ -41,6 +45,7 @@ export default function PartnerHomePage() {
       setReferralLink(linkRes);
     } catch (error) {
       console.error('Failed to fetch partner data:', error);
+      setError('Failed to load partner data. Please refresh the page.');
     } finally {
       setLoading(false);
     }
@@ -82,6 +87,18 @@ export default function PartnerHomePage() {
           </Link>
         </Button>
       </div>
+
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => fetchData()
+          }}
+        />
+      )}
 
       {/* Referral Link Card */}
       <div className='rounded-xl border border-primary-alpha-16 bg-primary-alpha-10/30 p-5'>
@@ -176,6 +193,6 @@ export default function PartnerHomePage() {
           </table>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

@@ -7,6 +7,7 @@ import { StatCard } from '@/components/ui/stat-card-new';
 import { RiFileList3Line, RiLoader4Line } from '@remixicon/react';
 import { useAffiliate } from '../context';
 import { affiliateApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 export default function AffiliateOrdersPage() {
   const { getSelectedBrand, isLoading: ctxLoading } = useAffiliate();
@@ -15,12 +16,14 @@ export default function AffiliateOrdersPage() {
   const [orders, setOrders] = React.useState<any[]>([]);
   const [stats, setStats] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!selectedBrand?.id) return;
 
     const fetchOrders = async () => {
       setLoading(true);
+      setError(null);
       try {
         const [ordersData, statsData] = await Promise.all([
           affiliateApi.getOrders(selectedBrand.id, { limit: 50 }),
@@ -30,6 +33,7 @@ export default function AffiliateOrdersPage() {
         setStats(statsData);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
+        setError('Failed to load orders. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -57,6 +61,34 @@ export default function AffiliateOrdersPage() {
     <div className='space-y-6'>
       <PageHeader title='Orders' description='All orders attributed to you and your L2 team' />
 
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => {
+              if (!selectedBrand?.id) return;
+              setLoading(true);
+              setError(null);
+              Promise.all([
+                affiliateApi.getOrders(selectedBrand.id, { limit: 50 }),
+                affiliateApi.getOrderStats(selectedBrand.id)
+              ]).then(([ordersData, statsData]) => {
+                setOrders(ordersData.data || ordersData.orders || []);
+                setStats(statsData);
+                setLoading(false);
+              }).catch(err => {
+                console.error('Failed to fetch orders:', err);
+                setError('Failed to load orders. Please refresh the page.');
+                setLoading(false);
+              });
+            }
+          }}
+        />
+      )}
+
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
         <StatCard
           title='Total Orders'
@@ -78,11 +110,11 @@ export default function AffiliateOrdersPage() {
           <div className='flex h-64 items-center justify-center'>
             <RiLoader4Line className='size-8 animate-spin text-text-soft-400' />
           </div>
-        ) : orders.length === 0 ? (
+        ) : !error && orders.length === 0 ? (
           <div className='p-12 text-center'>
             <p className='text-paragraph-sm text-text-sub-600'>No orders found for this brand yet.</p>
           </div>
-        ) : (
+        ) : !error ? (
           <div className='overflow-x-auto'>
             <table className='w-full text-nowrap'>
               <thead>
@@ -115,7 +147,7 @@ export default function AffiliateOrdersPage() {
                           size='sm'
                           dot
                         >
-                          {o.status?.charAt(0) + o.status?.slice(1).toLowerCase() || 'Processing'}
+                          {o.status?.charAt(0).toUpperCase() + (o.status?.slice(1)?.toLowerCase() ?? '') || 'Processing'}
                         </Badge>
                       </td>
                     </tr>
@@ -124,7 +156,7 @@ export default function AffiliateOrdersPage() {
               </tbody>
             </table>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

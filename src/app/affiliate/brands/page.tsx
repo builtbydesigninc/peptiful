@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button-new';
 import { RiExternalLinkLine, RiFileCopyLine, RiLoader4Line } from '@remixicon/react';
 import { useEffect, useState } from 'react';
 import { affiliateApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 interface Brand {
   id: string;
@@ -21,14 +22,17 @@ interface Brand {
 export default function AffiliateBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBrands = async () => {
       try {
+        setError(null);
         const data = await affiliateApi.getBrands();
         setBrands(data);
-      } catch (error: any) {
-        console.error('Failed to fetch brands:', error);
+      } catch (err: any) {
+        console.error('Failed to fetch brands:', err);
+        setError('Failed to load brands. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -47,8 +51,32 @@ export default function AffiliateBrandsPage() {
   return (
     <div className='space-y-6'>
       <PageHeader title='My Brands' description='Brands you promote as an L1 affiliate' />
+
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => {
+              setLoading(true);
+              setError(null);
+              affiliateApi.getBrands().then(data => {
+                setBrands(data);
+                setLoading(false);
+              }).catch(err => {
+                console.error('Failed to fetch brands:', err);
+                setError('Failed to load brands. Please refresh the page.');
+                setLoading(false);
+              });
+            }
+          }}
+        />
+      )}
+
       <div className='grid gap-4'>
-        {brands.length === 0 ? (
+        {!error && brands.length === 0 ? (
           <div className='rounded-xl border border-dashed border-stroke-soft-200 p-12 text-center'>
             <p className='text-paragraph-sm text-text-sub-600'>No brands found.</p>
           </div>
