@@ -185,10 +185,11 @@ function UserDropdown({ user, collapsed }: { user: { name: string; email: string
     if (affiliateCtx?.logout) {
       await affiliateCtx.logout();
     } else if (adminCtx?.logout) {
-      // Future-proofing: AdminProvider doesn't have logout yet but easily added
-      // For now we use the context fallback
+      await adminCtx.logout();
     } else {
-      await adminApi.logout();
+      try { await adminApi.logout(); } catch (e) { }
+      const { logout: purge } = await import('@/lib/api-client');
+      purge();
     }
   };
   const ref = React.useRef<HTMLDivElement>(null);

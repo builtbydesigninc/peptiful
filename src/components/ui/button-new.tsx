@@ -44,20 +44,33 @@ const buttonVariants = tv({
   },
 });
 
+import { RiLoader4Line } from '@remixicon/react';
+
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    loading?: boolean;
   };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, iconOnly, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, iconOnly, asChild = false, loading, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
     return (
       <Comp
         ref={ref}
+        disabled={loading || disabled}
         className={cn(buttonVariants({ variant, size, iconOnly }), className)}
         {...props}
-      />
+      >
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {loading && <RiLoader4Line className="mr-2 size-4 animate-spin" />}
+            {children}
+          </>
+        )}
+      </Comp>
     );
   },
 );

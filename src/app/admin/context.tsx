@@ -58,6 +58,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         } catch (err) {
             console.error("Logout failed API side:", err)
         } finally {
+            const { logout: clearLocalData } = await import("@/lib/api-client")
+            clearLocalData()
             setState({
                 user: null,
                 isLoading: false,

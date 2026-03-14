@@ -78,30 +78,12 @@ export default function AdminBrandsPage() {
     adminApi.getPartnersList().then(setPartners).catch(console.error);
   }, []);
 
-  const handleCreateBrand = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      slug: formData.get('slug'),
-      partnerId: formData.get('partnerId') || null,
-      l1CommissionRate: parseFloat(formData.get('l1CommissionRate') as string),
-      status: formData.get('status'),
-    };
 
-    try {
-      await adminApi.createBrand(data);
-      setShowCreate(false);
-      fetchBrands();
-    } catch (error) {
-      console.error('Failed to create brand:', error);
-      alert('Failed to create brand. Check console for details.');
-    }
-  };
 
   const [editingBrand, setEditingBrand] = React.useState<any>(null);
   const [viewingBrand, setViewingBrand] = React.useState<any>(null);
+
+  const [viewLoading, setViewLoading] = React.useState(false);
 
   const handleAction = async (brandId: string, action: string) => {
     const brand = brands.find(b => b.id === brandId);
@@ -129,22 +111,51 @@ export default function AdminBrandsPage() {
     } else if (action === 'edit') {
       setEditingBrand(brand);
     } else if (action === 'view') {
-      setViewingBrand(brand);
+      setViewLoading(true);
+      try {
+        const fullBrand = await adminApi.getBrand(brandId);
+        setViewingBrand(fullBrand);
+      } catch (error) {
+        console.error('Failed to fetch brand details:', error);
+        alert('Failed to fetch brand details.');
+      } finally {
+        setViewLoading(false);
+      }
     }
   };
+
+  const [saving, setSaving] = React.useState(false);
 
   const handleSubmitBrand = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const slug = (formData.get('slug') as string).toLowerCase().trim();
+
+    // Simple frontend validation for slug
+    if (!/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(slug)) {
+      alert('Invalid subdomain format. Use lowercase alphanumeric and hyphens (3-63 chars).');
+      return;
+    }
+
     const data: any = {
       name: formData.get('name'),
       email: formData.get('email'),
-      slug: formData.get('slug'),
+      slug,
       partnerId: formData.get('partnerId') || null,
       l1CommissionRate: parseFloat(formData.get('l1CommissionRate') as string),
       status: formData.get('status'),
     };
 
+    if (!editingBrand) {
+      data.fullName = formData.get('fullName');
+      data.password = formData.get('password');
+      if (!data.fullName || !data.password) {
+        alert('Owner name and password are required for new brands.');
+        return;
+      }
+    }
+
+    setSaving(true);
     try {
       if (editingBrand) {
         await adminApi.updateBrand(editingBrand.id, data);
@@ -154,9 +165,11 @@ export default function AdminBrandsPage() {
         setShowCreate(false);
       }
       fetchBrands();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save brand:', error);
-      alert('Failed to save brand. Check console for details.');
+      alert(error.message || 'Failed to save brand. Check console for details.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -233,6 +246,18 @@ export default function AdminBrandsPage() {
               </Button>
             </div>
             <div className='space-y-4'>
+              {!editingBrand && (
+                <>
+                  <div className='space-y-1.5'>
+                    <label className='text-label-sm text-text-strong-950'>Owner Full Name</label>
+                    <input name='fullName' required placeholder='Jane Smith' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                  </div>
+                  <div className='space-y-1.5'>
+                    <label className='text-label-sm text-text-strong-950'>Initial Password</label>
+                    <input name='password' type='password' required minLength={8} placeholder='••••••••' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                  </div>
+                </>
+              )}
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Brand Name</label>
                 <input name='name' required defaultValue={editingBrand?.name} placeholder='e.g. PeptideKing' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
@@ -243,7 +268,10 @@ export default function AdminBrandsPage() {
               </div>
               <div className='space-y-1.5'>
                 <label className='text-label-sm text-text-strong-950'>Subdomain (Slug)</label>
-                <input name='slug' required defaultValue={editingBrand?.slug} placeholder='peptideking' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                <div className='relative'>
+                  <input name='slug' required defaultValue={editingBrand?.slug} placeholder='peptideking' className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 pl-3 pr-28 text-paragraph-sm placeholder:text-text-disabled-300 shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
+                  <span className='absolute right-3 top-1/2 -translate-y-1/2 text-paragraph-xs text-text-soft-400'>.peptiful.com</span>
+                </div>
               </div>
 
               <div className='space-y-1.5'>
@@ -258,7 +286,7 @@ export default function AdminBrandsPage() {
 
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-1.5'>
-                  <label className='text-label-sm text-text-strong-950'>L1 Commission Rate (%)</label>
+                  <label className='text-label-sm text-text-strong-950'>L1 Commission (%)</label>
                   <input name='l1CommissionRate' type='number' step='0.1' defaultValue={editingBrand?.l1CommissionRate || '15'} className='h-10 w-full rounded-10 border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm shadow-custom-input focus:outline-none focus:ring-2 focus:ring-primary-alpha-16' />
                 </div>
                 <div className='space-y-1.5'>
@@ -271,9 +299,9 @@ export default function AdminBrandsPage() {
                 </div>
               </div>
 
-              <div className='flex justify-end gap-3 pt-2'>
-                <Button type='button' variant='secondary' onClick={() => { setShowCreate(false); setEditingBrand(null); }}>Cancel</Button>
-                <Button type='submit'>{editingBrand ? 'Save Changes' : 'Create Brand'}</Button>
+              <div className='flex justify-end gap-3 pt-4 border-t border-stroke-soft-200 mt-2'>
+                <Button type='button' variant='secondary' disabled={saving} onClick={() => { setShowCreate(false); setEditingBrand(null); }}>Cancel</Button>
+                <Button type='submit' loading={saving}>{editingBrand ? 'Save Changes' : 'Create Brand'}</Button>
               </div>
             </div>
           </form>
@@ -282,81 +310,134 @@ export default function AdminBrandsPage() {
 
       {/* View Brand Modal */}
       {viewingBrand && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4'>
-          <div className='w-full max-w-2xl rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-6 shadow-complex'>
-            <div className='flex items-center justify-between mb-6'>
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4 backdrop-blur-sm transition-all'>
+          <div className='w-full max-w-2xl rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-complex overflow-hidden'>
+            {/* Modal Header */}
+            <div className='flex items-center justify-between px-6 py-5 border-b border-stroke-soft-200 bg-bg-weak-50'>
               <div>
-                <h3 className='text-label-lg text-text-strong-950'>{viewingBrand.name}</h3>
-                <p className='text-paragraph-xs text-text-sub-600'>{viewingBrand.slug}.peptiful.com</p>
+                <h3 className='text-label-lg font-bold text-text-strong-950'>{viewingBrand.name}</h3>
+                <div className='flex items-center gap-2 mt-0.5'>
+                  <p className='text-paragraph-xs text-text-sub-600'>{viewingBrand.slug}.peptiful.com</p>
+                  <span className='size-1 rounded-full bg-text-disabled-300' />
+                  <p className='text-paragraph-xs text-text-sub-600'>Created {new Date(viewingBrand.createdAt).toLocaleDateString()}</p>
+                </div>
               </div>
-              <Button variant='ghost' size='xs' iconOnly onClick={() => setViewingBrand(null)}>
-                <RiCloseLine className='size-5' />
-              </Button>
+              <div className='flex items-center gap-2'>
+                <Badge variant='light' color={viewingBrand.status === 'ACTIVE' ? 'success' : viewingBrand.status === 'PENDING' ? 'warning' : 'error'} size='md' dot>
+                  {viewingBrand.status}
+                </Badge>
+                <Button variant='ghost' size='xs' iconOnly onClick={() => setViewingBrand(null)}>
+                  <RiCloseLine className='size-5' />
+                </Button>
+              </div>
             </div>
 
-            <div className='grid grid-cols-2 gap-6'>
-              <div className='space-y-4'>
-                <div>
-                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Store Details</label>
-                  <div className='mt-2 space-y-2'>
-                    <div className='flex justify-between text-paragraph-sm'>
-                      <span className='text-text-sub-600'>Status</span>
-                      <Badge variant='light' color={viewingBrand.status === 'ACTIVE' ? 'success' : viewingBrand.status === 'PENDING' ? 'warning' : 'error'} size='sm'>
-                        {viewingBrand.status}
-                      </Badge>
+            {/* Modal Body */}
+            <div className='p-8'>
+              <div className='grid grid-cols-2 gap-x-12 gap-y-10'>
+                {/* Stats Section */}
+                <div className='col-span-2 grid grid-cols-3 gap-4'>
+                  {[
+                    { label: 'Total Revenue', value: `$${viewingBrand.orderStats?.revenue?.toLocaleString() || '0.00'}`, icon: RiSearchLine }, // Dummy icon, replace if needed
+                    { label: 'Total Orders', value: viewingBrand.orderStats?.count || 0 },
+                    { label: 'Products', value: viewingBrand._count?.brandProducts || 0 },
+                  ].map((stat, i) => (
+                    <div key={i} className='rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 shadow-regular-xs'>
+                      <p className='text-label-2xs uppercase tracking-wider text-text-soft-400'>{stat.label}</p>
+                      <p className='mt-1 text-label-lg font-bold text-text-strong-950'>{stat.value}</p>
                     </div>
-                    <div className='flex justify-between text-paragraph-sm'>
-                      <span className='text-text-sub-600'>Partner</span>
-                      <span className='text-text-strong-950'>{viewingBrand.partner?.user?.fullName || 'Direct'}</span>
+                  ))}
+                </div>
+
+                <div className='space-y-6'>
+                  <div>
+                    <label className='text-label-xs font-bold uppercase tracking-wider text-text-soft-400'>Store Details</label>
+                    <div className='mt-3 space-y-3'>
+                      <div className='flex justify-between items-center text-paragraph-sm'>
+                        <span className='text-text-sub-600'>Partner</span>
+                        <span className='text-text-strong-950 font-medium'>{viewingBrand.partner?.user?.fullName || viewingBrand.partner?.company || 'Direct (No Partner)'}</span>
+                      </div>
+                      <div className='flex justify-between items-center text-paragraph-sm'>
+                        <span className='text-text-sub-600'>Business Type</span>
+                        <Badge variant='light' color='gray' size='sm'>{viewingBrand.businessType || 'RETAILER'}</Badge>
+                      </div>
+                      <div className='flex justify-between items-center text-paragraph-sm'>
+                        <span className='text-text-sub-600'>L1 Commission</span>
+                        <span className='text-text-strong-950 font-medium'>{viewingBrand.l1CommissionRate}%</span>
+                      </div>
                     </div>
-                    <div className='flex justify-between text-paragraph-sm'>
-                      <span className='text-text-sub-600'>L1 Commission</span>
-                      <span className='text-text-strong-950'>{viewingBrand.l1CommissionRate}%</span>
+                  </div>
+
+                  <div>
+                    <label className='text-label-xs font-bold uppercase tracking-wider text-text-soft-400'>Onboarding Progress</label>
+                    <div className='mt-3 space-y-3'>
+                      <div className='h-2 w-full rounded-full bg-bg-soft-200 overflow-hidden'>
+                        <div
+                          className='h-full bg-primary-base transition-all duration-500'
+                          style={{ width: `${(Object.values(viewingBrand.onboarding?.stepsCompleted || {}).filter(Boolean).length / 5) * 100}%` }}
+                        />
+                      </div>
+                      <div className='flex justify-between text-paragraph-xs text-text-sub-600 italic'>
+                        <span>{Object.values(viewingBrand.onboarding?.stepsCompleted || {}).filter(Boolean).length} / 5 steps completed</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Performance</label>
-                  <div className='mt-2 space-y-2'>
-                    <div className='flex justify-between text-paragraph-sm'>
-                      <span className='text-text-sub-600'>Total Revenue</span>
-                      <span className='text-text-strong-950 font-medium'>${viewingBrand.totalRevenue || '0.00'}</span>
+                <div className='space-y-6'>
+                  <div>
+                    <label className='text-label-xs font-bold uppercase tracking-wider text-text-soft-400'>Contact Information</label>
+                    <div className='mt-3 space-y-3'>
+                      <div className='space-y-1'>
+                        <p className='text-paragraph-xs text-text-sub-600'>Email Address</p>
+                        <p className='text-paragraph-sm font-medium text-text-strong-950'>{viewingBrand.email}</p>
+                      </div>
+                      {viewingBrand.phone && (
+                        <div className='space-y-1'>
+                          <p className='text-paragraph-xs text-text-sub-600'>Phone Number</p>
+                          <p className='text-paragraph-sm font-medium text-text-strong-950'>{viewingBrand.phone}</p>
+                        </div>
+                      )}
                     </div>
-                    <div className='flex justify-between text-paragraph-sm'>
-                      <span className='text-text-sub-600'>Total Orders</span>
-                      <span className='text-text-strong-950'>{viewingBrand._count?.orders || 0}</span>
-                    </div>
-                    <div className='flex justify-between text-paragraph-sm'>
-                      <span className='text-text-sub-600'>Products</span>
-                      <span className='text-text-strong-950'>{viewingBrand._count?.brandProducts || 0}</span>
+                  </div>
+
+                  <div>
+                    <label className='text-label-xs font-bold uppercase tracking-wider text-text-soft-400'>Affiliate Setup</label>
+                    <div className='mt-3 space-y-3'>
+                      <div className='flex justify-between items-center text-paragraph-sm'>
+                        <span className='text-text-sub-600'>Affiliates Enabled</span>
+                        <Badge variant='light' color={viewingBrand.affiliatesEnabled !== false ? 'success' : 'error'} size='sm' dot>
+                          {viewingBrand.affiliatesEnabled !== false ? 'Yes' : 'No'}
+                        </Badge>
+                      </div>
+                      <div className='flex justify-between items-center text-paragraph-sm'>
+                        <span className='text-text-sub-600'>Active Affiliates</span>
+                        <span className='text-text-strong-950 font-medium'>{viewingBrand._count?.affiliates || 0}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div className='space-y-4'>
-                <div>
-                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Contact Information</label>
-                  <p className='mt-2 text-paragraph-sm text-text-strong-950'>{viewingBrand.email}</p>
-                </div>
-                {/* Placeholder for more details like created date etc */}
-                <div>
-                  <label className='text-label-2xs uppercase tracking-wider text-text-soft-400'>Created At</label>
-                  <p className='mt-1 text-paragraph-sm text-text-sub-600'>
-                    {new Date(viewingBrand.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
             </div>
 
-            <div className='mt-8 pt-5 border-t border-stroke-soft-200 flex justify-end gap-3'>
-              <Button variant='secondary' onClick={() => setViewingBrand(null)}>Close</Button>
+            {/* Modal Footer */}
+            <div className='px-8 py-6 border-t border-stroke-soft-200 bg-bg-weak-50 flex justify-end gap-3'>
+              <Button variant='secondary' onClick={() => setViewingBrand(null)}>Close Details</Button>
               <Button onClick={() => { setViewingBrand(null); setEditingBrand(viewingBrand); }}>
                 <RiEditLine className='size-4' />
                 Edit Brand
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Loading Overlay */}
+      {viewLoading && (
+        <div className='fixed inset-0 z-[60] flex items-center justify-center bg-overlay/50 backdrop-blur-[2px]'>
+          <div className='flex flex-col items-center gap-3 rounded-2xl bg-bg-white-0 px-8 py-6 shadow-complex'>
+            <div className='animate-spin rounded-full h-8 w-8 border-t-2 border-primary-base' />
+            <p className='text-paragraph-sm font-medium text-text-strong-950'>Fetching details...</p>
           </div>
         </div>
       )}
