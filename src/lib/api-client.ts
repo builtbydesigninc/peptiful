@@ -1,4 +1,10 @@
+import { toast } from 'sonner';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+export interface FetchOptions extends RequestInit {
+    skipToast?: boolean;
+}
 
 export function setApiToken(token: string) {
     if (typeof window !== 'undefined') {
@@ -36,7 +42,7 @@ const pendingRequests = new Map<string, Promise<any>>();
 
 export async function fetchApi<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: FetchOptions = {}
 ): Promise<T> {
     const isGet = !options.method || options.method.toUpperCase() === 'GET';
     const cacheKey = isGet ? `${endpoint}` : null;
@@ -95,6 +101,37 @@ export async function fetchApi<T>(
                 } catch {
                     error = { message: errText || 'An unknown error occurred' };
                 }
+                if (typeof window !== 'undefined' && !options.skipToast) {
+                    const status = response.status;
+                    const message = error.message || response.statusText;
+
+                    switch (status) {
+                        case 400:
+                        case 422:
+                            toast.error('Validation Error', { description: message });
+                            break;
+                        case 403:
+                            toast.error('Permission Denied', { description: 'You do not have permission to perform this action.' });
+                            break;
+                        case 404:
+                            toast.error('Not Found', { description: message });
+                            break;
+                        case 409:
+                            toast.error('Conflict', { description: message });
+                            break;
+                        case 429:
+                            toast.error('Too Many Requests', { description: 'Please slow down and try again later.' });
+                            break;
+                        case 500:
+                            toast.error('Server Error', { description: 'Something went wrong on our end. Please try again later.' });
+                            break;
+                        default:
+                            if (status >= 400) {
+                                toast.error('Error', { description: message });
+                            }
+                    }
+                }
+
                 throw new Error(error.message || `API error: ${response.statusText}`);
             }
 

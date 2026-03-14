@@ -76,14 +76,18 @@ function Toggle({ defaultChecked }: { defaultChecked?: boolean }) {
   );
 }
 
+import { useEvents } from '@/hooks/use-events';
+import { toast } from 'sonner';
+
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState('general');
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [settings, setSettings] = React.useState<any>(null);
 
+  const { socket } = useEvents(settings?.id);
+
   const fetchData = async () => {
-    setLoading(true);
     try {
       const data = await brandApi.getSettings();
       setSettings(data);
@@ -97,6 +101,28 @@ export default function SettingsPage() {
   React.useEffect(() => {
     fetchData();
   }, []);
+
+  React.useEffect(() => {
+    if (!socket) return;
+
+    socket.on('dns:update', (data: any) => {
+      if (data.success) {
+        toast.success('DNS Verified', {
+          description: 'Your custom domain has been successfully verified.',
+        });
+        fetchData();
+      } else {
+        toast.error('DNS Verification Failed', {
+          description: `Failed check: ${data.failedCheck}`,
+        });
+        fetchData();
+      }
+    });
+
+    return () => {
+      socket.off('dns:update');
+    };
+  }, [socket]);
 
   const handleSaveGeneral = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
