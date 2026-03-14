@@ -84,23 +84,29 @@ export default function SettingsPage() {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [settings, setSettings] = React.useState<any>(null);
+  const [dnsInfo, setDnsInfo] = React.useState<any>(null);
 
   const { socket } = useEvents(settings?.id);
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const data = await brandApi.getSettings();
       setSettings(data);
+
+      if (data?.branding?.customDomain) {
+        const dnsData = await brandApi.getDnsStatus();
+        setDnsInfo(dnsData);
+      }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   React.useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   React.useEffect(() => {
     if (!socket) return;
@@ -122,7 +128,7 @@ export default function SettingsPage() {
     return () => {
       socket.off('dns:update');
     };
-  }, [socket]);
+  }, [socket, fetchData]);
 
   const handleSaveGeneral = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -153,12 +159,24 @@ export default function SettingsPage() {
       primaryColor: formData.get('primaryColor') as string,
       description: formData.get('description') as string,
     };
+    const customDomain = (formData.get('customDomain') as string)?.trim() || '';
+    const currentDomain = settings?.branding?.customDomain || '';
 
     try {
       await brandApi.updateBrandingSettings(data);
+
+      if (customDomain !== currentDomain) {
+        if (customDomain) {
+          await brandApi.setCustomDomain(customDomain);
+        } else {
+          await brandApi.removeCustomDomain();
+        }
+      }
+
       await fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update branding settings:', error);
+      toast.error('Update Failed', { description: error.message || 'Failed to update custom domain' });
     } finally {
       setSaving(false);
     }
@@ -409,7 +427,7 @@ export default function SettingsPage() {
                       <p className='text-label-xs text-text-strong-950 px-1'>Record 2: TXT (Verification)</p>
                       <div className='rounded-lg bg-bg-weak-50 p-2 text-paragraph-xs border border-stroke-soft-200'>
                         <div className='flex justify-between'><span className='text-text-soft-400'>Host</span><span className='font-mono text-right shrink-0'>_peptiful-verify</span></div>
-                        <div className='flex justify-between mt-1 overflow-x-auto'><span className='text-text-soft-400 mr-2'>Value</span><span className='font-mono text-right whitespace-nowrap'>peptiful-verify={settings?.branding?.dnsVerificationToken || '...'}</span></div>
+                        <div className='flex justify-between mt-1 overflow-x-auto'><span className='text-text-soft-400 mr-2'>Value</span><span className='font-mono text-right whitespace-nowrap'>peptiful-verify={dnsInfo?.dnsVerificationToken || '...'}</span></div>
                       </div>
                     </div>
                   </div>

@@ -31,11 +31,6 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
     const fetchProfile = useCallback(async () => {
         try {
-            if (typeof window !== 'undefined' && window.location.pathname === '/login') {
-                setState({ user: null, isLoading: false });
-                return;
-            }
-
             const profile = await labApi.getProfile()
             setState({
                 user: {
@@ -54,17 +49,14 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
     const handleLogout = useCallback(async () => {
         try {
-            const { adminApi } = await import("@/lib/api-client")
-            await adminApi.logout()
-        } catch (err) {
-            console.error("Logout failed API side:", err)
-        } finally {
             const { logout: clearLocalData } = await import("@/lib/api-client")
             clearLocalData()
             setState({
                 user: null,
                 isLoading: false,
             })
+        } catch (err) {
+            console.error("Local logout failed:", err)
         }
     }, [])
 

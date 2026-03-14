@@ -12,6 +12,7 @@ import {
 } from '@remixicon/react';
 import { useAffiliate } from '../context';
 import { affiliateApi } from '@/lib/api-client';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 export default function AffiliateEarningsPage() {
   const { getSelectedBrand, isLoading: ctxLoading } = useAffiliate();
@@ -20,12 +21,14 @@ export default function AffiliateEarningsPage() {
   const [stats, setStats] = React.useState<any>(null);
   const [monthly, setMonthly] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!selectedBrand?.id) return;
 
     const fetchEarnings = async () => {
       setLoading(true);
+      setError(null);
       try {
         const [statsData, monthlyData] = await Promise.all([
           affiliateApi.getEarningsStats(selectedBrand.id),
@@ -35,6 +38,7 @@ export default function AffiliateEarningsPage() {
         setMonthly(monthlyData);
       } catch (error) {
         console.error('Failed to fetch earnings:', error);
+        setError('Failed to load earnings. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -75,6 +79,34 @@ export default function AffiliateEarningsPage() {
         }
       />
 
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => {
+              if (!selectedBrand?.id) return;
+              setLoading(true);
+              setError(null);
+              Promise.all([
+                affiliateApi.getEarningsStats(selectedBrand.id),
+                affiliateApi.getMonthlyEarnings(selectedBrand.id)
+              ]).then(([statsData, monthlyData]) => {
+                setStats(statsData);
+                setMonthly(monthlyData);
+                setLoading(false);
+              }).catch(err => {
+                console.error('Failed to fetch earnings:', err);
+                setError('Failed to load earnings. Please refresh the page.');
+                setLoading(false);
+              });
+            }
+          }}
+        />
+      )}
+
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <StatCard
           title='Total Earnings'
@@ -105,11 +137,11 @@ export default function AffiliateEarningsPage() {
           <div className='flex h-40 items-center justify-center'>
             <RiLoader4Line className='size-6 animate-spin text-text-soft-400' />
           </div>
-        ) : monthly.length === 0 ? (
+        ) : !error && monthly.length === 0 ? (
           <div className='p-12 text-center'>
             <p className='text-paragraph-sm text-text-sub-600'>No earnings data found for this period.</p>
           </div>
-        ) : (
+        ) : !error ? (
           <table className='w-full'>
             <thead>
               <tr className='border-b border-stroke-soft-200 bg-bg-weak-50'>
@@ -129,7 +161,7 @@ export default function AffiliateEarningsPage() {
               ))}
             </tbody>
           </table>
-        )}
+        ) : null}
       </div>
     </div>
   );

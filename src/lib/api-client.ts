@@ -77,10 +77,13 @@ export async function fetchApi<T>(
                 const isAuthEndpoint = endpoint.includes('/auth/');
                 if (response.status === 401 && typeof window !== 'undefined' && !isAuthEndpoint) {
                     const isAffiliatePath = window.location.pathname.startsWith('/affiliate');
+                    const isLabPath = window.location.pathname.startsWith('/lab');
                     let targetPath = isAffiliatePath ? '/affiliate/login' : '/login';
 
-                    // For storefront (non-affiliate) paths, try to keep the brand slug
-                    if (!isAffiliatePath) {
+                    if (isLabPath) {
+                        targetPath = '/lab-login';
+                    } else if (!isAffiliatePath) {
+                        // For storefront (non-affiliate) paths, try to keep the brand slug
                         const pathParts = window.location.pathname.split('/').filter(Boolean);
                         if (pathParts.length > 0 && pathParts[0] !== 'login' && pathParts[0] !== 'register') {
                             targetPath = `/${pathParts[0]}/login`;
@@ -106,6 +109,9 @@ export async function fetchApi<T>(
                     const message = error.message || response.statusText;
 
                     switch (status) {
+                        case 401:
+                            toast.error('Session Expired', { description: 'Your session has expired. Please log in again.' });
+                            break;
                         case 400:
                         case 422:
                             toast.error('Validation Error', { description: message });

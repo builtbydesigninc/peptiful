@@ -14,6 +14,7 @@ import {
 } from '@remixicon/react';
 import { affiliateApi } from '@/lib/api-client';
 import { useAffiliate } from '../context';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
 export default function AffiliatePayoutsPage() {
   const { getSelectedBrand, isLoading: ctxLoading } = useAffiliate();
@@ -23,12 +24,14 @@ export default function AffiliatePayoutsPage() {
   const [summary, setSummary] = React.useState<any>(null);
   const [paymentMethod, setPaymentMethod] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!selectedBrand?.id) return;
 
     const fetchPayoutData = async () => {
       setLoading(true);
+      setError(null);
       try {
         const [payoutsData, summaryData, methodData] = await Promise.all([
           affiliateApi.getPayouts(selectedBrand.id, { limit: 50 }),
@@ -40,6 +43,7 @@ export default function AffiliatePayoutsPage() {
         setPaymentMethod(methodData);
       } catch (error) {
         console.error('Failed to fetch payout data:', error);
+        setError('Failed to load payout data. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -75,6 +79,36 @@ export default function AffiliatePayoutsPage() {
   return (
     <div className='space-y-6'>
       <PageHeader title='Payouts' description='Your payout history and payment method' />
+
+      {error && (
+        <AlertBanner
+          variant='error'
+          title='Error'
+          description={error || undefined}
+          action={{
+            label: 'Retry',
+            onClick: () => {
+              if (!selectedBrand?.id) return;
+              setLoading(true);
+              setError(null);
+              Promise.all([
+                affiliateApi.getPayouts(selectedBrand.id, { limit: 50 }),
+                affiliateApi.getPayoutSummary(selectedBrand.id),
+                affiliateApi.getPaymentMethod(selectedBrand.id)
+              ]).then(([payoutsData, summaryData, methodData]) => {
+                setPayouts(payoutsData.data || payoutsData.payouts || []);
+                setSummary(summaryData);
+                setPaymentMethod(methodData);
+                setLoading(false);
+              }).catch(err => {
+                console.error('Failed to fetch payout data:', err);
+                setError('Failed to load payout data. Please refresh the page.');
+                setLoading(false);
+              });
+            }
+          }}
+        />
+      )}
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
         <div className='rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs transition-shadow hover:shadow-regular-sm'>
@@ -150,11 +184,11 @@ export default function AffiliatePayoutsPage() {
           <div className='flex h-64 items-center justify-center'>
             <RiLoader4Line className='size-8 animate-spin text-text-soft-400' />
           </div>
-        ) : payouts.length === 0 ? (
+        ) : !error && payouts.length === 0 ? (
           <div className='p-12 text-center'>
             <p className='text-paragraph-sm text-text-sub-600'>No payout history yet.</p>
           </div>
-        ) : (
+        ) : !error ? (
           <div className='overflow-x-auto'>
             <table className='w-full text-nowrap'>
               <thead>
@@ -173,7 +207,7 @@ export default function AffiliatePayoutsPage() {
                     <td className='px-5 py-3.5 text-paragraph-sm text-text-sub-600'>{p.method || 'PayPal'}</td>
                     <td className='px-5 py-3.5'>
                       <Badge variant='light' color={getStatusColor(p.status)} size='sm' dot>
-                        {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
+                        {p.status?.charAt(0).toUpperCase() + (p.status?.slice(1)?.toLowerCase() ?? '')}
                       </Badge>
                     </td>
                     <td className='px-5 py-3.5 text-right'>
@@ -186,7 +220,7 @@ export default function AffiliatePayoutsPage() {
               </tbody>
             </table>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

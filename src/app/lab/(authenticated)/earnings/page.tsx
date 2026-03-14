@@ -60,7 +60,7 @@ export default function LabEarnings() {
                     <h1 className="text-2xl font-bold text-text-strong-950">Earnings Management</h1>
                     <p className="text-paragraph-sm text-text-sub-600">Monitor production revenue and settlement history.</p>
                 </div>
-                <Button variant="secondary" className="rounded-xl" onClick={() => window.open('/api/lab/earnings/export')}>
+                <Button variant="secondary" className="rounded-xl" onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/lab/earnings/export`, '_blank')}>
                     <RiDownloadLine className="size-4 mr-2" />
                     Export CSV
                 </Button>
