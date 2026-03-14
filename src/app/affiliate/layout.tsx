@@ -31,6 +31,42 @@ const BASE_NAV_ITEMS: SidebarConfig['navItems'] = [
 ];
 
 import { usePathname } from 'next/navigation';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+function BrandSwitcher() {
+  const { getVisibleBrands, selectedBrandId, selectBrand } = useAffiliate();
+  const brands = getVisibleBrands();
+
+  if (!brands || brands.length === 0) return null;
+
+  return (
+    <Select
+      value={selectedBrandId || ''}
+      onValueChange={(val) => selectBrand(val)}
+    >
+      <SelectTrigger className="w-full bg-bg-weak-50 border-stroke-soft-200 shadow-none h-10 rounded-10 focus:ring-primary-alpha-16">
+        <SelectValue placeholder="Select Brand" />
+      </SelectTrigger>
+      <SelectContent className="bg-bg-white-0 border-stroke-soft-200">
+        {brands.map((b) => (
+          <SelectItem
+            key={b.id}
+            value={b.id}
+            className="rounded-lg cursor-pointer focus:bg-bg-weak-50 text-text-strong-950 focus:text-text-strong-950"
+          >
+            {b.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 function AffiliateShell({ children }: { children: React.ReactNode }) {
   const { user } = useAffiliate();
@@ -53,6 +89,7 @@ function AffiliateShell({ children }: { children: React.ReactNode }) {
     logo: <PeptifulLogomark variant='gradient' className='size-8' />,
     title: 'Peptiful',
     subtitle: 'Promoter Portal',
+    switcher: <BrandSwitcher />,
     navItems,
     user: user
       ? { name: user.name, email: user.email }

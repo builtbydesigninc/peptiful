@@ -33,6 +33,7 @@ export type SidebarConfig = {
   logo: React.ReactNode;
   title: string;
   subtitle?: string;
+  switcher?: React.ReactNode;
   navItems: NavItem[];
   bottomNavItems?: NavItem[];
   user?: {
@@ -86,6 +87,11 @@ export function AppSidebar({ config }: { config: SidebarConfig }) {
 
       {/* Navigation */}
       <nav className='flex-1 overflow-y-auto px-3 py-4'>
+        {!collapsed && config.switcher && (
+          <div className="mb-4">
+            {config.switcher}
+          </div>
+        )}
         <ul className='space-y-1'>
           {config.navItems.map((item) => {
             const active = isActive(item.href);
