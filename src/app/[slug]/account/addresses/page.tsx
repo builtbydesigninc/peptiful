@@ -254,6 +254,18 @@ export default function AddressesPage() {
                                     required
                                 />
                             </div>
+                            <div className="col-span-2 flex items-center gap-2 mt-2">
+                                <input
+                                    type="checkbox"
+                                    id="isDefault"
+                                    checked={formData.isDefault}
+                                    onChange={e => setFormData({ ...formData, isDefault: e.target.checked })}
+                                    className="size-4 rounded border-gray-300 text-primary-base focus:ring-primary-base accent-primary-base cursor-pointer"
+                                />
+                                <label htmlFor="isDefault" className="text-sm font-medium text-gray-700 cursor-pointer">
+                                    Set as default shipping destination
+                                </label>
+                            </div>
                         </div>
                         <ModalFooter className="mt-8">
                             <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)} disabled={actionLoading}>Cancel</Button>
