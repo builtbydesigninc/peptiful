@@ -159,12 +159,24 @@ export default function SettingsPage() {
       primaryColor: formData.get('primaryColor') as string,
       description: formData.get('description') as string,
     };
+    const customDomain = (formData.get('customDomain') as string)?.trim() || '';
+    const currentDomain = settings?.branding?.customDomain || '';
 
     try {
       await brandApi.updateBrandingSettings(data);
+
+      if (customDomain !== currentDomain) {
+        if (customDomain) {
+          await brandApi.setCustomDomain(customDomain);
+        } else {
+          await brandApi.removeCustomDomain();
+        }
+      }
+
       await fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update branding settings:', error);
+      toast.error('Update Failed', { description: error.message || 'Failed to update custom domain' });
     } finally {
       setSaving(false);
     }

@@ -235,7 +235,7 @@ export default function AffiliateDashboardPage() {
                       size='sm'
                       dot
                     >
-                      {o.status?.charAt(0) + o.status?.slice(1).toLowerCase()}
+                      {(o.status ?? '').charAt(0) + (o.status ?? '').slice(1).toLowerCase() || 'Processing'}
                     </Badge>
                   </td>
                 </tr>
